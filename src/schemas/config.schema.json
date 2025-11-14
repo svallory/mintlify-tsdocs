@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "mintlify-tsdocs Configuration",
+  "description": "Unified configuration for mintlify-tsdocs documentation generator.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "Part of the JSON Schema standard, this optional keyword declares the URL of the schema that the file conforms to. Editors may download the schema and use it to perform syntax highlighting.",
+      "type": "string"
+    },
+    "entryPoint": {
+      "description": "Path to the main TypeScript declaration file (.d.ts) to document. If not specified, will auto-detect from package.json 'types'/'typings' field or common paths.",
+      "type": "string"
+    },
+    "outputFolder": {
+      "description": "Directory where MDX documentation files will be generated. Defaults to './docs/reference'.",
+      "type": "string"
+    },
+    "docsJson": {
+      "description": "Path to Mintlify's docs.json file for navigation integration. If not specified, will search for docs.json in common locations.",
+      "type": "string"
+    },
+    "tabName": {
+      "description": "Name of the tab in Mintlify navigation where API docs will appear. Defaults to 'API Reference'.",
+      "type": "string",
+      "default": "API Reference"
+    },
+    "groupName": {
+      "description": "Name of the group within the tab for organizing API documentation pages. Defaults to 'API'.",
+      "type": "string",
+      "default": "API"
+    },
+    "convertReadme": {
+      "description": "Whether to convert README.md to index.mdx. Defaults to false.",
+      "type": "boolean",
+      "default": false
+    },
+    "readmeTitle": {
+      "description": "Title for the converted README file. Defaults to 'README'.",
+      "type": "string",
+      "default": "README"
+    },
+    "templates": {
+      "description": "Template customization options.",
+      "type": "object",
+      "properties": {
+        "userTemplateDir": {
+          "description": "Directory containing custom template overrides.",
+          "type": "string"
+        },
+        "cache": {
+          "description": "Whether to enable template caching. Defaults to true.",
+          "type": "boolean",
+          "default": true
+        },
+        "strict": {
+          "description": "Whether to use strict mode for templates. Defaults to true.",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "tsdoc": {
+      "description": "TSDoc configuration. Will be written to .tsdocs/tsdoc.json",
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "default": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json"
+        },
+        "extends": {
+          "description": "Paths to other tsdoc.json files to extend from.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["@microsoft/api-extractor/extends/tsdoc-base.json"]
+        },
+        "tagDefinitions": {
+          "description": "Custom TSDoc tag definitions.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "apiExtractor": {
+      "description": "API Extractor configuration. Will be written to .tsdocs/api-extractor.json. See https://api-extractor.com/pages/configs/api-extractor_json/",
+      "type": "object",
+      "properties": {
+        "configPath": {
+          "description": "Path to custom api-extractor.json file. If specified, will use this instead of generating one.",
+          "type": "string"
+        },
+        "bundledPackages": {
+          "description": "NPM packages to treat as part of this package.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "compiler": {
+          "description": "TypeScript compiler options.",
+          "type": "object",
+          "properties": {
+            "tsconfigFilePath": {
+              "description": "Path to tsconfig.json file.",
+              "type": "string"
+            },
+            "skipLibCheck": {
+              "description": "Whether to skip type checking of declaration files.",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "apiReport": {
+          "description": "API report (.api.md) generation settings.",
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "docModel": {
+          "description": "Doc model (.api.json) generation settings.",
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "projectFolderUrl": {
+              "description": "Base URL for source code links (e.g., 'https://github.com/user/repo/tree/main').",
+              "type": "string"
+            }
+          }
+        },
+        "dtsRollup": {
+          "description": "TypeScript declaration rollup settings.",
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "messages": {
+          "description": "Message reporting configuration.",
+          "type": "object",
+          "properties": {
+            "compilerMessageReporting": {
+              "type": "object"
+            },
+            "extractorMessageReporting": {
+              "type": "object"
+            },
+            "tsdocMessageReporting": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

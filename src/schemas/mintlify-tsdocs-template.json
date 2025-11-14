@@ -1,0 +1,51 @@
+/**
+ * Config file for mintlify-tsdocs.
+ *
+ * This file stores default configuration options for the mintlify-tsdocs documentation generator.
+ * It's typically created by running `mintlify-tsdocs init` and stored in `.tsdocs/mintlify-tsdocs.json`.
+ *
+ * For more info, visit: https://github.com/microsoft/rushstack/tree/main/apps/api-documenter
+ */
+{
+  "$schema": "https://api.api-extractor.com/schemas/mintlify-tsdocs.schema.json",
+
+  /**
+   * Directory where API Extractor outputs .api.json files.
+   * This should match the directory specified in api-extractor.json's docModel.apiJsonFilePath.
+   *
+   * Example: "./temp"
+   */
+  "inputFolder": "./temp",
+
+  /**
+   * Directory where MDX documentation files will be generated.
+   * This is where your Mintlify API documentation pages will be written.
+   *
+   * Example: "./docs/api"
+   */
+  "outputFolder": "./docs/api",
+
+  /**
+   * Path to Mintlify's mint.json configuration file.
+   * When specified, generated documentation will be automatically added to your Mintlify navigation.
+   *
+   * Example: "./docs/mint.json"
+   */
+  // "docsJsonPath": "./docs/mint.json",
+
+  /**
+   * Name of the tab in Mintlify navigation where API documentation will appear.
+   * Only used when docsJsonPath is specified.
+   *
+   * Example: "API Reference"
+   */
+  // "tabName": "API Reference",
+
+  /**
+   * Name of the group within the tab for organizing API documentation pages.
+   * Only used when docsJsonPath is specified.
+   *
+   * Example: "Core API"
+   */
+  // "groupName": "API"
+}

@@ -1,0 +1,38 @@
+{
+  "title": "mintlify-tsdocs Configuration",
+  "description": "Configuration for mintlify-tsdocs documentation generator.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "Part of the JSON Schema standard, this optional keyword declares the URL of the schema that the file conforms to. Editors may download the schema and use it to perform syntax highlighting.",
+      "type": "string"
+    },
+
+    "inputFolder": {
+      "description": "Directory where API Extractor outputs .api.json files (e.g., './temp'). This is typically set in api-extractor.json's docModel.apiJsonFilePath.",
+      "type": "string"
+    },
+
+    "outputFolder": {
+      "description": "Directory where MDX documentation files will be generated (e.g., './docs/api').",
+      "type": "string"
+    },
+
+    "docsJsonPath": {
+      "description": "Path to Mintlify's mint.json file for navigation integration (e.g., './docs/mint.json').",
+      "type": "string"
+    },
+
+    "tabName": {
+      "description": "Name of the tab in Mintlify navigation where API docs will appear (e.g., 'API Reference').",
+      "type": "string"
+    },
+
+    "groupName": {
+      "description": "Name of the group within the tab for organizing API documentation pages (e.g., 'API', 'Core API').",
+      "type": "string"
+    }
+  },
+
+  "additionalProperties": false
+}

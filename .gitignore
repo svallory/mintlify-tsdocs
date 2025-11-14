@@ -1,0 +1,6 @@
+lib
+node_modules
+
+# API Extractor generated files
+newdocs/.tsdocs/
+.tsdocs

@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/mintlify-tsdocs/lib/schemas/config.schema.json",
+  "entryPoint": "lib/index.d.ts",
+  "outputFolder": "docs/reference",
+  "docsJson": "docs/docs.json",
+  "tabName": "Reference",
+  "groupName": "Ref Group"
+}

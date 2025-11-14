@@ -1,0 +1,55 @@
+{
+  "name": "mintlify-tsdocs",
+  "version": "0.0.1",
+  "description": "Generate Mintlify-compatible MDX documentation from TypeScript. Also published as 'mint-ts' for convenience.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/rushstack.git",
+    "directory": "apps/api-documenter"
+  },
+  "homepage": "https://api-extractor.com/",
+  "license": "MIT",
+  "files": [
+    "lib/",
+    "bin/",
+    "src/templates/defaults/",
+    "src/components/"
+  ],
+  "scripts": {
+    "build": "tsc && cp -r src/schemas lib/ && cp -r src/components lib/",
+    "clean": "rm -rf lib",
+    "rebuild": "bun run clean && bun run build",
+    "docs:extract": "api-extractor run --local",
+    "docs:generate": "node ./bin/mintlify-tsdocs generate --tab-name Reference --group 'Code API' --menu --readme -o docs/reference --docs-json docs/docs.json --skip-extractor -i docs/reference",
+    "docs": "node ./scripts/generate-docs.js",
+    "docs:verbose": "bun run build && node ./bin/mintlify-tsdocs generate --tab-name Reference --group 'Code API' --menu --readme -o docs/reference --docs-json docs/docs.json"
+  },
+  "bin": {
+    "mintlify-tsdocs": "./bin/mintlify-tsdocs",
+    "mint-ts": "./bin/mintlify-tsdocs",
+    "api-documenter": "./bin/mintlify-tsdocs"
+  },
+  "main": "lib/index.js",
+  "typings": "dist/rollup.d.ts",
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "@microsoft/api-extractor": "^7.55.0",
+    "@microsoft/api-extractor-model": "^7.32.0",
+    "@microsoft/tsdoc": "^0.16.0",
+    "@rushstack/node-core-library": "^5.18.0",
+    "@rushstack/terminal": "^0.19.3",
+    "@rushstack/ts-command-line": "^5.1.3",
+    "@types/debug": "^4.1.12",
+    "cosmiconfig": "^9.0.0",
+    "debug": "^4.4.3",
+    "ejs": "^3.1.10",
+    "liquidjs": "^10.24.0",
+    "resolve": "~1.22.11"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^18.19.130",
+    "@types/resolve": "1.20.2",
+    "typescript": "^5.9.3"
+  }
+}
