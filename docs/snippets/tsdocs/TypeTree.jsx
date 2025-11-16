@@ -4,12 +4,12 @@
  * A recursive, expandable component for documenting complex type structures.
  * Works for TypeScript types, JSON schemas, API parameters, return types, or any structured data.
  *
- * Distributed with mintlify-tsdocs and automatically installed to docs/snippets/.
+ * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
+ *
+ * Note: React and useState are globally available in Mintlify
  *
  * @version 1.0.0
  */
-
-import React, { useState } from 'react';
 
 /**
  * TypeTree - Recursive expandable type documentation component
@@ -56,7 +56,7 @@ export const TypeTree = ({
   level = 0
 }) => {
   // Auto-expand first two levels for better UX
-  const [isOpen, setIsOpen] = useState(level < 2);
+  const [isOpen, setIsOpen] = React.useState(level < 2);
   const hasNested = properties && properties.length > 0;
 
   return (

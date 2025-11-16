@@ -6,10 +6,10 @@
  *
  * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
  *
+ * Note: React, useState, and useEffect are globally available in Mintlify
+ *
  * @version 1.0.0
  */
-
-import React, { useState } from 'react';
 
 /**
  * Copy to clipboard utility
@@ -27,9 +27,9 @@ const copyToClipboard = async (text) => {
 /**
  * CopyToClipboardButton - Internal component for the copy button
  */
-function CopyToClipboardButton({ textToCopy, tooltipColor = '#0D9373', onCopied, className = '' }) {
-  const [hidden, setHidden] = useState(true);
-  const [disabled, setDisabled] = useState(false);
+const CopyToClipboardButton = ({ textToCopy, tooltipColor = '#0D9373', onCopied, className = '' }) => {
+  const [hidden, setHidden] = React.useState(true);
+  const [disabled, setDisabled] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined' && !navigator?.clipboard) {
@@ -118,7 +118,7 @@ export const Preview = ({
   className = '',
   defaultTab = 'preview',
 }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [activeTab, setActiveTab] = React.useState(defaultTab);
 
   return (
     <div className={`not-prose my-6 gray-frame rounded-lg overflow-hidden ${className}`}>
