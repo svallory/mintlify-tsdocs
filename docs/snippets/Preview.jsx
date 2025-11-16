@@ -6,10 +6,13 @@
  *
  * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
  *
- * Note: React, useState, and useEffect are globally available in Mintlify
+ * Note: React is globally available in Mintlify
  *
  * @version 1.0.0
  */
+
+// Destructure hooks from global React
+const { useState, useEffect } = React;
 
 /**
  * Copy to clipboard utility

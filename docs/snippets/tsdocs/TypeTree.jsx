@@ -6,10 +6,13 @@
  *
  * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
  *
- * Note: React and useState are globally available in Mintlify
+ * Note: React is globally available in Mintlify
  *
  * @version 1.0.0
  */
+
+// Destructure hooks from global React
+const { useState } = React;
 
 /**
  * TypeTree - Recursive expandable type documentation component
