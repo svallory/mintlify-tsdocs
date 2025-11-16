@@ -56,7 +56,7 @@ export const TypeTree = ({
   level = 0
 }) => {
   // Auto-expand first two levels for better UX
-  const [isOpen, setIsOpen] = React.useState(level < 2);
+  const [isOpen, setIsOpen] = useState(level < 2);
   const hasNested = properties && properties.length > 0;
 
   return (

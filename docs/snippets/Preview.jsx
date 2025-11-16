@@ -28,10 +28,10 @@ const copyToClipboard = async (text) => {
  * CopyToClipboardButton - Internal component for the copy button
  */
 const CopyToClipboardButton = ({ textToCopy, tooltipColor = '#0D9373', onCopied, className = '' }) => {
-  const [hidden, setHidden] = React.useState(true);
-  const [disabled, setDisabled] = React.useState(false);
+  const [hidden, setHidden] = useState(true);
+  const [disabled, setDisabled] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined' && !navigator?.clipboard) {
       console.warn("The browser's Clipboard API is unavailable.");
       setDisabled(true);
@@ -118,7 +118,7 @@ export const Preview = ({
   className = '',
   defaultTab = 'preview',
 }) => {
-  const [activeTab, setActiveTab] = React.useState(defaultTab);
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   return (
     <div className={`not-prose my-6 gray-frame rounded-lg overflow-hidden ${className}`}>
