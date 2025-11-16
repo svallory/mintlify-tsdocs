@@ -39,7 +39,8 @@
               "installation",
               "quickstart",
               "cheat-sheet",
-              "cli-reference"
+              "cli-reference",
+              "config-reference"
             ]
           },
           {

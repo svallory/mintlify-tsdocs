@@ -1,0 +1,741 @@
+---
+title: Configuration Reference
+description: Complete reference for mint-tsdocs.config.json configuration options
+---
+
+## Configuration File
+
+mint-tsdocs uses [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig) to load configuration. It searches for configuration in the following locations (in order):
+
+1. `mint-tsdocs.config.json` (recommended)
+2. `.mint-tsdocsrc`
+3. `.mint-tsdocsrc.json`
+4. `mintlifyTsdocs` field in `package.json`
+
+## JSON Schema
+
+Add the `$schema` field for IDE autocomplete and validation:
+
+```json
+{
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "./docs/reference"
+}
+```
+
+---
+
+## Core Options
+
+### entryPoint
+
+**Type:** `string` (required)
+
+Path to the main TypeScript declaration file (.d.ts) that serves as the entry point for your API.
+
+```json
+{
+  "entryPoint": "./lib/index.d.ts"
+}
+```
+
+**Auto-detection:**
+- Checks `types` field in package.json
+- Checks `typings` field in package.json
+- Searches common paths: `./lib/index.d.ts`, `./dist/index.d.ts`, `./build/index.d.ts`
+
+**Notes:**
+- Must point to a compiled .d.ts file (not .ts source)
+- Run TypeScript compiler before generating docs
+- Path is relative to project root
+
+---
+
+### outputFolder
+
+**Type:** `string`
+
+**Default:** `./docs/reference`
+
+Directory where generated MDX documentation files will be written.
+
+```json
+{
+  "outputFolder": "./docs/reference"
+}
+```
+
+**Notes:**
+- Directory will be created if it doesn't exist
+- Existing files will be overwritten
+- Path is relative to project root
+
+---
+
+### docsJson
+
+**Type:** `string`
+
+**Default:** Auto-detected or `./docs/docs.json`
+
+Path to Mintlify's docs.json navigation file.
+
+```json
+{
+  "docsJson": "./docs/docs.json"
+}
+```
+
+**Auto-detection searches:**
+- `./docs/docs.json`
+- `./docs.json`
+- `./documentation/docs.json`
+
+**Notes:**
+- Navigation entries will be automatically added to this file
+- File must exist and be valid JSON
+- Set to `false` to skip navigation updates
+
+---
+
+## Navigation Options
+
+### tabName
+
+**Type:** `string`
+
+**Default:** `"API Reference"`
+
+Name of the tab in Mintlify navigation where API docs will appear.
+
+```json
+{
+  "tabName": "API Reference"
+}
+```
+
+**Example in docs.json:**
+```json
+{
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "API Reference",  // ← tabName
+        "groups": [...]
+      }
+    ]
+  }
+}
+```
+
+---
+
+### groupName
+
+**Type:** `string`
+
+**Default:** `"API"`
+
+Name of the group within the tab where API items will be organized.
+
+```json
+{
+  "groupName": "API"
+}
+```
+
+**Example in docs.json:**
+```json
+{
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API",  // ← groupName
+            "pages": [...]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## README Options
+
+### convertReadme
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Whether to convert the project's README.md to MDX and include it in the documentation.
+
+```json
+{
+  "convertReadme": true,
+  "readmeTitle": "Overview"
+}
+```
+
+**Notes:**
+- Searches for README.md in project root
+- Converts markdown to Mintlify-compatible MDX
+- Adds to navigation with specified title
+
+---
+
+### readmeTitle
+
+**Type:** `string`
+
+**Default:** `"README"`
+
+Title for the converted README page in navigation (only used if `convertReadme: true`).
+
+```json
+{
+  "readmeTitle": "Getting Started"
+}
+```
+
+---
+
+## Template Options
+
+### templates
+
+**Type:** `object`
+
+Configuration for Liquid template customization.
+
+```json
+{
+  "templates": {
+    "userTemplateDir": "./templates",
+    "cache": true,
+    "strict": true
+  }
+}
+```
+
+#### templates.userTemplateDir
+
+**Type:** `string`
+
+Path to directory containing custom Liquid templates.
+
+```json
+{
+  "templates": {
+    "userTemplateDir": "./templates"
+  }
+}
+```
+
+**Template files:**
+- `layout.liquid` - Base layout wrapper
+- `class.liquid` - Class documentation
+- `interface.liquid` - Interface documentation
+- `method.liquid` - Method documentation
+- `property.liquid` - Property documentation
+- `constructor.liquid` - Constructor documentation
+- `function.liquid` - Function documentation
+- `enum.liquid` - Enum documentation
+- `type-alias.liquid` - Type alias documentation
+- `namespace.liquid` - Namespace documentation
+
+**Generate templates:**
+```bash
+mint-tsdocs customize -t ./templates
+```
+
+---
+
+#### templates.cache
+
+**Type:** `boolean`
+
+**Default:** `true`
+
+Whether to cache compiled templates for better performance.
+
+```json
+{
+  "templates": {
+    "cache": true
+  }
+}
+```
+
+**Notes:**
+- Recommended: `true` for production, `false` for template development
+- Clear cache by deleting `node_modules/.cache/mint-tsdocs/`
+
+---
+
+#### templates.strict
+
+**Type:** `boolean`
+
+**Default:** `true`
+
+Whether to enable strict mode in Liquid template engine.
+
+```json
+{
+  "templates": {
+    "strict": true
+  }
+}
+```
+
+**Strict mode:**
+- Throws errors on undefined variables
+- Throws errors on invalid filters
+- Helps catch template bugs during development
+
+**Lenient mode (strict: false):**
+- Silently ignores undefined variables
+- Silently ignores invalid filters
+- May hide template errors
+
+---
+
+## TSDoc Options
+
+### tsdoc
+
+**Type:** `object`
+
+Configuration for TSDoc parser.
+
+```json
+{
+  "tsdoc": {
+    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"],
+    "tagDefinitions": [
+      {
+        "tagName": "@customTag",
+        "syntaxKind": "modifier"
+      }
+    ]
+  }
+}
+```
+
+#### tsdoc.extends
+
+**Type:** `string[]`
+
+Paths to TSDoc configuration files to extend.
+
+```json
+{
+  "tsdoc": {
+    "extends": [
+      "@microsoft/api-extractor/extends/tsdoc-base.json"
+    ]
+  }
+}
+```
+
+**Common extends:**
+- `@microsoft/api-extractor/extends/tsdoc-base.json` - Base TSDoc tags
+- Custom tsdoc.json files in your project
+
+---
+
+#### tsdoc.tagDefinitions
+
+**Type:** `array`
+
+Custom TSDoc tag definitions.
+
+```json
+{
+  "tsdoc": {
+    "tagDefinitions": [
+      {
+        "tagName": "@experimental",
+        "syntaxKind": "modifier"
+      }
+    ]
+  }
+}
+```
+
+**Tag properties:**
+- `tagName` - Tag name (e.g., `@experimental`)
+- `syntaxKind` - Tag type: `modifier`, `block`, or `inline`
+
+---
+
+## API Extractor Options
+
+### apiExtractor
+
+**Type:** `object`
+
+Configuration for API Extractor integration.
+
+```json
+{
+  "apiExtractor": {
+    "configPath": "./api-extractor.json",
+    "bundledPackages": ["@internal/utils"],
+    "compiler": {
+      "tsconfigFilePath": "./tsconfig.json",
+      "skipLibCheck": true
+    },
+    "docModel": {
+      "enabled": true,
+      "projectFolderUrl": "https://github.com/user/repo/tree/main"
+    }
+  }
+}
+```
+
+---
+
+#### apiExtractor.configPath
+
+**Type:** `string`
+
+**Default:** Auto-generated in `.tsdocs/api-extractor.json`
+
+Path to custom API Extractor configuration file.
+
+```json
+{
+  "apiExtractor": {
+    "configPath": "./api-extractor.json"
+  }
+}
+```
+
+**Notes:**
+- If specified, mint-tsdocs will use your custom config
+- If not specified, config is auto-generated from other settings
+- Custom config gives you full control over API Extractor
+
+---
+
+#### apiExtractor.bundledPackages
+
+**Type:** `string[]`
+
+**Default:** `[]`
+
+List of package names to treat as bundled (include their declarations in the documentation).
+
+```json
+{
+  "apiExtractor": {
+    "bundledPackages": ["@internal/utils", "@internal/types"]
+  }
+}
+```
+
+**Use case:**
+- Document internal packages alongside main package
+- Include types from dependencies in your documentation
+
+---
+
+#### apiExtractor.compiler
+
+**Type:** `object`
+
+TypeScript compiler configuration for API Extractor.
+
+##### compiler.tsconfigFilePath
+
+**Type:** `string`
+
+**Default:** Auto-detected
+
+Path to tsconfig.json file.
+
+```json
+{
+  "apiExtractor": {
+    "compiler": {
+      "tsconfigFilePath": "./tsconfig.build.json"
+    }
+  }
+}
+```
+
+**Auto-detection searches:**
+- `./tsconfig.json`
+- `./tsconfig.build.json`
+- `./tsconfig.prod.json`
+
+---
+
+##### compiler.skipLibCheck
+
+**Type:** `boolean`
+
+**Default:** `true`
+
+Whether to skip type checking of declaration files.
+
+```json
+{
+  "apiExtractor": {
+    "compiler": {
+      "skipLibCheck": true
+    }
+  }
+}
+```
+
+**Recommended:** `true` for faster builds
+
+---
+
+#### apiExtractor.docModel
+
+**Type:** `object`
+
+Configuration for API Extractor's documentation model output.
+
+##### docModel.enabled
+
+**Type:** `boolean`
+
+**Default:** `true`
+
+Whether to generate .api.json files.
+
+```json
+{
+  "apiExtractor": {
+    "docModel": {
+      "enabled": true
+    }
+  }
+}
+```
+
+**Note:** Must be `true` for mint-tsdocs to work
+
+---
+
+##### docModel.projectFolderUrl
+
+**Type:** `string`
+
+Base URL for source code links in generated documentation.
+
+```json
+{
+  "apiExtractor": {
+    "docModel": {
+      "projectFolderUrl": "https://github.com/username/repo/tree/main"
+    }
+  }
+}
+```
+
+**Example link:**
+```
+https://github.com/username/repo/tree/main/src/MyClass.ts#L42
+```
+
+---
+
+#### apiExtractor.apiReport
+
+**Type:** `object`
+
+Configuration for API report file generation (optional).
+
+```json
+{
+  "apiExtractor": {
+    "apiReport": {
+      "enabled": false,
+      "reportFolder": "./temp",
+      "reportFileName": "<packageName>.api.md"
+    }
+  }
+}
+```
+
+**Properties:**
+- `enabled` - Whether to generate API report
+- `reportFolder` - Output directory
+- `reportFileName` - Report file name pattern
+
+---
+
+#### apiExtractor.dtsRollup
+
+**Type:** `object`
+
+Configuration for .d.ts rollup generation (optional).
+
+```json
+{
+  "apiExtractor": {
+    "dtsRollup": {
+      "enabled": false,
+      "publicTrimmedFilePath": "./dist/<packageName>.d.ts"
+    }
+  }
+}
+```
+
+**Properties:**
+- `enabled` - Whether to generate rollup
+- `publicTrimmedFilePath` - Public API .d.ts output
+- `betaTrimmedFilePath` - Beta API .d.ts output
+- `alphaTrimmedFilePath` - Alpha API .d.ts output
+- `untrimmedFilePath` - Full API .d.ts output
+
+---
+
+## Complete Example
+
+```json
+{
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
+
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "./docs/reference",
+  "docsJson": "./docs/docs.json",
+
+  "tabName": "API Reference",
+  "groupName": "API",
+
+  "convertReadme": true,
+  "readmeTitle": "Overview",
+
+  "templates": {
+    "userTemplateDir": "./templates",
+    "cache": true,
+    "strict": true
+  },
+
+  "tsdoc": {
+    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"],
+    "tagDefinitions": [
+      {
+        "tagName": "@experimental",
+        "syntaxKind": "modifier"
+      }
+    ]
+  },
+
+  "apiExtractor": {
+    "bundledPackages": [],
+    "compiler": {
+      "tsconfigFilePath": "./tsconfig.json",
+      "skipLibCheck": true
+    },
+    "docModel": {
+      "enabled": true,
+      "projectFolderUrl": "https://github.com/username/repo/tree/main"
+    },
+    "apiReport": {
+      "enabled": false
+    },
+    "dtsRollup": {
+      "enabled": false
+    }
+  }
+}
+```
+
+---
+
+## Validation
+
+mint-tsdocs validates your configuration on startup. Common validation errors:
+
+| Error | Fix |
+|-------|-----|
+| `entryPoint is required` | Add `"entryPoint": "./lib/index.d.ts"` |
+| `entryPoint file not found` | Run `bun run build` to generate .d.ts files |
+| `Invalid docsJson path` | Check path or create docs.json file |
+| `Invalid template directory` | Run `mint-tsdocs customize -t ./templates` |
+
+---
+
+## Environment-Specific Configs
+
+Use different configs for different environments:
+
+**Development:**
+```json
+{
+  "templates": {
+    "cache": false,
+    "strict": true
+  }
+}
+```
+
+**Production:**
+```json
+{
+  "templates": {
+    "cache": true,
+    "strict": true
+  }
+}
+```
+
+**package.json scripts:**
+```json
+{
+  "scripts": {
+    "docs:dev": "mint-tsdocs --verbose",
+    "docs:build": "mint-tsdocs --quiet"
+  }
+}
+```
+
+---
+
+## Migration from api-documenter
+
+If migrating from `@microsoft/api-documenter`:
+
+1. **Keep your api-extractor.json:**
+   ```json
+   {
+     "apiExtractor": {
+       "configPath": "./api-extractor.json"
+     }
+   }
+   ```
+
+2. **Or let mint-tsdocs generate it:**
+   ```json
+   {
+     "entryPoint": "./lib/index.d.ts",
+     "apiExtractor": {
+       "compiler": {
+         "tsconfigFilePath": "./tsconfig.json"
+       }
+     }
+   }
+   ```
+
+---
+
+## See Also
+
+- **[Cheat Sheet](/cheat-sheet)** - Quick command reference
+- **[CLI Reference](/cli-reference)** - Complete CLI documentation
+- **[API Extractor Docs](https://api-extractor.com/)** - API Extractor configuration
+- **[TSDoc Specification](https://tsdoc.org/)** - TSDoc tag reference
