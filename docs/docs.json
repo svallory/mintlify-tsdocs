@@ -47,7 +47,8 @@
             "group": "Components",
             "icon": "puzzle",
             "pages": [
-              "components/type-tree"
+              "components/type-tree",
+              "components/preview"
             ]
           },
           {

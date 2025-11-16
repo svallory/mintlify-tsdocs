@@ -4,16 +4,17 @@ description: Display recursive type structures with expandable nested properties
 icon: "diagram-project"
 ---
 
+import { TypeTree, TypeTreeGroup } from "/snippets/TypeTree.jsx"
+import { Preview } from "/snippets/Preview.jsx"
+
 The `TypeTree` component provides an elegant way to document complex type structures with nested properties. It automatically handles recursive rendering and provides an intuitive expandable interface for exploring deeply nested types.
 
 ## Basic Usage
 
 Import the component in your MDX file and pass the type information:
 
-```jsx
-import { TypeTree } from "/snippets/TypeTree.jsx"
-
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="config"
   type="object"
   description="Configuration settings for the application"
@@ -22,12 +23,19 @@ import { TypeTree } from "/snippets/TypeTree.jsx"
     { name: "host", type: "string", description: "Database host address", required: true },
     { name: "port", type: "number", description: "Database port number", defaultValue: "5432" }
   ]}
-/>
-```
-
-<Frame>
-  <img src="/images/typetree-basic.png" alt="Basic TypeTree example" />
-</Frame>
+/>`}
+>
+  <TypeTree
+    name="config"
+    type="object"
+    description="Configuration settings for the application"
+    required={true}
+    properties={[
+      { name: "host", type: "string", description: "Database host address", required: true },
+      { name: "port", type: "number", description: "Database port number", defaultValue: "5432" }
+    ]}
+  />
+</Preview>
 
 ## Properties
 
@@ -67,8 +75,8 @@ import { TypeTree } from "/snippets/TypeTree.jsx"
 
 TypeTree automatically renders nested properties with expandable sections:
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="database"
   type="object"
   description="Database configuration"
@@ -103,8 +111,45 @@ TypeTree automatically renders nested properties with expandable sections:
       ]
     }
   ]}
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="database"
+    type="object"
+    description="Database configuration"
+    required={true}
+    properties={[
+      {
+        name: "connection",
+        type: "object",
+        description: "Connection settings",
+        required: true,
+        properties: [
+          { name: "host", type: "string", required: true },
+          { name: "port", type: "number", defaultValue: "5432" },
+          {
+            name: "ssl",
+            type: "object",
+            description: "SSL configuration",
+            properties: [
+              { name: "enabled", type: "boolean", defaultValue: "false" },
+              { name: "cert", type: "string" }
+            ]
+          }
+        ]
+      },
+      {
+        name: "pool",
+        type: "object",
+        description: "Connection pool settings",
+        properties: [
+          { name: "min", type: "number", defaultValue: "2" },
+          { name: "max", type: "number", defaultValue: "10" }
+        ]
+      }
+    ]}
+  />
+</Preview>
 
 ## Auto-Expansion Behavior
 
@@ -121,10 +166,8 @@ This provides an optimal balance between information density and discoverability
 
 Use `TypeTreeGroup` to organize multiple related types:
 
-```jsx
-import { TypeTree, TypeTreeGroup } from "/snippets/TypeTree.jsx"
-
-<TypeTreeGroup title="Request Parameters">
+<Preview
+  code={`<TypeTreeGroup title="Request Parameters">
   <TypeTree
     name="id"
     type="string"
@@ -140,85 +183,150 @@ import { TypeTree, TypeTreeGroup } from "/snippets/TypeTree.jsx"
       { name: "retries", type: "number", defaultValue: "3" }
     ]}
   />
-</TypeTreeGroup>
-```
+</TypeTreeGroup>`}
+>
+  <TypeTreeGroup title="Request Parameters">
+    <TypeTree
+      name="id"
+      type="string"
+      description="Unique identifier"
+      required={true}
+    />
+    <TypeTree
+      name="options"
+      type="object"
+      description="Optional configuration"
+      properties={[
+        { name: "timeout", type: "number", defaultValue: "5000" },
+        { name: "retries", type: "number", defaultValue: "3" }
+      ]}
+    />
+  </TypeTreeGroup>
+</Preview>
 
 ## Complex Type Examples
 
 ### Union Types
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="status"
   type="'pending' | 'active' | 'completed'"
   description="Current status of the task"
   required={true}
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="status"
+    type="'pending' | 'active' | 'completed'"
+    description="Current status of the task"
+    required={true}
+  />
+</Preview>
 
 ### Array Types
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="tags"
   type="Array<string>"
   description="List of tags associated with the item"
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="tags"
+    type="Array<string>"
+    description="List of tags associated with the item"
+  />
+</Preview>
 
 ### Generic Types
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="response"
   type="Promise<Result<T>>"
   description="Async operation result"
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="response"
+    type="Promise<Result<T>>"
+    description="Async operation result"
+  />
+</Preview>
 
 ### Function Types
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="handler"
   type="(event: Event) => void"
   description="Event handler callback"
   required={true}
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="handler"
+    type="(event: Event) => void"
+    description="Event handler callback"
+    required={true}
+  />
+</Preview>
 
 ## Deprecated Properties
 
 Mark deprecated properties with the `deprecated` flag:
 
-```jsx
-<TypeTree
+<Preview
+  code={`<TypeTree
   name="oldField"
   type="string"
   description="This field is deprecated. Use 'newField' instead."
   deprecated={true}
-/>
-```
+/>`}
+>
+  <TypeTree
+    name="oldField"
+    type="string"
+    description="This field is deprecated. Use 'newField' instead."
+    deprecated={true}
+  />
+</Preview>
 
 ## Optional vs Required
 
 The component automatically displays badges for required and optional properties:
 
-```jsx
-<TypeTree
-  name="email"
-  type="string"
-  description="User email address"
-  required={true}  // Shows red "required" badge
-/>
-
-<TypeTree
-  name="phone"
-  type="string"
-  description="User phone number"
-  // Shows gray "optional" text
-/>
-```
+<Preview
+  code={`<TypeTreeGroup title="User Fields">
+  <TypeTree
+    name="email"
+    type="string"
+    description="User email address"
+    required={true}
+  />
+  <TypeTree
+    name="phone"
+    type="string"
+    description="User phone number"
+  />
+</TypeTreeGroup>`}
+>
+  <TypeTreeGroup title="User Fields">
+    <TypeTree
+      name="email"
+      type="string"
+      description="User email address"
+      required={true}
+    />
+    <TypeTree
+      name="phone"
+      type="string"
+      description="User phone number"
+    />
+  </TypeTreeGroup>
+</Preview>
 
 ## Best Practices
 
@@ -334,7 +442,7 @@ TypeTree is designed as a cleaner alternative to deeply nested ParamField compon
 
 ## Auto-Generated Documentation
 
-When using `mintlify-tsdocs` to generate API documentation, TypeTree components are automatically created for complex type structures:
+When using `mint-tsdocs` to generate API documentation, TypeTree components are automatically created for complex type structures:
 
 1. The tool analyzes TypeScript types
 2. Extracts nested property information
@@ -350,7 +458,7 @@ This means you get clean, maintainable documentation without manual work!
     If you see `Cannot find module "/snippets/TypeTree.jsx"`:
 
     1. Ensure TypeTree.jsx exists in your `docs/snippets/` folder
-    2. Run `mintlify-tsdocs` to auto-install the component
+    2. Run `mint-tsdocs` to auto-install the component
     3. Check that the import path is correct (should start with `/snippets/`)
   </Accordion>
 
@@ -378,22 +486,24 @@ This means you get clean, maintainable documentation without manual work!
     Initial release with full recursive rendering support
   </Card>
   <Card title="Future" icon="sparkles">
+
     - Syntax highlighting for code examples
     - Copy-to-clipboard for type definitions
     - Collapsible all/expand all controls
+  
   </Card>
 </CardGroup>
 
 ## Related Components
 
 <CardGroup cols={3}>
-  <Card title="ParamField" icon="square-dashed" href="https://mintlify.com/docs/components/params">
+  <Card title="ParamField" icon="square-dashed" href="https://mintlify.com/docs/components/fields">
     Standard Mintlify component for parameters
   </Card>
   <Card title="ResponseField" icon="reply" href="https://mintlify.com/docs/components/responses">
     Document API response structures
   </Card>
-  <Card title="Expandable" icon="chevron-down" href="https://mintlify.com/docs/components/accordion">
+  <Card title="Expandable" icon="chevron-down" href="https://mintlify.com/docs/components/accordions">
     Create expandable sections
   </Card>
 </CardGroup>
