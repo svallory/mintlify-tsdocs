@@ -1,0 +1,544 @@
+---
+title: CLI Reference
+description: Complete command-line reference for mint-tsdocs with examples and usage patterns
+---
+
+## Quick Start
+
+```bash
+# Install globally
+bun install -g mint-tsdocs
+
+# Or use with npx (no installation needed)
+npx mint-tsdocs init
+npx mint-tsdocs generate
+```
+
+## Default Behavior
+
+Running `mint-tsdocs` without any command defaults to `generate`:
+
+```bash
+# These are equivalent
+mint-tsdocs
+mint-tsdocs generate
+```
+
+## Commands
+
+### init
+
+Initialize mint-tsdocs configuration in your project.
+
+**Usage:**
+```bash
+mint-tsdocs init [PROJECT_DIR] [OPTIONS]
+```
+
+**Options:**
+- `--yes`, `-y` - Skip prompts and use auto-detected defaults
+- `--skip-mintlify` - Skip Mintlify initialization
+- `--project-dir PATH` - Project directory (alternative to positional argument)
+
+**Examples:**
+```bash
+# Interactive setup in current directory
+mint-tsdocs init
+
+# Quick setup with defaults (no prompts)
+mint-tsdocs init --yes
+
+# Initialize specific package in monorepo
+mint-tsdocs init ./packages/my-library
+
+# Initialize without setting up Mintlify
+mint-tsdocs init --skip-mintlify
+```
+
+**What it does:**
+1. Auto-detects TypeScript entry point from package.json
+2. Searches for existing docs.json (Mintlify config)
+3. Creates `mint-tsdocs.config.json` with detected settings
+4. Optionally initializes Mintlify if not already set up
+5. Adds `"mint-ts"` script to package.json
+
+---
+
+### generate
+
+Generate Mintlify-compatible MDX documentation from TypeScript source.
+
+**Usage:**
+```bash
+mint-tsdocs generate [PROJECT_DIR] [OPTIONS]
+mint-tsdocs [PROJECT_DIR]  # shorthand
+```
+
+**Options:**
+- `--skip-extractor` - Skip running api-extractor (use existing .api.json files)
+- `--project-dir PATH` - Project directory (alternative to positional argument)
+
+**Global Options:**
+- `-v`, `--verbose` - Show verbose output (info level logging)
+- `--debug` - Show debug output (implies --verbose)
+- `-q`, `--quiet` - Suppress all output except errors
+
+**Examples:**
+```bash
+# Generate docs for current project
+mint-tsdocs generate
+mint-tsdocs  # shorthand
+
+# Generate docs for specific package (monorepo)
+mint-tsdocs ./packages/core
+mint-tsdocs generate ./packages/utils
+
+# Generate with verbose output
+mint-tsdocs generate --verbose
+
+# Skip api-extractor (use existing .api.json files)
+mint-tsdocs generate --skip-extractor
+
+# Debug mode for troubleshooting
+mint-tsdocs generate --debug
+```
+
+**What it does:**
+1. Loads configuration from `mint-tsdocs.config.json`
+2. Prompts to run init if config not found
+3. Creates `.tsdocs/` cache directory
+4. Generates `api-extractor.json` and `tsdoc.json` in `.tsdocs/`
+5. Validates and compiles TypeScript
+6. Runs api-extractor to generate `.api.json` files
+7. Converts `.api.json` to MDX documentation
+8. Updates Mintlify navigation in `docs.json`
+
+---
+
+### customize
+
+Copy default templates to a directory for customization.
+
+**Usage:**
+```bash
+mint-tsdocs customize -t TEMPLATE_DIR [OPTIONS]
+```
+
+**Options:**
+- `-t`, `--template-dir PATH` - Template directory path (required)
+- `--force` - Overwrite existing templates
+
+**Examples:**
+```bash
+# Initialize templates in ./templates
+mint-tsdocs customize -t ./templates
+
+# Overwrite existing templates
+mint-tsdocs customize -t ./templates --force
+```
+
+**What it does:**
+1. Copies default Liquid templates from mint-tsdocs package
+2. Creates directory structure for customization
+3. Templates can be edited to customize MDX output
+
+**Template Files:**
+- `layout.liquid` - Base layout for all pages
+- `class.liquid` - Class documentation template
+- `interface.liquid` - Interface documentation template
+- `method.liquid` - Method documentation template
+- `property.liquid` - Property documentation template
+- `constructor.liquid` - Constructor documentation template
+
+---
+
+### show
+
+Display configuration or cache statistics.
+
+**Usage:**
+```bash
+mint-tsdocs show [TARGET] [OPTIONS]
+mint-tsdocs show --target TARGET
+```
+
+**Targets:**
+- `config` - Display current configuration (default)
+- `stats` - Display cache statistics
+
+**Examples:**
+```bash
+# Show current configuration
+mint-tsdocs show
+mint-tsdocs show config
+mint-tsdocs show --target config
+
+# Show cache statistics
+mint-tsdocs show stats
+mint-tsdocs show --target stats
+```
+
+**Config Output:**
+Shows all settings from `mint-tsdocs.config.json`:
+- Project settings (entry point, output folder)
+- Navigation settings (tab name, group name)
+- README conversion settings
+- Template configuration
+- API Extractor configuration
+- TSDoc configuration
+
+**Stats Output:**
+Shows performance metrics:
+- Cache status (enabled/disabled)
+- Type analysis cache (size, hits, misses, hit rate)
+- API resolution cache (size, hits, misses, hit rate)
+- Overall hit rate and total lookups
+
+---
+
+### help
+
+Display comprehensive help information.
+
+**Usage:**
+```bash
+mint-tsdocs help
+mint-tsdocs --help
+mint-tsdocs -h
+```
+
+Shows:
+- Tool description
+- Usage patterns
+- Available commands
+- Global options
+- Examples
+- Documentation links
+
+---
+
+### version
+
+Display version and package information.
+
+**Usage:**
+```bash
+mint-tsdocs version
+mint-tsdocs --version
+mint-tsdocs -v
+```
+
+Shows:
+- Package name and version
+- Description
+- Homepage URL
+- License information
+- Issue tracker URL
+
+---
+
+## Global Options
+
+Available for all commands:
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--verbose` | `-v` | Show verbose output (info level logging) |
+| `--debug` | | Show debug output (includes verbose) |
+| `--quiet` | `-q` | Suppress all output except errors |
+| `--help` | `-h` | Show help for command |
+
+**Examples:**
+```bash
+# Verbose output
+mint-tsdocs generate --verbose
+
+# Debug mode
+mint-tsdocs generate --debug
+
+# Quiet mode (errors only)
+mint-tsdocs generate --quiet
+```
+
+---
+
+## Monorepo Support
+
+mint-tsdocs fully supports monorepos through positional directory arguments:
+
+```bash
+# Initialize multiple packages
+mint-tsdocs init ./packages/core
+mint-tsdocs init ./packages/utils
+mint-tsdocs init ./packages/plugins
+
+# Generate docs for specific packages
+mint-tsdocs ./packages/core
+mint-tsdocs ./packages/utils
+
+# Or use the --project-dir flag
+mint-tsdocs generate --project-dir ./packages/core
+```
+
+**Monorepo Example Workflow:**
+```bash
+# 1. Initialize each package
+for pkg in packages/*; do
+  mint-tsdocs init "$pkg" --yes
+done
+
+# 2. Generate docs for all packages
+for pkg in packages/*; do
+  mint-tsdocs "$pkg"
+done
+
+# 3. View combined configuration
+mint-tsdocs show config
+```
+
+---
+
+## Using with npx
+
+No installation required when using npx:
+
+```bash
+# Run any command directly
+npx mint-tsdocs init
+npx mint-tsdocs generate
+npx mint-tsdocs ./packages/my-lib
+npx mint-tsdocs show stats
+```
+
+**package.json Scripts:**
+```json
+{
+  "scripts": {
+    "docs:init": "npx mint-tsdocs init",
+    "docs:generate": "npx mint-tsdocs generate",
+    "docs": "npx mint-tsdocs"
+  }
+}
+```
+
+Then run:
+```bash
+bun run docs:init
+bun run docs:generate
+bun run docs
+```
+
+---
+
+## Configuration File
+
+Configuration is stored in `mint-tsdocs.config.json` at your project root.
+
+**Minimal Example:**
+```json
+{
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "./docs/reference"
+}
+```
+
+**Full Example:**
+```json
+{
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "./docs/reference",
+  "docsJson": "./docs/docs.json",
+  "tabName": "API Reference",
+  "groupName": "API",
+  "convertReadme": false,
+  "readmeTitle": "README",
+  "templates": {
+    "userTemplateDir": "./templates",
+    "cache": true,
+    "strict": true
+  },
+  "tsdoc": {
+    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"]
+  },
+  "apiExtractor": {
+    "bundledPackages": [],
+    "docModel": {
+      "projectFolderUrl": "https://github.com/user/repo/tree/main"
+    }
+  }
+}
+```
+
+**Alternative Locations:**
+- `mint-tsdocs.config.json` (recommended)
+- `.mint-tsdocsrc`
+- `.mint-tsdocsrc.json`
+- `mintlifyTsdocs` field in `package.json`
+
+---
+
+## Common Workflows
+
+### First-Time Setup
+```bash
+# 1. Initialize configuration
+mint-tsdocs init
+
+# 2. Build your TypeScript project
+bun run build
+
+# 3. Generate documentation
+mint-tsdocs generate
+```
+
+### Development Workflow
+```bash
+# Make code changes
+vim src/index.ts
+
+# Rebuild TypeScript
+bun run build
+
+# Regenerate docs
+mint-tsdocs
+
+# View with Mintlify dev server
+npx mintlify dev
+```
+
+### Debugging Issues
+```bash
+# Check current configuration
+mint-tsdocs show config
+
+# View cache statistics
+mint-tsdocs show stats
+
+# Generate with debug output
+mint-tsdocs generate --debug
+
+# Skip api-extractor to test MDX generation only
+mint-tsdocs generate --skip-extractor
+```
+
+### Template Customization
+```bash
+# 1. Copy templates
+mint-tsdocs customize -t ./templates
+
+# 2. Edit templates
+vim ./templates/class.liquid
+
+# 3. Update config to use templates
+# Edit mint-tsdocs.config.json:
+# "templates": { "userTemplateDir": "./templates" }
+
+# 4. Regenerate docs
+mint-tsdocs generate
+```
+
+---
+
+## Troubleshooting
+
+### Config Not Found
+```bash
+# Error: No mint-tsdocs configuration found
+mint-tsdocs generate
+
+# Solution: Run init first
+mint-tsdocs init
+```
+
+### TypeScript Compilation Errors
+```bash
+# Error: declaration: true not set
+mint-tsdocs generate
+
+# Solutions offered interactively:
+# 1. Update tsconfig.json with "declaration: true"
+# 2. Create tsconfig.tsdocs.json (extends your config)
+# 3. Pick a different tsconfig.json file
+```
+
+### API Extractor Errors
+```bash
+# View detailed error output
+mint-tsdocs generate --debug
+
+# Check if TypeScript compiled successfully
+ls -la lib/*.d.ts
+
+# Verify entry point exists
+mint-tsdocs show config
+```
+
+### Cache Issues
+```bash
+# View cache statistics
+mint-tsdocs show stats
+
+# Clear cache by deleting .tsdocs/ directory
+rm -rf docs/.tsdocs
+
+# Regenerate everything
+mint-tsdocs generate
+```
+
+---
+
+## Environment Variables
+
+### DEBUG
+Control debug output using the DEBUG environment variable:
+
+```bash
+# Show all debug output
+DEBUG=mint-tsdocs:* mint-tsdocs generate
+
+# Show only warnings and errors (default)
+mint-tsdocs generate
+
+# Show specific namespace
+DEBUG=mint-tsdocs:cli:* mint-tsdocs generate
+
+# Multiple namespaces
+DEBUG=mint-tsdocs:cli:*,mint-tsdocs:cache:* mint-tsdocs generate
+```
+
+**Debug Levels:**
+- `mint-tsdocs:*:error` - Errors only
+- `mint-tsdocs:*:warn` - Warnings and errors
+- `mint-tsdocs:*:info` - Info, warnings, and errors (same as --verbose)
+- `mint-tsdocs:*:debug` - All output (same as --debug)
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | Error occurred |
+
+Check exit code in scripts:
+```bash
+if mint-tsdocs generate; then
+  echo "Documentation generated successfully"
+else
+  echo "Documentation generation failed"
+  exit 1
+fi
+```
+
+---
+
+## Resources
+
+- **Documentation**: https://mint-tsdocs.saulo.engineer/
+- **GitHub**: https://github.com/mintlify/tsdocs
+- **Issues**: https://github.com/mintlify/tsdocs/issues
+- **Mintlify Docs**: https://mintlify.com/docs
+- **API Extractor**: https://api-extractor.com/
