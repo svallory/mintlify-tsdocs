@@ -1,29 +1,29 @@
 ---
 title: Introduction
-description: Generate beautiful Mintlify documentation from your TypeScript API
+description: Generate beautiful code references for your Mintlify documentation
 icon: "book-open"
 ---
 
-# mintlify-tsdocs
+## Quick Start
 
-This tool generates [Mintlify](https://mintlify.com/)-compatible API documentation for your TypeScript library.
-It reads the `*.api.json` data files produced by [API Extractor](https://api-extractor.com/) and generates
-MDX files with proper frontmatter, navigation integration, and Mintlify-specific components.
+```bash
+npx mint-tsdocs
+```
 
-<CardGroup cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/quickstart">
-    Get up and running in minutes
-  </Card>
-  <Card title="Architecture" icon="sitemap" href="/architecture/overview">
-    Understand how it works
-  </Card>
-  <Card title="Examples" icon="code" href="/examples/basic-setup">
-    Learn from practical examples
-  </Card>
-  <Card title="API Reference" icon="book" href="/api">
-    Explore the API documentation
-  </Card>
-</CardGroup>
+`mint-tsdocs` will automatically detect your TypeScript project, ask a few configuration questions,
+and set everything up.
+
+If you haven't configured your Mintlify docs yet, we'll do that for you too!
+
+<Card
+  title="Wanna see how good it looks?"
+  icon="camera"
+  href="/reference"
+  arrow="true"
+  cta="Check it out!"
+>
+  The Reference section of this documentation was generated using `mint-tsdocs` 
+</Card>
 
 ## Features
 
@@ -48,11 +48,11 @@ MDX files with proper frontmatter, navigation integration, and Mintlify-specific
 ## How It Works
 
 <Steps>
-  <Step title="Extract API Data">
-    Use API Extractor to generate `.api.json` files from your TypeScript project
+  <Step title="Initialize">
+    Run `npx mint-tsdocs` - it auto-detects your TypeScript setup and creates configuration files
   </Step>
-  <Step title="Generate Documentation">
-    Run `mintlify-tsdocs` to convert API data into beautiful MDX files
+  <Step title="Generate">
+    Run `npx mint-tsdocs generate` - everything happens automatically
   </Step>
   <Step title="Deploy">
     Your documentation is ready to deploy with Mintlify
@@ -62,26 +62,22 @@ MDX files with proper frontmatter, navigation integration, and Mintlify-specific
 ## Quick Example
 
 ```bash
-# Install API Extractor and generate .api.json files
-npm install -g @microsoft/api-extractor
-api-extractor run --local
+# Initialize configuration (auto-detects your TypeScript setup)
+npx mint-tsdocs
 
-# Generate Mintlify documentation
-npx mintlify-tsdocs markdown \
-  -i ./temp \
-  -o ./docs/api \
-  --docs-json ./docs/docs.json \
-  --tab-name "API Reference" \
-  --group "Core API"
+# Generate documentation
+npx mint-tsdocs generate
 ```
 
+That's it! Your API documentation is ready in the `docs/reference` folder (or wherever you configured it).
+
 <Note>
-  This documentation site itself is generated using `mintlify-tsdocs` - it's the ultimate example of what the tool can do!
+  This documentation site itself is generated using `mint-tsdocs` - it's the ultimate example of what the tool can do!
 </Note>
 
 ## What Gets Generated
 
-When you run `mintlify-tsdocs`, you get:
+When you run `mint-tsdocs`, you get:
 
 - **MDX Files** - One file per API item (class, interface, function, etc.)
 - **Rich Components** - Interactive `<ParamField>` and `<ResponseField>` components
@@ -89,13 +85,23 @@ When you run `mintlify-tsdocs`, you get:
 - **Cross-References** - Automatic linking between related API items
 - **Navigation** - Auto-updated `docs.json` with your API structure
 
+## Built on Solid Foundations
+
+mint-tsdocs is powered by Microsoft's excellent [API Extractor](https://api-extractor.com/) and [TSDoc](https://tsdoc.org/) projects, which handle the complex work of extracting and parsing TypeScript APIs. We're grateful to the Rush Stack team for these foundational tools.
+
 ## Next Steps
 
 <CardGroup cols={2}>
   <Card title="Installation" icon="download" href="/installation">
     Install and configure the tool
   </Card>
-  <Card title="Your First Docs" icon="play" href="/quickstart">
-    Generate your first documentation
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get up and running in minutes
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/architecture/overview">
+    Understand how it works
+  </Card>
+  <Card title="Examples" icon="code" href="/examples/basic-setup">
+    Learn from practical examples
   </Card>
 </CardGroup>

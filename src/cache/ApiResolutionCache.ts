@@ -128,8 +128,16 @@ export class ApiResolutionCache {
     declarationReference: any,
     contextApiItem?: ApiItem
   ): string {
-    // Use JSON.stringify for the declaration reference since it may not have a consistent toString method
-    const refString = JSON.stringify(declarationReference);
+    // Use toString() instead of JSON.stringify to avoid circular structure issues
+    // DeclarationReference objects can contain ParserContext with circular references
+    let refString: string;
+    try {
+      // Try to use the object's toString method if available
+      refString = declarationReference?.toString?.() || String(declarationReference);
+    } catch {
+      // Fallback: create a simple string representation
+      refString = `${declarationReference?.packageName || 'pkg'}:${declarationReference?.memberReferences?.length || 0}`;
+    }
     const contextString = contextApiItem?.canonicalReference?.toString() || '';
     return `${refString}|${contextString}`;
   }

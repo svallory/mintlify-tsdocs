@@ -35,6 +35,7 @@ DocNode (TSDoc base)
 Central registration point for all custom node types.
 
 **Responsibilities:**
+
 - Define CustomDocNodeKind enum
 - Register custom nodes with TSDocConfiguration
 - Define parent-child relationships
@@ -42,37 +43,35 @@ Central registration point for all custom node types.
 
 **Node Types:**
 
-| Kind | Class | Purpose |
-|------|-------|---------|
-| `EmphasisSpan` | DocEmphasisSpan | Bold/italic text |
-| `Heading` | DocHeading | Section headers (h1-h5) |
-| `NoteBox` | DocNoteBox | Info/warning boxes |
-| `Table` | DocTable | Table structures |
-| `TableRow` | DocTableRow | Table rows |
-| `TableCell` | DocTableCell | Table cells |
-| `Expandable` | DocExpandable | Collapsible sections |
+| Kind           | Class           | Purpose                 |
+| -------------- | --------------- | ----------------------- |
+| `EmphasisSpan` | DocEmphasisSpan | Bold/italic text        |
+| `Heading`      | DocHeading      | Section headers (h1-h5) |
+| `NoteBox`      | DocNoteBox      | Info/warning boxes      |
+| `Table`        | DocTable        | Table structures        |
+| `TableRow`     | DocTableRow     | Table rows              |
+| `TableCell`    | DocTableCell    | Table cells             |
+| `Expandable`   | DocExpandable   | Collapsible sections    |
 
 **Allowable Children:**
 
 ```typescript
 // EmphasisSpan can contain:
-- DocNodeKind.PlainText
-- DocNodeKind.SoftBreak
-
-// Section can contain:
-- CustomDocNodeKind.Heading
-- CustomDocNodeKind.NoteBox
-- CustomDocNodeKind.Table
-- CustomDocNodeKind.Expandable
-
-// Paragraph can contain:
-- CustomDocNodeKind.EmphasisSpan
+-DocNodeKind.PlainText -
+  DocNodeKind.SoftBreak -
+  // Section can contain:
+  CustomDocNodeKind.Heading -
+  CustomDocNodeKind.NoteBox -
+  CustomDocNodeKind.Table -
+  CustomDocNodeKind.Expandable -
+  // Paragraph can contain:
+  CustomDocNodeKind.EmphasisSpan;
 ```
 
 **Usage:**
 
 ```typescript
-import { CustomDocNodes } from '../nodes/CustomDocNodeKind';
+import { CustomDocNodes } from "../nodes/CustomDocNodeKind";
 
 // Get shared configuration
 const config = CustomDocNodes.configuration;
@@ -90,18 +89,21 @@ const parser = new TSDocParser(config);
 Inline text with emphasis (bold, italic, or code formatting).
 
 **Properties:**
+
 - `bold`: boolean
 - `italic`: boolean
 
 **Usage:**
+
 ```typescript
-new DocEmphasisSpan({
-  configuration,
-  bold: true,
-  italic: false
-}, [
-  new DocPlainText({ text: 'Important text' })
-]);
+new DocEmphasisSpan(
+  {
+    configuration,
+    bold: true,
+    italic: false,
+  },
+  [new DocPlainText({ text: "Important text" })]
+);
 ```
 
 **Renders as:** `**Important text**`
@@ -113,17 +115,19 @@ new DocEmphasisSpan({
 Section heading with configurable level (1-5).
 
 **Properties:**
+
 - `title`: string - Heading text
 - `level`: number - Heading level (1-5, default 1)
 
 **Validation:** Throws error if level < 1 or level > 5
 
 **Usage:**
+
 ```typescript
 new DocHeading({
   configuration,
-  title: 'Getting Started',
-  level: 2
+  title: "Getting Started",
+  level: 2,
 });
 ```
 
@@ -136,9 +140,11 @@ new DocHeading({
 Bordered information box for notes, warnings, or tips.
 
 **Properties:**
+
 - `content`: DocSection - Box content
 
 **Usage:**
+
 ```typescript
 new DocNoteBox(
   { configuration },
@@ -149,10 +155,9 @@ new DocNoteBox(
 ```
 
 **Renders as Mintlify:**
+
 ```mdx
-<Note>
-Content here
-</Note>
+<Note>Content here</Note>
 ```
 
 ---
@@ -162,10 +167,12 @@ Content here
 Collapsible/expandable content section.
 
 **Properties:**
+
 - `title`: string - Section title
 - `content`: DocSection - Expandable content
 
 **Usage:**
+
 ```typescript
 new DocExpandable({
   configuration,
@@ -176,10 +183,9 @@ new DocExpandable({
 ```
 
 **Renders as Mintlify:**
+
 ```mdx
-<Accordion title="Click to expand">
-Content here
-</Accordion>
+<Accordion title="Click to expand">Content here</Accordion>
 ```
 
 ---
@@ -189,32 +195,35 @@ Content here
 Table structure with header and data rows.
 
 **Properties:**
+
 - `header`: DocTableRow - Table header
 - `rows`: DocTableRow[] - Data rows
 
 **Usage:**
+
 ```typescript
 const header = new DocTableRow([
-  new DocTableCell({ content: new DocPlainText({ text: 'Name' }) }),
-  new DocTableCell({ content: new DocPlainText({ text: 'Type' }) })
+  new DocTableCell({ content: new DocPlainText({ text: "Name" }) }),
+  new DocTableCell({ content: new DocPlainText({ text: "Type" }) }),
 ]);
 
 const row = new DocTableRow([
-  new DocTableCell({ content: new DocPlainText({ text: 'id' }) }),
-  new DocTableCell({ content: new DocPlainText({ text: 'string' }) })
+  new DocTableCell({ content: new DocPlainText({ text: "id" }) }),
+  new DocTableCell({ content: new DocPlainText({ text: "string" }) }),
 ]);
 
 new DocTable({
   configuration,
   header,
-  rows: [row]
+  rows: [row],
 });
 ```
 
 **Renders as:**
+
 ```markdown
-| Name | Type |
-|------|------|
+| Name | Type   |
+| ---- | ------ |
 | id   | string |
 ```
 
@@ -225,9 +234,11 @@ new DocTable({
 Single row in a table.
 
 **Properties:**
+
 - `cells`: DocTableCell[] - Row cells
 
 **Usage:**
+
 ```typescript
 new DocTableRow(
   { configuration },
@@ -245,16 +256,15 @@ new DocTableRow(
 Single cell in a table row.
 
 **Properties:**
+
 - `content`: DocSection - Cell content
 
 **Usage:**
+
 ```typescript
-new DocTableCell(
-  { configuration },
-  [
-    new DocPlainText({ text: 'Cell content' })
-  ]
-);
+new DocTableCell({ configuration }, [
+  new DocPlainText({ text: "Cell content" }),
+]);
 ```
 
 ## Usage for Contributors
@@ -262,8 +272,8 @@ new DocTableCell(
 ### Creating Custom Nodes
 
 ```typescript
-import { CustomDocNodes, CustomDocNodeKind } from '../nodes/CustomDocNodeKind';
-import { DocHeading, DocNoteBox } from '../nodes';
+import { CustomDocNodes, CustomDocNodeKind } from "../nodes/CustomDocNodeKind";
+import { DocHeading, DocNoteBox } from "../nodes";
 
 // Get configuration
 const config = CustomDocNodes.configuration;
@@ -271,25 +281,22 @@ const config = CustomDocNodes.configuration;
 // Create heading
 const heading = new DocHeading({
   configuration: config,
-  title: 'API Reference',
-  level: 2
+  title: "API Reference",
+  level: 2,
 });
 
 // Create note box
-const noteBox = new DocNoteBox(
-  { configuration: config },
-  [
-    new DocParagraph({ configuration: config }, [
-      new DocPlainText({ text: 'This API is deprecated' })
-    ])
-  ]
-);
+const noteBox = new DocNoteBox({ configuration: config }, [
+  new DocParagraph({ configuration: config }, [
+    new DocPlainText({ text: "This API is deprecated" }),
+  ]),
+]);
 ```
 
 ### Rendering Custom Nodes
 
 ```typescript
-import { CustomMarkdownEmitter } from '../markdown/CustomMarkdownEmitter';
+import { CustomMarkdownEmitter } from "../markdown/CustomMarkdownEmitter";
 
 // Custom emitter knows how to render all custom nodes
 const emitter = new CustomMarkdownEmitter(apiModel);
@@ -297,14 +304,14 @@ const emitter = new CustomMarkdownEmitter(apiModel);
 // Render a node
 if (node.kind === CustomDocNodeKind.Heading) {
   const heading = node as DocHeading;
-  emitter.write('#'.repeat(heading.level) + ' ' + heading.title + '\n\n');
+  emitter.write("#".repeat(heading.level) + " " + heading.title + "\n\n");
 }
 
 if (node.kind === CustomDocNodeKind.NoteBox) {
   const noteBox = node as DocNoteBox;
-  emitter.write('<Note>\n');
+  emitter.write("<Note>\n");
   emitter.writeNode(noteBox.content);
-  emitter.write('</Note>\n\n');
+  emitter.write("</Note>\n\n");
 }
 ```
 
@@ -313,10 +320,11 @@ if (node.kind === CustomDocNodeKind.NoteBox) {
 To add a new custom node type (e.g., `DocCodeBlock`):
 
 1. **Create node class:**
+
 ```typescript
 // src/nodes/DocCodeBlock.ts
-import { IDocNodeParameters, DocNode } from '@microsoft/tsdoc';
-import { CustomDocNodeKind } from './CustomDocNodeKind';
+import { IDocNodeParameters, DocNode } from "@microsoft/tsdoc";
+import { CustomDocNodeKind } from "./CustomDocNodeKind";
 
 export interface IDocCodeBlockParameters extends IDocNodeParameters {
   code: string;
@@ -340,65 +348,71 @@ export class DocCodeBlock extends DocNode {
 ```
 
 2. **Add to CustomDocNodeKind enum:**
+
 ```typescript
 // src/nodes/CustomDocNodeKind.ts
 export enum CustomDocNodeKind {
   // ... existing kinds ...
-  CodeBlock = 'CodeBlock'
+  CodeBlock = "CodeBlock",
 }
 ```
 
 3. **Register with TSDocConfiguration:**
+
 ```typescript
 // src/nodes/CustomDocNodeKind.ts
-configuration.docNodeManager.registerDocNodes('@microsoft/mintlify-tsdocs', [
+configuration.docNodeManager.registerDocNodes("@microsoft/mint-tsdocs", [
   // ... existing registrations ...
-  { docNodeKind: CustomDocNodeKind.CodeBlock, constructor: DocCodeBlock }
+  { docNodeKind: CustomDocNodeKind.CodeBlock, constructor: DocCodeBlock },
 ]);
 
 // Define allowable parents
 configuration.docNodeManager.registerAllowableChildren(DocNodeKind.Section, [
   // ... existing children ...
-  CustomDocNodeKind.CodeBlock
+  CustomDocNodeKind.CodeBlock,
 ]);
 ```
 
 4. **Add rendering logic:**
-```typescript
+
+````typescript
 // src/markdown/CustomMarkdownEmitter.ts
 if (node.kind === CustomDocNodeKind.CodeBlock) {
   const codeBlock = node as DocCodeBlock;
-  this.write('```' + codeBlock.language + '\n');
+  this.write("```" + codeBlock.language + "\n");
   this.write(codeBlock.code);
-  this.write('\n```\n\n');
+  this.write("\n```\n\n");
 }
-```
+````
 
 ### Testing Custom Nodes
 
 ```typescript
-import { CustomDocNodes, DocHeading } from '../nodes';
+import { CustomDocNodes, DocHeading } from "../nodes";
 
-describe('DocHeading', () => {
-  it('should validate heading level', () => {
+describe("DocHeading", () => {
+  it("should validate heading level", () => {
     const config = CustomDocNodes.configuration;
 
-    expect(() => new DocHeading({
-      configuration: config,
-      title: 'Test',
-      level: 6  // Invalid
-    })).toThrow('must be a number between 1 and 5');
+    expect(
+      () =>
+        new DocHeading({
+          configuration: config,
+          title: "Test",
+          level: 6, // Invalid
+        })
+    ).toThrow("must be a number between 1 and 5");
   });
 
-  it('should have correct kind', () => {
+  it("should have correct kind", () => {
     const heading = new DocHeading({
       configuration: CustomDocNodes.configuration,
-      title: 'Test',
-      level: 2
+      title: "Test",
+      level: 2,
     });
 
     expect(heading.kind).toBe(CustomDocNodeKind.Heading);
-    expect(heading.title).toBe('Test');
+    expect(heading.title).toBe("Test");
     expect(heading.level).toBe(2);
   });
 });
@@ -409,19 +423,21 @@ describe('DocHeading', () => {
 ### 🔴 Critical
 
 1. **Package Name Typo** (CustomDocNodeKind.ts:33)
-   - **Issue**: `@micrososft/mintlify-tsdocs` should be `@microsoft/mintlify-tsdocs`
+   - **Issue**: `@micrososft/mint-tsdocs` should be `@microsoft/mint-tsdocs`
    - **Impact**: Incorrect package identification in TSDoc registration
    - **Fix**: Correct the typo:
    ```typescript
-   configuration.docNodeManager.registerDocNodes('@microsoft/mintlify-tsdocs', [
+   configuration.docNodeManager.registerDocNodes('@microsoft/mint-tsdocs', [
    ```
 
 ### 🟡 Major
 
 2. **Singleton Configuration** (CustomDocNodeKind.ts:27-62)
+
    - **Issue**: Single static TSDocConfiguration instance
    - **Impact**: Cannot have different configurations, testing is difficult
    - **Fix**: Allow configuration injection:
+
    ```typescript
    public static createConfiguration(): TSDocConfiguration {
      const configuration = new TSDocConfiguration();
@@ -431,9 +447,11 @@ describe('DocHeading', () => {
    ```
 
 3. **No Validation in Node Constructors**
+
    - **Issue**: Only DocHeading validates its parameters
    - **Impact**: Invalid nodes could be created
    - **Fix**: Add validation to all node constructors:
+
    ```typescript
    constructor(parameters: IDocTableParameters) {
      super(parameters);
@@ -447,7 +465,7 @@ describe('DocHeading', () => {
    - **Issue**: Node classes lack detailed JSDoc comments
    - **Impact**: Unclear how to use nodes, what they render as
    - **Fix**: Add comprehensive JSDoc:
-   ```typescript
+   ````typescript
    /**
     * Represents a table in documentation.
     *
@@ -465,13 +483,15 @@ describe('DocHeading', () => {
     *
     * @public
     */
-   ```
+   ````
 
 ### 🟢 Minor
 
 5. **No Type Guards**
+
    - **Issue**: No helper functions to check node types
    - **Enhancement**: Add type guards:
+
    ```typescript
    export function isDocHeading(node: DocNode): node is DocHeading {
      return node.kind === CustomDocNodeKind.Heading;
@@ -479,6 +499,7 @@ describe('DocHeading', () => {
    ```
 
 6. **Inconsistent Parameter Interfaces**
+
    - **Issue**: Some have rich parameters, others are empty
    - **Enhancement**: Standardize parameter interfaces
 
@@ -491,7 +512,7 @@ describe('DocHeading', () => {
        return new DocHeading({
          configuration: CustomDocNodes.configuration,
          title,
-         level
+         level,
        });
      }
    }
@@ -501,11 +522,11 @@ describe('DocHeading', () => {
 
 ### Time Complexity
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| Node creation | O(1) | Simple object construction |
-| Get configuration | O(1) | Cached singleton |
-| Tree traversal | O(n) | n = number of nodes |
+| Operation         | Complexity | Notes                      |
+| ----------------- | ---------- | -------------------------- |
+| Node creation     | O(1)       | Simple object construction |
+| Get configuration | O(1)       | Cached singleton           |
+| Tree traversal    | O(n)       | n = number of nodes        |
 
 ### Memory Usage
 
@@ -516,9 +537,11 @@ describe('DocHeading', () => {
 ## Dependencies
 
 ### External Dependencies
+
 - `@microsoft/tsdoc` - TSDoc parsing and node system
 
 ### Internal Dependencies
+
 - None - standalone module
 
 ## Related Modules
@@ -543,13 +566,13 @@ describe('DocHeading', () => {
 new DocEmphasisSpan({ bold: true, italic: false }, [...children]);
 
 // Headings
-new DocHeading({ title: 'Section', level: 2 });
+new DocHeading({ title: "Section", level: 2 });
 
 // Note boxes
 new DocNoteBox({}, [...children]);
 
 // Expandable sections
-new DocExpandable({ title: 'Details' }, [...children]);
+new DocExpandable({ title: "Details" }, [...children]);
 
 // Tables
 new DocTable({ header: headerRow, rows: [row1, row2] });
@@ -572,7 +595,7 @@ new DocTableCell({}, [...children]);
 ### Using Configuration
 
 ```typescript
-import { CustomDocNodes } from '../nodes/CustomDocNodeKind';
+import { CustomDocNodes } from "../nodes/CustomDocNodeKind";
 
 const config = CustomDocNodes.configuration;
 // Use this config for all custom nodes

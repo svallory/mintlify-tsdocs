@@ -29,6 +29,7 @@ import { StringBuilder, type IStringBuilder } from '@rushstack/node-core-library
  *     two
  *   end
  * ```
+ * @public
  */
 export class IndentedWriter {
   /**

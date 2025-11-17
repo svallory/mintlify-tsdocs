@@ -20,8 +20,8 @@ export class LiquidTemplateEngine {
   private readonly _templateCache: Map<string, string> = new Map();
 
   public constructor(options: ITemplateEngineOptions = {}) {
-    // Default templates are in src/templates/defaults, accessible from compiled code
-    this._templateDir = options.templateDir || path.join(__dirname, '..', '..', 'src', 'templates', 'defaults');
+    // Default templates are bundled in lib/templates/defaults after build
+    this._templateDir = options.templateDir || path.join(__dirname, '..', 'templates', 'defaults');
     this._cache = options.cache !== false;
     this._strict = options.strict !== false;
 
@@ -174,9 +174,18 @@ export class LiquidTemplateEngine {
    * Sanitize template data to prevent XSS and ensure valid output
    */
   private _sanitizeTemplateData(data: ITemplateData): ITemplateData {
+    // Keys that should NOT be sanitized (code/type content)
+    const skipSanitizationKeys = new Set(['type', 'signature', 'code', 'typePath', 'defaultValue']);
+
     // Deep clone and sanitize strings
-    const sanitize = (value: any): any => {
+    const sanitize = (value: any, key?: string): any => {
       if (typeof value === 'string') {
+        // Skip sanitization for code/type fields - they're from API Extractor (trusted)
+        // and need to preserve <, >, & for TypeScript syntax
+        if (key && skipSanitizationKeys.has(key)) {
+          return value;
+        }
+
         // Basic HTML escaping for security
         return value
           .replace(/&/g, '&amp;')
@@ -186,12 +195,12 @@ export class LiquidTemplateEngine {
           .replace(/'/g, '&#39;');
       }
       if (Array.isArray(value)) {
-        return value.map(sanitize);
+        return value.map((item) => sanitize(item, key));
       }
       if (typeof value === 'object' && value !== null) {
         const sanitized: any = {};
-        for (const key in value) {
-          sanitized[key] = sanitize(value[key]);
+        for (const objKey in value) {
+          sanitized[objKey] = sanitize(value[objKey], objKey);
         }
         return sanitized;
       }
@@ -255,6 +264,24 @@ export class LiquidTemplateEngine {
     this._liquid.registerFilter('truncate', (input: string, length: number = 100, suffix: string = '...') => {
       if (input.length <= length) return input;
       return input.substring(0, length - suffix.length) + suffix;
+    });
+
+    // Add a 'is_multiline' filter to check if type has newlines
+    this._liquid.registerFilter('is_multiline', (input: string) => {
+      return input && input.includes('\n');
+    });
+
+    // Add a 'format_type' filter for proper type rendering in MDX
+    this._liquid.registerFilter('format_type', (input: string) => {
+      if (!input) return '';
+
+      // If type contains newlines or is complex (has curly braces), use code block
+      if (input.includes('\n') || (input.includes('{') && input.length > 50)) {
+        return `\n\n\`\`\`typescript\n${input}\n\`\`\`\n`;
+      }
+
+      // For simple types, return inline code (without backticks - template will add them)
+      return input;
     });
   }
 

@@ -1,16 +1,6 @@
 /**
- * Unified configuration types for mintlify-tsdocs
+ * Unified configuration types for mint-tsdocs
  */
-
-export interface TsDocConfig {
-  $schema?: string;
-  extends?: string[];
-  tagDefinitions?: Array<{
-    tagName: string;
-    syntaxKind: string;
-    allowMultiple?: boolean;
-  }>;
-}
 
 export interface ApiExtractorCompilerConfig {
   tsconfigFilePath?: string;
@@ -155,11 +145,6 @@ export interface MintlifyTsDocsConfig {
   templates?: TemplateConfig;
 
   /**
-   * TSDoc configuration (written to .tsdocs/tsdoc.json)
-   */
-  tsdoc?: TsDocConfig;
-
-  /**
    * API Extractor configuration (written to .tsdocs/api-extractor.json)
    */
   apiExtractor?: ApiExtractorConfig;
@@ -178,6 +163,5 @@ export interface ResolvedConfig {
     cache: boolean;
     strict: boolean;
   };
-  tsdoc: TsDocConfig;
   apiExtractor: ApiExtractorConfig;
 }

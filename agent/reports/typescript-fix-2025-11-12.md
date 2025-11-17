@@ -1,11 +1,12 @@
 # TypeScript Error Resolution Report
+
 **Date:** 2025-11-12
-**Project:** mintlify-tsdocs
+**Project:** mint-tsdocs
 **Status:** ✅ Resolved
 
 ## Summary
 
-Successfully resolved all TypeScript compilation errors in the `mintlify-tsdocs` app by addressing dependency version conflicts.
+Successfully resolved all TypeScript compilation errors in the `mint-tsdocs` app by addressing dependency version conflicts.
 
 ## Root Cause
 
@@ -21,11 +22,13 @@ This created a situation where two versions of `@microsoft/tsdoc` (0.15.1 and 0.
 ## Errors Encountered
 
 All errors followed this pattern across multiple files:
+
 - `src/cli/BaseAction.ts` (3 errors)
 - `src/documenters/MarkdownDocumenter.ts` (7 errors)
 - `src/markdown/CustomMarkdownEmitter.ts` (1 error)
 
 The errors were all variations of:
+
 ```
 Type 'import(".../tsdoc@0.16.0/...").DocX' is not assignable to type 'import(".../tsdoc@0.15.1/...").DocX'
 ```
@@ -37,6 +40,7 @@ Updated dependency versions to ensure consistency across the dependency tree:
 ### Changes to `package.json`
 
 **Before:**
+
 ```json
 "dependencies": {
   "@microsoft/api-extractor-model": "^7.30.7",
@@ -49,6 +53,7 @@ Updated dependency versions to ensure consistency across the dependency tree:
 ```
 
 **After:**
+
 ```json
 "dependencies": {
   "@microsoft/api-extractor-model": "^7.32.0",
@@ -79,8 +84,8 @@ bun tsc --noEmit
 
 ## Files Modified
 
-- `/work/hyperdev/apps/mintlify-tsdocs/package.json` - Updated dependency versions
-- `/work/hyperdev/apps/mintlify-tsdocs/pnpm-lock.yaml` - Regenerated lockfile
+- `/work/hyperdev/apps/mint-tsdocs/package.json` - Updated dependency versions
+- `/work/hyperdev/apps/mint-tsdocs/pnpm-lock.yaml` - Regenerated lockfile
 
 ## Approach
 

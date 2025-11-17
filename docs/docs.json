@@ -37,10 +37,16 @@
             "pages": [
               "introduction",
               "installation",
-              "quickstart",
-              "cheat-sheet",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Usage",
+            "icon": "terminal",
+            "pages": [
               "cli-reference",
-              "config-reference"
+              "config-reference",
+              "cheat-sheet"
             ]
           },
           {
@@ -50,14 +56,30 @@
               "components/type-tree",
               "components/preview"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "Deep Dive",
+        "groups": [
+          {
+            "group": "Guides",
+            "icon": "book",
+            "pages": [
+              "guides/setup-guide"
+            ]
           },
           {
             "group": "Architecture",
+            "icon": "sitemap",
             "pages": [
               "architecture/overview",
               "architecture/cli-layer",
               "architecture/generation-layer",
               "architecture/emission-layer",
+              "architecture/navigation-layer",
+              "architecture/caching-layer",
+              "architecture/performance-layer",
               "architecture/utils-layer",
               "architecture/ast-nodes-layer"
             ]
@@ -77,357 +99,357 @@
                   {
                     "group": "ApiModelError",
                     "pages": [
-                      "reference/mintlify-tsdocs.apimodelerror",
-                      "reference/mintlify-tsdocs.apimodelerror._constructor_"
+                      "reference/mint-tsdocs.apimodelerror",
+                      "reference/mint-tsdocs.apimodelerror._constructor_"
                     ]
                   },
                   {
                     "group": "ApiResolutionCache",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiresolutioncache",
-                      "reference/mintlify-tsdocs.apiresolutioncache.clear",
-                      "reference/mintlify-tsdocs.apiresolutioncache._constructor_",
-                      "reference/mintlify-tsdocs.apiresolutioncache.createcachedresolver",
-                      "reference/mintlify-tsdocs.apiresolutioncache.get",
-                      "reference/mintlify-tsdocs.apiresolutioncache.getstats",
-                      "reference/mintlify-tsdocs.apiresolutioncache.set"
+                      "reference/mint-tsdocs.apiresolutioncache",
+                      "reference/mint-tsdocs.apiresolutioncache.clear",
+                      "reference/mint-tsdocs.apiresolutioncache._constructor_",
+                      "reference/mint-tsdocs.apiresolutioncache.createcachedresolver",
+                      "reference/mint-tsdocs.apiresolutioncache.get",
+                      "reference/mint-tsdocs.apiresolutioncache.getstats",
+                      "reference/mint-tsdocs.apiresolutioncache.set"
                     ]
                   },
                   {
                     "group": "CacheManager",
                     "pages": [
-                      "reference/mintlify-tsdocs.cachemanager",
-                      "reference/mintlify-tsdocs.cachemanager.apiresolution",
-                      "reference/mintlify-tsdocs.cachemanager.clearall",
-                      "reference/mintlify-tsdocs.cachemanager._constructor_",
-                      "reference/mintlify-tsdocs.cachemanager.createdefault",
-                      "reference/mintlify-tsdocs.cachemanager.createdevelopment",
-                      "reference/mintlify-tsdocs.cachemanager.createproduction",
-                      "reference/mintlify-tsdocs.cachemanager.getstats",
-                      "reference/mintlify-tsdocs.cachemanager.printstats",
-                      "reference/mintlify-tsdocs.cachemanager.typeanalysis"
+                      "reference/mint-tsdocs.cachemanager",
+                      "reference/mint-tsdocs.cachemanager.apiresolution",
+                      "reference/mint-tsdocs.cachemanager.clearall",
+                      "reference/mint-tsdocs.cachemanager._constructor_",
+                      "reference/mint-tsdocs.cachemanager.createdefault",
+                      "reference/mint-tsdocs.cachemanager.createdevelopment",
+                      "reference/mint-tsdocs.cachemanager.createproduction",
+                      "reference/mint-tsdocs.cachemanager.getstats",
+                      "reference/mint-tsdocs.cachemanager.printstats",
+                      "reference/mint-tsdocs.cachemanager.typeanalysis"
                     ]
                   },
                   {
                     "group": "CustomDocNodes",
                     "pages": [
-                      "reference/mintlify-tsdocs.customdocnodes",
-                      "reference/mintlify-tsdocs.customdocnodes.configuration"
+                      "reference/mint-tsdocs.customdocnodes",
+                      "reference/mint-tsdocs.customdocnodes.configuration"
                     ]
                   },
                   {
                     "group": "CustomMarkdownEmitter",
                     "pages": [
-                      "reference/mintlify-tsdocs.custommarkdownemitter",
-                      "reference/mintlify-tsdocs.custommarkdownemitter._constructor_",
-                      "reference/mintlify-tsdocs.custommarkdownemitter.emit",
-                      "reference/mintlify-tsdocs.custommarkdownemitter.writelinktagwithcodedestination",
-                      "reference/mintlify-tsdocs.custommarkdownemitter.writenode"
+                      "reference/mint-tsdocs.custommarkdownemitter",
+                      "reference/mint-tsdocs.custommarkdownemitter._constructor_",
+                      "reference/mint-tsdocs.custommarkdownemitter.emit",
+                      "reference/mint-tsdocs.custommarkdownemitter.writelinktagwithcodedestination",
+                      "reference/mint-tsdocs.custommarkdownemitter.writenode"
                     ]
                   },
                   {
                     "group": "DocEmphasisSpan",
                     "pages": [
-                      "reference/mintlify-tsdocs.docemphasisspan",
-                      "reference/mintlify-tsdocs.docemphasisspan.bold",
-                      "reference/mintlify-tsdocs.docemphasisspan._constructor_",
-                      "reference/mintlify-tsdocs.docemphasisspan.italic",
-                      "reference/mintlify-tsdocs.docemphasisspan.kind"
+                      "reference/mint-tsdocs.docemphasisspan",
+                      "reference/mint-tsdocs.docemphasisspan.bold",
+                      "reference/mint-tsdocs.docemphasisspan._constructor_",
+                      "reference/mint-tsdocs.docemphasisspan.italic",
+                      "reference/mint-tsdocs.docemphasisspan.kind"
                     ]
                   },
                   {
                     "group": "DocExpandable",
                     "pages": [
-                      "reference/mintlify-tsdocs.docexpandable",
-                      "reference/mintlify-tsdocs.docexpandable._constructor_",
-                      "reference/mintlify-tsdocs.docexpandable.content",
-                      "reference/mintlify-tsdocs.docexpandable.getchildnodes",
-                      "reference/mintlify-tsdocs.docexpandable.kind",
-                      "reference/mintlify-tsdocs.docexpandable.title"
+                      "reference/mint-tsdocs.docexpandable",
+                      "reference/mint-tsdocs.docexpandable._constructor_",
+                      "reference/mint-tsdocs.docexpandable.content",
+                      "reference/mint-tsdocs.docexpandable.getchildnodes",
+                      "reference/mint-tsdocs.docexpandable.kind",
+                      "reference/mint-tsdocs.docexpandable.title"
                     ]
                   },
                   {
                     "group": "DocHeading",
                     "pages": [
-                      "reference/mintlify-tsdocs.docheading",
-                      "reference/mintlify-tsdocs.docheading.kind",
-                      "reference/mintlify-tsdocs.docheading.level",
-                      "reference/mintlify-tsdocs.docheading.title"
+                      "reference/mint-tsdocs.docheading",
+                      "reference/mint-tsdocs.docheading.kind",
+                      "reference/mint-tsdocs.docheading.level",
+                      "reference/mint-tsdocs.docheading.title"
                     ]
                   },
                   {
                     "group": "DocNoteBox",
                     "pages": [
-                      "reference/mintlify-tsdocs.docnotebox",
-                      "reference/mintlify-tsdocs.docnotebox._constructor_",
-                      "reference/mintlify-tsdocs.docnotebox.content",
-                      "reference/mintlify-tsdocs.docnotebox.kind",
-                      "reference/mintlify-tsdocs.docnotebox.ongetchildnodes"
+                      "reference/mint-tsdocs.docnotebox",
+                      "reference/mint-tsdocs.docnotebox._constructor_",
+                      "reference/mint-tsdocs.docnotebox.content",
+                      "reference/mint-tsdocs.docnotebox.kind",
+                      "reference/mint-tsdocs.docnotebox.ongetchildnodes"
                     ]
                   },
                   {
                     "group": "DocTable",
                     "pages": [
-                      "reference/mintlify-tsdocs.doctable",
-                      "reference/mintlify-tsdocs.doctable.addrow",
-                      "reference/mintlify-tsdocs.doctable._constructor_",
-                      "reference/mintlify-tsdocs.doctable.createandaddrow",
-                      "reference/mintlify-tsdocs.doctable.header",
-                      "reference/mintlify-tsdocs.doctable.kind",
-                      "reference/mintlify-tsdocs.doctable.ongetchildnodes",
-                      "reference/mintlify-tsdocs.doctable.rows"
+                      "reference/mint-tsdocs.doctable",
+                      "reference/mint-tsdocs.doctable.addrow",
+                      "reference/mint-tsdocs.doctable._constructor_",
+                      "reference/mint-tsdocs.doctable.createandaddrow",
+                      "reference/mint-tsdocs.doctable.header",
+                      "reference/mint-tsdocs.doctable.kind",
+                      "reference/mint-tsdocs.doctable.ongetchildnodes",
+                      "reference/mint-tsdocs.doctable.rows"
                     ]
                   },
                   {
                     "group": "DocTableCell",
                     "pages": [
-                      "reference/mintlify-tsdocs.doctablecell",
-                      "reference/mintlify-tsdocs.doctablecell._constructor_",
-                      "reference/mintlify-tsdocs.doctablecell.content",
-                      "reference/mintlify-tsdocs.doctablecell.kind"
+                      "reference/mint-tsdocs.doctablecell",
+                      "reference/mint-tsdocs.doctablecell._constructor_",
+                      "reference/mint-tsdocs.doctablecell.content",
+                      "reference/mint-tsdocs.doctablecell.kind"
                     ]
                   },
                   {
                     "group": "DocTableRow",
                     "pages": [
-                      "reference/mintlify-tsdocs.doctablerow",
-                      "reference/mintlify-tsdocs.doctablerow.addcell",
-                      "reference/mintlify-tsdocs.doctablerow.addplaintextcell",
-                      "reference/mintlify-tsdocs.doctablerow.cells",
-                      "reference/mintlify-tsdocs.doctablerow._constructor_",
-                      "reference/mintlify-tsdocs.doctablerow.createandaddcell",
-                      "reference/mintlify-tsdocs.doctablerow.kind",
-                      "reference/mintlify-tsdocs.doctablerow.ongetchildnodes"
+                      "reference/mint-tsdocs.doctablerow",
+                      "reference/mint-tsdocs.doctablerow.addcell",
+                      "reference/mint-tsdocs.doctablerow.addplaintextcell",
+                      "reference/mint-tsdocs.doctablerow.cells",
+                      "reference/mint-tsdocs.doctablerow._constructor_",
+                      "reference/mint-tsdocs.doctablerow.createandaddcell",
+                      "reference/mint-tsdocs.doctablerow.kind",
+                      "reference/mint-tsdocs.doctablerow.ongetchildnodes"
                     ]
                   },
                   {
                     "group": "DocumentationError",
                     "pages": [
-                      "reference/mintlify-tsdocs.documentationerror",
-                      "reference/mintlify-tsdocs.documentationerror.code",
-                      "reference/mintlify-tsdocs.documentationerror._constructor_",
-                      "reference/mintlify-tsdocs.documentationerror.context",
-                      "reference/mintlify-tsdocs.documentationerror.getdetailedmessage",
-                      "reference/mintlify-tsdocs.documentationerror.isusererror",
-                      "reference/mintlify-tsdocs.documentationerror.timestamp",
-                      "reference/mintlify-tsdocs.documentationerror.tojson"
+                      "reference/mint-tsdocs.documentationerror",
+                      "reference/mint-tsdocs.documentationerror.code",
+                      "reference/mint-tsdocs.documentationerror._constructor_",
+                      "reference/mint-tsdocs.documentationerror.context",
+                      "reference/mint-tsdocs.documentationerror.getdetailedmessage",
+                      "reference/mint-tsdocs.documentationerror.isusererror",
+                      "reference/mint-tsdocs.documentationerror.timestamp",
+                      "reference/mint-tsdocs.documentationerror.tojson"
                     ]
                   },
                   {
                     "group": "DocumentationHelper",
                     "pages": [
-                      "reference/mintlify-tsdocs.documentationhelper",
-                      "reference/mintlify-tsdocs.documentationhelper.analyzetypeproperties",
-                      "reference/mintlify-tsdocs.documentationhelper._constructor_",
-                      "reference/mintlify-tsdocs.documentationhelper.extractnestedproperties",
-                      "reference/mintlify-tsdocs.documentationhelper.isobjectliteral"
+                      "reference/mint-tsdocs.documentationhelper",
+                      "reference/mint-tsdocs.documentationhelper.analyzetypeproperties",
+                      "reference/mint-tsdocs.documentationhelper._constructor_",
+                      "reference/mint-tsdocs.documentationhelper.extractnestedproperties",
+                      "reference/mint-tsdocs.documentationhelper.isobjectliteral"
                     ]
                   },
                   {
                     "group": "ErrorBoundary",
                     "pages": [
-                      "reference/mintlify-tsdocs.errorboundary",
-                      "reference/mintlify-tsdocs.errorboundary._constructor_",
-                      "reference/mintlify-tsdocs.errorboundary.executeasync",
-                      "reference/mintlify-tsdocs.errorboundary.executesync",
-                      "reference/mintlify-tsdocs.errorboundary.generateerrorreport",
-                      "reference/mintlify-tsdocs.errorboundary.getstats",
-                      "reference/mintlify-tsdocs.errorboundary.reset"
+                      "reference/mint-tsdocs.errorboundary",
+                      "reference/mint-tsdocs.errorboundary._constructor_",
+                      "reference/mint-tsdocs.errorboundary.executeasync",
+                      "reference/mint-tsdocs.errorboundary.executesync",
+                      "reference/mint-tsdocs.errorboundary.generateerrorreport",
+                      "reference/mint-tsdocs.errorboundary.getstats",
+                      "reference/mint-tsdocs.errorboundary.reset"
                     ]
                   },
                   {
                     "group": "FileSystemError",
                     "pages": [
-                      "reference/mintlify-tsdocs.filesystemerror",
-                      "reference/mintlify-tsdocs.filesystemerror._constructor_"
+                      "reference/mint-tsdocs.filesystemerror",
+                      "reference/mint-tsdocs.filesystemerror._constructor_"
                     ]
                   },
                   {
                     "group": "GlobalErrorBoundary",
                     "pages": [
-                      "reference/mintlify-tsdocs.globalerrorboundary",
-                      "reference/mintlify-tsdocs.globalerrorboundary.getinstance",
-                      "reference/mintlify-tsdocs.globalerrorboundary.reset"
+                      "reference/mint-tsdocs.globalerrorboundary",
+                      "reference/mint-tsdocs.globalerrorboundary.getinstance",
+                      "reference/mint-tsdocs.globalerrorboundary.reset"
                     ]
                   },
                   {
                     "group": "IndentedWriter",
                     "pages": [
-                      "reference/mintlify-tsdocs.indentedwriter",
-                      "reference/mintlify-tsdocs.indentedwriter._constructor_",
-                      "reference/mintlify-tsdocs.indentedwriter.decreaseindent",
-                      "reference/mintlify-tsdocs.indentedwriter.defaultindentprefix",
-                      "reference/mintlify-tsdocs.indentedwriter.ensurenewline",
-                      "reference/mintlify-tsdocs.indentedwriter.ensureskippedline",
-                      "reference/mintlify-tsdocs.indentedwriter.gettext",
-                      "reference/mintlify-tsdocs.indentedwriter.increaseindent",
-                      "reference/mintlify-tsdocs.indentedwriter.indentscope",
-                      "reference/mintlify-tsdocs.indentedwriter.peeklastcharacter",
-                      "reference/mintlify-tsdocs.indentedwriter.peeksecondlastcharacter",
-                      "reference/mintlify-tsdocs.indentedwriter.tostring",
-                      "reference/mintlify-tsdocs.indentedwriter.write",
-                      "reference/mintlify-tsdocs.indentedwriter.writeline",
-                      "reference/mintlify-tsdocs.indentedwriter.writetentative"
+                      "reference/mint-tsdocs.indentedwriter",
+                      "reference/mint-tsdocs.indentedwriter._constructor_",
+                      "reference/mint-tsdocs.indentedwriter.decreaseindent",
+                      "reference/mint-tsdocs.indentedwriter.defaultindentprefix",
+                      "reference/mint-tsdocs.indentedwriter.ensurenewline",
+                      "reference/mint-tsdocs.indentedwriter.ensureskippedline",
+                      "reference/mint-tsdocs.indentedwriter.gettext",
+                      "reference/mint-tsdocs.indentedwriter.increaseindent",
+                      "reference/mint-tsdocs.indentedwriter.indentscope",
+                      "reference/mint-tsdocs.indentedwriter.peeklastcharacter",
+                      "reference/mint-tsdocs.indentedwriter.peeksecondlastcharacter",
+                      "reference/mint-tsdocs.indentedwriter.tostring",
+                      "reference/mint-tsdocs.indentedwriter.write",
+                      "reference/mint-tsdocs.indentedwriter.writeline",
+                      "reference/mint-tsdocs.indentedwriter.writetentative"
                     ]
                   },
                   {
                     "group": "LiquidTemplateEngine",
                     "pages": [
-                      "reference/mintlify-tsdocs.liquidtemplateengine",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.clearcache",
-                      "reference/mintlify-tsdocs.liquidtemplateengine._constructor_",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.getavailabletemplates",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.hastemplate",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.liquid",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.postprocessoutput",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.render",
-                      "reference/mintlify-tsdocs.liquidtemplateengine.templatedir"
+                      "reference/mint-tsdocs.liquidtemplateengine",
+                      "reference/mint-tsdocs.liquidtemplateengine.clearcache",
+                      "reference/mint-tsdocs.liquidtemplateengine._constructor_",
+                      "reference/mint-tsdocs.liquidtemplateengine.getavailabletemplates",
+                      "reference/mint-tsdocs.liquidtemplateengine.hastemplate",
+                      "reference/mint-tsdocs.liquidtemplateengine.liquid",
+                      "reference/mint-tsdocs.liquidtemplateengine.postprocessoutput",
+                      "reference/mint-tsdocs.liquidtemplateengine.render",
+                      "reference/mint-tsdocs.liquidtemplateengine.templatedir"
                     ]
                   },
                   {
                     "group": "LiquidTemplateManager",
                     "pages": [
-                      "reference/mintlify-tsdocs.liquidtemplatemanager",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.cleanup",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.clearcache",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager._constructor_",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.getavailabletemplates",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.gettemplatemapping",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.gettemplatestats",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.hastemplate",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.initialize",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.liquidengine",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.mergedtemplatedir",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.renderapiitem",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.renderlayout",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.rendertemplate",
-                      "reference/mintlify-tsdocs.liquidtemplatemanager.templatedataconverter"
+                      "reference/mint-tsdocs.liquidtemplatemanager",
+                      "reference/mint-tsdocs.liquidtemplatemanager.cleanup",
+                      "reference/mint-tsdocs.liquidtemplatemanager.clearcache",
+                      "reference/mint-tsdocs.liquidtemplatemanager._constructor_",
+                      "reference/mint-tsdocs.liquidtemplatemanager.getavailabletemplates",
+                      "reference/mint-tsdocs.liquidtemplatemanager.gettemplatemapping",
+                      "reference/mint-tsdocs.liquidtemplatemanager.gettemplatestats",
+                      "reference/mint-tsdocs.liquidtemplatemanager.hastemplate",
+                      "reference/mint-tsdocs.liquidtemplatemanager.initialize",
+                      "reference/mint-tsdocs.liquidtemplatemanager.liquidengine",
+                      "reference/mint-tsdocs.liquidtemplatemanager.mergedtemplatedir",
+                      "reference/mint-tsdocs.liquidtemplatemanager.renderapiitem",
+                      "reference/mint-tsdocs.liquidtemplatemanager.renderlayout",
+                      "reference/mint-tsdocs.liquidtemplatemanager.rendertemplate",
+                      "reference/mint-tsdocs.liquidtemplatemanager.templatedataconverter"
                     ]
                   },
                   {
                     "group": "MarkdownDocumenter",
                     "pages": [
-                      "reference/mintlify-tsdocs.markdowndocumenter",
-                      "reference/mintlify-tsdocs.markdowndocumenter._constructor_",
-                      "reference/mintlify-tsdocs.markdowndocumenter.generatefiles",
-                      "reference/mintlify-tsdocs.markdowndocumenter.generatenavigation"
+                      "reference/mint-tsdocs.markdowndocumenter",
+                      "reference/mint-tsdocs.markdowndocumenter._constructor_",
+                      "reference/mint-tsdocs.markdowndocumenter.generatefiles",
+                      "reference/mint-tsdocs.markdowndocumenter.generatenavigation"
                     ]
                   },
                   {
                     "group": "MarkdownEmitter",
                     "pages": [
-                      "reference/mintlify-tsdocs.markdownemitter",
-                      "reference/mintlify-tsdocs.markdownemitter.emit",
-                      "reference/mintlify-tsdocs.markdownemitter.getescapedtext",
-                      "reference/mintlify-tsdocs.markdownemitter.gettableescapedtext",
-                      "reference/mintlify-tsdocs.markdownemitter.writelinktagwithcodedestination",
-                      "reference/mintlify-tsdocs.markdownemitter.writelinktagwithurldestination",
-                      "reference/mintlify-tsdocs.markdownemitter.writenode",
-                      "reference/mintlify-tsdocs.markdownemitter.writenodes",
-                      "reference/mintlify-tsdocs.markdownemitter.writeplaintext"
+                      "reference/mint-tsdocs.markdownemitter",
+                      "reference/mint-tsdocs.markdownemitter.emit",
+                      "reference/mint-tsdocs.markdownemitter.getescapedtext",
+                      "reference/mint-tsdocs.markdownemitter.gettableescapedtext",
+                      "reference/mint-tsdocs.markdownemitter.writelinktagwithcodedestination",
+                      "reference/mint-tsdocs.markdownemitter.writelinktagwithurldestination",
+                      "reference/mint-tsdocs.markdownemitter.writenode",
+                      "reference/mint-tsdocs.markdownemitter.writenodes",
+                      "reference/mint-tsdocs.markdownemitter.writeplaintext"
                     ]
                   },
                   {
                     "group": "NavigationManager",
                     "pages": [
-                      "reference/mintlify-tsdocs.navigationmanager",
-                      "reference/mintlify-tsdocs.navigationmanager.addapiitem",
-                      "reference/mintlify-tsdocs.navigationmanager.addnavigationitem",
-                      "reference/mintlify-tsdocs.navigationmanager.clear",
-                      "reference/mintlify-tsdocs.navigationmanager._constructor_",
-                      "reference/mintlify-tsdocs.navigationmanager.generatehierarchicalnavigation",
-                      "reference/mintlify-tsdocs.navigationmanager.generatenavigation",
-                      "reference/mintlify-tsdocs.navigationmanager.getstats"
+                      "reference/mint-tsdocs.navigationmanager",
+                      "reference/mint-tsdocs.navigationmanager.addapiitem",
+                      "reference/mint-tsdocs.navigationmanager.addnavigationitem",
+                      "reference/mint-tsdocs.navigationmanager.clear",
+                      "reference/mint-tsdocs.navigationmanager._constructor_",
+                      "reference/mint-tsdocs.navigationmanager.generatehierarchicalnavigation",
+                      "reference/mint-tsdocs.navigationmanager.generatenavigation",
+                      "reference/mint-tsdocs.navigationmanager.getstats"
                     ]
                   },
                   {
                     "group": "ObjectTypeAnalyzer",
                     "pages": [
-                      "reference/mintlify-tsdocs.objecttypeanalyzer",
-                      "reference/mintlify-tsdocs.objecttypeanalyzer.analyzetype",
-                      "reference/mintlify-tsdocs.objecttypeanalyzer._constructor_"
+                      "reference/mint-tsdocs.objecttypeanalyzer",
+                      "reference/mint-tsdocs.objecttypeanalyzer.analyzetype",
+                      "reference/mint-tsdocs.objecttypeanalyzer._constructor_"
                     ]
                   },
                   {
                     "group": "SecurityError",
                     "pages": [
-                      "reference/mintlify-tsdocs.securityerror",
-                      "reference/mintlify-tsdocs.securityerror._constructor_"
+                      "reference/mint-tsdocs.securityerror",
+                      "reference/mint-tsdocs.securityerror._constructor_"
                     ]
                   },
                   {
                     "group": "SecurityUtils",
                     "pages": [
-                      "reference/mintlify-tsdocs.securityutils",
-                      "reference/mintlify-tsdocs.securityutils.sanitizejsonforjsx",
-                      "reference/mintlify-tsdocs.securityutils.sanitizejsxattribute",
-                      "reference/mintlify-tsdocs.securityutils.sanitizeyamltext",
-                      "reference/mintlify-tsdocs.securityutils.validatecliinput",
-                      "reference/mintlify-tsdocs.securityutils.validatefilename",
-                      "reference/mintlify-tsdocs.securityutils.validatefilepath",
-                      "reference/mintlify-tsdocs.securityutils.validatejsoncontent"
+                      "reference/mint-tsdocs.securityutils",
+                      "reference/mint-tsdocs.securityutils.sanitizejsonforjsx",
+                      "reference/mint-tsdocs.securityutils.sanitizejsxattribute",
+                      "reference/mint-tsdocs.securityutils.sanitizeyamltext",
+                      "reference/mint-tsdocs.securityutils.validatecliinput",
+                      "reference/mint-tsdocs.securityutils.validatefilename",
+                      "reference/mint-tsdocs.securityutils.validatefilepath",
+                      "reference/mint-tsdocs.securityutils.validatejsoncontent"
                     ]
                   },
                   {
                     "group": "TemplateDataConverter",
                     "pages": [
-                      "reference/mintlify-tsdocs.templatedataconverter",
-                      "reference/mintlify-tsdocs.templatedataconverter._constructor_",
-                      "reference/mintlify-tsdocs.templatedataconverter.convertapiitem"
+                      "reference/mint-tsdocs.templatedataconverter",
+                      "reference/mint-tsdocs.templatedataconverter._constructor_",
+                      "reference/mint-tsdocs.templatedataconverter.convertapiitem"
                     ]
                   },
                   {
                     "group": "TemplateEngine",
                     "pages": [
-                      "reference/mintlify-tsdocs.templateengine",
-                      "reference/mintlify-tsdocs.templateengine.clearcache",
-                      "reference/mintlify-tsdocs.templateengine._constructor_",
-                      "reference/mintlify-tsdocs.templateengine.getavailabletemplates",
-                      "reference/mintlify-tsdocs.templateengine.hastemplate",
-                      "reference/mintlify-tsdocs.templateengine.render"
+                      "reference/mint-tsdocs.templateengine",
+                      "reference/mint-tsdocs.templateengine.clearcache",
+                      "reference/mint-tsdocs.templateengine._constructor_",
+                      "reference/mint-tsdocs.templateengine.getavailabletemplates",
+                      "reference/mint-tsdocs.templateengine.hastemplate",
+                      "reference/mint-tsdocs.templateengine.render"
                     ]
                   },
                   {
                     "group": "TemplateManager",
                     "pages": [
-                      "reference/mintlify-tsdocs.templatemanager",
-                      "reference/mintlify-tsdocs.templatemanager.clearcache",
-                      "reference/mintlify-tsdocs.templatemanager._constructor_",
-                      "reference/mintlify-tsdocs.templatemanager.getavailabletemplates",
-                      "reference/mintlify-tsdocs.templatemanager.gettemplatemapping",
-                      "reference/mintlify-tsdocs.templatemanager.gettemplatestats",
-                      "reference/mintlify-tsdocs.templatemanager.hasusertemplate",
-                      "reference/mintlify-tsdocs.templatemanager.renderapiitem",
-                      "reference/mintlify-tsdocs.templatemanager.renderlayout",
-                      "reference/mintlify-tsdocs.templatemanager.rendertemplate"
+                      "reference/mint-tsdocs.templatemanager",
+                      "reference/mint-tsdocs.templatemanager.clearcache",
+                      "reference/mint-tsdocs.templatemanager._constructor_",
+                      "reference/mint-tsdocs.templatemanager.getavailabletemplates",
+                      "reference/mint-tsdocs.templatemanager.gettemplatemapping",
+                      "reference/mint-tsdocs.templatemanager.gettemplatestats",
+                      "reference/mint-tsdocs.templatemanager.hasusertemplate",
+                      "reference/mint-tsdocs.templatemanager.renderapiitem",
+                      "reference/mint-tsdocs.templatemanager.renderlayout",
+                      "reference/mint-tsdocs.templatemanager.rendertemplate"
                     ]
                   },
                   {
                     "group": "TypeAnalysisCache",
                     "pages": [
-                      "reference/mintlify-tsdocs.typeanalysiscache",
-                      "reference/mintlify-tsdocs.typeanalysiscache.clear",
-                      "reference/mintlify-tsdocs.typeanalysiscache._constructor_",
-                      "reference/mintlify-tsdocs.typeanalysiscache.createcachedfunction",
-                      "reference/mintlify-tsdocs.typeanalysiscache.get",
-                      "reference/mintlify-tsdocs.typeanalysiscache.getstats",
-                      "reference/mintlify-tsdocs.typeanalysiscache.set"
+                      "reference/mint-tsdocs.typeanalysiscache",
+                      "reference/mint-tsdocs.typeanalysiscache.clear",
+                      "reference/mint-tsdocs.typeanalysiscache._constructor_",
+                      "reference/mint-tsdocs.typeanalysiscache.createcachedfunction",
+                      "reference/mint-tsdocs.typeanalysiscache.get",
+                      "reference/mint-tsdocs.typeanalysiscache.getstats",
+                      "reference/mint-tsdocs.typeanalysiscache.set"
                     ]
                   },
                   {
                     "group": "Utilities",
                     "pages": [
-                      "reference/mintlify-tsdocs.utilities",
-                      "reference/mintlify-tsdocs.utilities.getconcisesignature",
-                      "reference/mintlify-tsdocs.utilities.getsafefilenameforname",
-                      "reference/mintlify-tsdocs.utilities.normalizedisplayname"
+                      "reference/mint-tsdocs.utilities",
+                      "reference/mint-tsdocs.utilities.getconcisesignature",
+                      "reference/mint-tsdocs.utilities.getsafefilenameforname",
+                      "reference/mint-tsdocs.utilities.normalizedisplayname"
                     ]
                   },
                   {
                     "group": "ValidationError",
                     "pages": [
-                      "reference/mintlify-tsdocs.validationerror",
-                      "reference/mintlify-tsdocs.validationerror._constructor_"
+                      "reference/mint-tsdocs.validationerror",
+                      "reference/mint-tsdocs.validationerror._constructor_"
                     ]
                   }
                 ]
@@ -436,25 +458,25 @@
                 "group": "Enums",
                 "icon": "list",
                 "pages": [
-                  "reference/mintlify-tsdocs.customdocnodekind",
-                  "reference/mintlify-tsdocs.errorcode"
+                  "reference/mint-tsdocs.customdocnodekind",
+                  "reference/mint-tsdocs.errorcode"
                 ]
               },
               {
                 "group": "Functions",
                 "icon": "function",
                 "pages": [
-                  "reference/mintlify-tsdocs.createdebugger",
-                  "reference/mintlify-tsdocs.createscopeddebugger",
-                  "reference/mintlify-tsdocs.disabledebug",
-                  "reference/mintlify-tsdocs.enabledebug",
-                  "reference/mintlify-tsdocs.generateapiextractorconfig",
-                  "reference/mintlify-tsdocs.getenablednamespaces",
-                  "reference/mintlify-tsdocs.getglobalcachemanager",
-                  "reference/mintlify-tsdocs.loadconfig",
-                  "reference/mintlify-tsdocs.resetglobalcachemanager",
-                  "reference/mintlify-tsdocs.resolveconfig",
-                  "reference/mintlify-tsdocs.witherrorboundary"
+                  "reference/mint-tsdocs.createdebugger",
+                  "reference/mint-tsdocs.createscopeddebugger",
+                  "reference/mint-tsdocs.disabledebug",
+                  "reference/mint-tsdocs.enabledebug",
+                  "reference/mint-tsdocs.generateapiextractorconfig",
+                  "reference/mint-tsdocs.getenablednamespaces",
+                  "reference/mint-tsdocs.getglobalcachemanager",
+                  "reference/mint-tsdocs.loadconfig",
+                  "reference/mint-tsdocs.resetglobalcachemanager",
+                  "reference/mint-tsdocs.resolveconfig",
+                  "reference/mint-tsdocs.witherrorboundary"
                 ]
               },
               {
@@ -464,357 +486,346 @@
                   {
                     "group": "ApiExtractorApiReportConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractorapireportconfig",
-                      "reference/mintlify-tsdocs.apiextractorapireportconfig.enabled",
-                      "reference/mintlify-tsdocs.apiextractorapireportconfig.reportfilename",
-                      "reference/mintlify-tsdocs.apiextractorapireportconfig.reportfolder",
-                      "reference/mintlify-tsdocs.apiextractorapireportconfig.reporttempfolder"
+                      "reference/mint-tsdocs.apiextractorapireportconfig",
+                      "reference/mint-tsdocs.apiextractorapireportconfig.enabled",
+                      "reference/mint-tsdocs.apiextractorapireportconfig.reportfilename",
+                      "reference/mint-tsdocs.apiextractorapireportconfig.reportfolder",
+                      "reference/mint-tsdocs.apiextractorapireportconfig.reporttempfolder"
                     ]
                   },
                   {
                     "group": "ApiExtractorCompilerConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractorcompilerconfig",
-                      "reference/mintlify-tsdocs.apiextractorcompilerconfig.skiplibcheck",
-                      "reference/mintlify-tsdocs.apiextractorcompilerconfig.tsconfigfilepath"
+                      "reference/mint-tsdocs.apiextractorcompilerconfig",
+                      "reference/mint-tsdocs.apiextractorcompilerconfig.skiplibcheck",
+                      "reference/mint-tsdocs.apiextractorcompilerconfig.tsconfigfilepath"
                     ]
                   },
                   {
                     "group": "ApiExtractorConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractorconfig",
-                      "reference/mintlify-tsdocs.apiextractorconfig.apireport",
-                      "reference/mintlify-tsdocs.apiextractorconfig.bundledpackages",
-                      "reference/mintlify-tsdocs.apiextractorconfig.compiler",
-                      "reference/mintlify-tsdocs.apiextractorconfig.configpath",
-                      "reference/mintlify-tsdocs.apiextractorconfig.docmodel",
-                      "reference/mintlify-tsdocs.apiextractorconfig.dtsrollup",
-                      "reference/mintlify-tsdocs.apiextractorconfig.messages"
+                      "reference/mint-tsdocs.apiextractorconfig",
+                      "reference/mint-tsdocs.apiextractorconfig.apireport",
+                      "reference/mint-tsdocs.apiextractorconfig.bundledpackages",
+                      "reference/mint-tsdocs.apiextractorconfig.compiler",
+                      "reference/mint-tsdocs.apiextractorconfig.configpath",
+                      "reference/mint-tsdocs.apiextractorconfig.docmodel",
+                      "reference/mint-tsdocs.apiextractorconfig.dtsrollup",
+                      "reference/mint-tsdocs.apiextractorconfig.messages"
                     ]
                   },
                   {
                     "group": "ApiExtractorDocModelConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractordocmodelconfig",
-                      "reference/mintlify-tsdocs.apiextractordocmodelconfig.enabled",
-                      "reference/mintlify-tsdocs.apiextractordocmodelconfig.projectfolderurl"
+                      "reference/mint-tsdocs.apiextractordocmodelconfig",
+                      "reference/mint-tsdocs.apiextractordocmodelconfig.enabled",
+                      "reference/mint-tsdocs.apiextractordocmodelconfig.projectfolderurl"
                     ]
                   },
                   {
                     "group": "ApiExtractorDtsRollupConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig",
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig.alphatrimmedfilepath",
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig.betatrimmedfilepath",
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig.enabled",
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig.publictrimmedfilepath",
-                      "reference/mintlify-tsdocs.apiextractordtsrollupconfig.untrimmedfilepath"
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig",
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig.alphatrimmedfilepath",
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig.betatrimmedfilepath",
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig.enabled",
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig.publictrimmedfilepath",
+                      "reference/mint-tsdocs.apiextractordtsrollupconfig.untrimmedfilepath"
                     ]
                   },
                   {
                     "group": "ApiExtractorMessagesConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiextractormessagesconfig",
-                      "reference/mintlify-tsdocs.apiextractormessagesconfig.compilermessagereporting",
-                      "reference/mintlify-tsdocs.apiextractormessagesconfig.extractormessagereporting",
-                      "reference/mintlify-tsdocs.apiextractormessagesconfig.tsdocmessagereporting"
+                      "reference/mint-tsdocs.apiextractormessagesconfig",
+                      "reference/mint-tsdocs.apiextractormessagesconfig.compilermessagereporting",
+                      "reference/mint-tsdocs.apiextractormessagesconfig.extractormessagereporting",
+                      "reference/mint-tsdocs.apiextractormessagesconfig.tsdocmessagereporting"
                     ]
                   },
                   {
                     "group": "ApiResolutionCacheOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.apiresolutioncacheoptions",
-                      "reference/mintlify-tsdocs.apiresolutioncacheoptions.enabled",
-                      "reference/mintlify-tsdocs.apiresolutioncacheoptions.maxsize"
+                      "reference/mint-tsdocs.apiresolutioncacheoptions",
+                      "reference/mint-tsdocs.apiresolutioncacheoptions.enabled",
+                      "reference/mint-tsdocs.apiresolutioncacheoptions.maxsize"
                     ]
                   },
                   {
                     "group": "CacheManagerOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.cachemanageroptions",
-                      "reference/mintlify-tsdocs.cachemanageroptions.apiresolution",
-                      "reference/mintlify-tsdocs.cachemanageroptions.enabled",
-                      "reference/mintlify-tsdocs.cachemanageroptions.enablestats",
-                      "reference/mintlify-tsdocs.cachemanageroptions.typeanalysis"
+                      "reference/mint-tsdocs.cachemanageroptions",
+                      "reference/mint-tsdocs.cachemanageroptions.apiresolution",
+                      "reference/mint-tsdocs.cachemanageroptions.enabled",
+                      "reference/mint-tsdocs.cachemanageroptions.enablestats",
+                      "reference/mint-tsdocs.cachemanageroptions.typeanalysis"
                     ]
                   },
                   {
                     "group": "Debugger",
                     "pages": [
-                      "reference/mintlify-tsdocs.debugger",
-                      "reference/mintlify-tsdocs.debugger.debug",
-                      "reference/mintlify-tsdocs.debugger.error",
-                      "reference/mintlify-tsdocs.debugger.info",
-                      "reference/mintlify-tsdocs.debugger.isenabled",
-                      "reference/mintlify-tsdocs.debugger.namespace",
-                      "reference/mintlify-tsdocs.debugger.trace",
-                      "reference/mintlify-tsdocs.debugger.warn"
+                      "reference/mint-tsdocs.debugger",
+                      "reference/mint-tsdocs.debugger.debug",
+                      "reference/mint-tsdocs.debugger.error",
+                      "reference/mint-tsdocs.debugger.info",
+                      "reference/mint-tsdocs.debugger.isenabled",
+                      "reference/mint-tsdocs.debugger.namespace",
+                      "reference/mint-tsdocs.debugger.trace",
+                      "reference/mint-tsdocs.debugger.warn"
                     ]
                   },
                   {
                     "group": "ErrorBoundaryOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.errorboundaryoptions",
-                      "reference/mintlify-tsdocs.errorboundaryoptions.continueonerror",
-                      "reference/mintlify-tsdocs.errorboundaryoptions.errorlogpath",
-                      "reference/mintlify-tsdocs.errorboundaryoptions.includestacktraces",
-                      "reference/mintlify-tsdocs.errorboundaryoptions.logerrors",
-                      "reference/mintlify-tsdocs.errorboundaryoptions.maxerrors"
+                      "reference/mint-tsdocs.errorboundaryoptions",
+                      "reference/mint-tsdocs.errorboundaryoptions.continueonerror",
+                      "reference/mint-tsdocs.errorboundaryoptions.errorlogpath",
+                      "reference/mint-tsdocs.errorboundaryoptions.includestacktraces",
+                      "reference/mint-tsdocs.errorboundaryoptions.logerrors",
+                      "reference/mint-tsdocs.errorboundaryoptions.maxerrors"
                     ]
                   },
                   {
                     "group": "ErrorContext",
                     "pages": [
-                      "reference/mintlify-tsdocs.errorcontext",
-                      "reference/mintlify-tsdocs.errorcontext.cause",
-                      "reference/mintlify-tsdocs.errorcontext.command",
-                      "reference/mintlify-tsdocs.errorcontext.data",
-                      "reference/mintlify-tsdocs.errorcontext.exitcode",
-                      "reference/mintlify-tsdocs.errorcontext.operation",
-                      "reference/mintlify-tsdocs.errorcontext.resource",
-                      "reference/mintlify-tsdocs.errorcontext.suggestion"
+                      "reference/mint-tsdocs.errorcontext",
+                      "reference/mint-tsdocs.errorcontext.cause",
+                      "reference/mint-tsdocs.errorcontext.command",
+                      "reference/mint-tsdocs.errorcontext.data",
+                      "reference/mint-tsdocs.errorcontext.exitcode",
+                      "reference/mint-tsdocs.errorcontext.operation",
+                      "reference/mint-tsdocs.errorcontext.resource",
+                      "reference/mint-tsdocs.errorcontext.suggestion"
                     ]
                   },
                   {
                     "group": "ErrorResult",
                     "pages": [
-                      "reference/mintlify-tsdocs.errorresult",
-                      "reference/mintlify-tsdocs.errorresult.data",
-                      "reference/mintlify-tsdocs.errorresult.error",
-                      "reference/mintlify-tsdocs.errorresult.recovered",
-                      "reference/mintlify-tsdocs.errorresult.success"
+                      "reference/mint-tsdocs.errorresult",
+                      "reference/mint-tsdocs.errorresult.data",
+                      "reference/mint-tsdocs.errorresult.error",
+                      "reference/mint-tsdocs.errorresult.recovered",
+                      "reference/mint-tsdocs.errorresult.success"
                     ]
                   },
                   {
                     "group": "ICustomMarkdownEmitterOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.icustommarkdownemitteroptions",
-                      "reference/mintlify-tsdocs.icustommarkdownemitteroptions.contextapiitem",
-                      "reference/mintlify-tsdocs.icustommarkdownemitteroptions.ongetfilenameforapiitem"
+                      "reference/mint-tsdocs.icustommarkdownemitteroptions",
+                      "reference/mint-tsdocs.icustommarkdownemitteroptions.contextapiitem",
+                      "reference/mint-tsdocs.icustommarkdownemitteroptions.ongetfilenameforapiitem"
                     ]
                   },
                   {
                     "group": "IDocEmphasisSpanParameters",
                     "pages": [
-                      "reference/mintlify-tsdocs.idocemphasisspanparameters",
-                      "reference/mintlify-tsdocs.idocemphasisspanparameters.bold",
-                      "reference/mintlify-tsdocs.idocemphasisspanparameters.italic"
+                      "reference/mint-tsdocs.idocemphasisspanparameters",
+                      "reference/mint-tsdocs.idocemphasisspanparameters.bold",
+                      "reference/mint-tsdocs.idocemphasisspanparameters.italic"
                     ]
                   },
                   {
                     "group": "IDocHeadingParameters",
                     "pages": [
-                      "reference/mintlify-tsdocs.idocheadingparameters",
-                      "reference/mintlify-tsdocs.idocheadingparameters.level",
-                      "reference/mintlify-tsdocs.idocheadingparameters.title"
+                      "reference/mint-tsdocs.idocheadingparameters",
+                      "reference/mint-tsdocs.idocheadingparameters.level",
+                      "reference/mint-tsdocs.idocheadingparameters.title"
                     ]
                   },
-                  "reference/mintlify-tsdocs.idocnoteboxparameters",
-                  "reference/mintlify-tsdocs.idoctablecellparameters",
+                  "reference/mint-tsdocs.idocnoteboxparameters",
+                  "reference/mint-tsdocs.idoctablecellparameters",
                   {
                     "group": "IDocTableParameters",
                     "pages": [
-                      "reference/mintlify-tsdocs.idoctableparameters",
-                      "reference/mintlify-tsdocs.idoctableparameters.headercells",
-                      "reference/mintlify-tsdocs.idoctableparameters.headertitles"
+                      "reference/mint-tsdocs.idoctableparameters",
+                      "reference/mint-tsdocs.idoctableparameters.headercells",
+                      "reference/mint-tsdocs.idoctableparameters.headertitles"
                     ]
                   },
-                  "reference/mintlify-tsdocs.idoctablerowparameters",
+                  "reference/mint-tsdocs.idoctablerowparameters",
                   {
                     "group": "IMarkdownDocumenterOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.apimodel",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.convertreadme",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.docsjsonpath",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.enablemenu",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.groupname",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.outputfolder",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.readmetitle",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.tabname",
-                      "reference/mintlify-tsdocs.imarkdowndocumenteroptions.templates"
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.apimodel",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.convertreadme",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.docsjsonpath",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.enablemenu",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.groupname",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.outputfolder",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.readmetitle",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.tabname",
+                      "reference/mint-tsdocs.imarkdowndocumenteroptions.templates"
                     ]
                   },
                   {
                     "group": "IMarkdownEmitterContext",
                     "pages": [
-                      "reference/mintlify-tsdocs.imarkdownemittercontext",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.boldrequested",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.italicrequested",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.options",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.writer",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.writingbold",
-                      "reference/mintlify-tsdocs.imarkdownemittercontext.writingitalic"
+                      "reference/mint-tsdocs.imarkdownemittercontext",
+                      "reference/mint-tsdocs.imarkdownemittercontext.boldrequested",
+                      "reference/mint-tsdocs.imarkdownemittercontext.italicrequested",
+                      "reference/mint-tsdocs.imarkdownemittercontext.options",
+                      "reference/mint-tsdocs.imarkdownemittercontext.writer",
+                      "reference/mint-tsdocs.imarkdownemittercontext.writingbold",
+                      "reference/mint-tsdocs.imarkdownemittercontext.writingitalic"
                     ]
                   },
-                  "reference/mintlify-tsdocs.imarkdownemitteroptions",
+                  "reference/mint-tsdocs.imarkdownemitteroptions",
                   {
                     "group": "IReturnData",
                     "pages": [
-                      "reference/mintlify-tsdocs.ireturndata",
-                      "reference/mintlify-tsdocs.ireturndata.description",
-                      "reference/mintlify-tsdocs.ireturndata.type",
-                      "reference/mintlify-tsdocs.ireturndata.typepath"
+                      "reference/mint-tsdocs.ireturndata",
+                      "reference/mint-tsdocs.ireturndata.description",
+                      "reference/mint-tsdocs.ireturndata.type",
+                      "reference/mint-tsdocs.ireturndata.typepath"
                     ]
                   },
                   {
                     "group": "ITableData",
                     "pages": [
-                      "reference/mintlify-tsdocs.itabledata",
-                      "reference/mintlify-tsdocs.itabledata.headers",
-                      "reference/mintlify-tsdocs.itabledata.rows",
-                      "reference/mintlify-tsdocs.itabledata.title"
+                      "reference/mint-tsdocs.itabledata",
+                      "reference/mint-tsdocs.itabledata.headers",
+                      "reference/mint-tsdocs.itabledata.rows",
+                      "reference/mint-tsdocs.itabledata.title"
                     ]
                   },
                   {
                     "group": "ITableRow",
                     "pages": [
-                      "reference/mintlify-tsdocs.itablerow",
-                      "reference/mintlify-tsdocs.itablerow.defaultvalue",
-                      "reference/mintlify-tsdocs.itablerow.description",
-                      "reference/mintlify-tsdocs.itablerow.isdeprecated",
-                      "reference/mintlify-tsdocs.itablerow.isinherited",
-                      "reference/mintlify-tsdocs.itablerow.isoptional",
-                      "reference/mintlify-tsdocs.itablerow.modifiers",
-                      "reference/mintlify-tsdocs.itablerow.title",
-                      "reference/mintlify-tsdocs.itablerow.titlepath",
-                      "reference/mintlify-tsdocs.itablerow.type",
-                      "reference/mintlify-tsdocs.itablerow.typepath"
+                      "reference/mint-tsdocs.itablerow",
+                      "reference/mint-tsdocs.itablerow.defaultvalue",
+                      "reference/mint-tsdocs.itablerow.description",
+                      "reference/mint-tsdocs.itablerow.isdeprecated",
+                      "reference/mint-tsdocs.itablerow.isinherited",
+                      "reference/mint-tsdocs.itablerow.isoptional",
+                      "reference/mint-tsdocs.itablerow.modifiers",
+                      "reference/mint-tsdocs.itablerow.title",
+                      "reference/mint-tsdocs.itablerow.titlepath",
+                      "reference/mint-tsdocs.itablerow.type",
+                      "reference/mint-tsdocs.itablerow.typepath"
                     ]
                   },
                   {
                     "group": "ITemplateData",
                     "pages": [
-                      "reference/mintlify-tsdocs.itemplatedata",
-                      "reference/mintlify-tsdocs.itemplatedata.abstractclasses",
-                      "reference/mintlify-tsdocs.itemplatedata.apiitem",
-                      "reference/mintlify-tsdocs.itemplatedata.classes",
-                      "reference/mintlify-tsdocs.itemplatedata.constructors",
-                      "reference/mintlify-tsdocs.itemplatedata.enumerations",
-                      "reference/mintlify-tsdocs.itemplatedata.events",
-                      "reference/mintlify-tsdocs.itemplatedata.examples",
-                      "reference/mintlify-tsdocs.itemplatedata.functions",
-                      "reference/mintlify-tsdocs.itemplatedata.heritagetypes",
-                      "reference/mintlify-tsdocs.itemplatedata.interfaces",
-                      "reference/mintlify-tsdocs.itemplatedata.members",
-                      "reference/mintlify-tsdocs.itemplatedata.methods",
-                      "reference/mintlify-tsdocs.itemplatedata.namespaces",
-                      "reference/mintlify-tsdocs.itemplatedata.navigation",
-                      "reference/mintlify-tsdocs.itemplatedata.page",
-                      "reference/mintlify-tsdocs.itemplatedata.parameters",
-                      "reference/mintlify-tsdocs.itemplatedata.properties",
-                      "reference/mintlify-tsdocs.itemplatedata.returntype",
-                      "reference/mintlify-tsdocs.itemplatedata.typealiases",
-                      "reference/mintlify-tsdocs.itemplatedata.variables"
+                      "reference/mint-tsdocs.itemplatedata",
+                      "reference/mint-tsdocs.itemplatedata.abstractclasses",
+                      "reference/mint-tsdocs.itemplatedata.apiitem",
+                      "reference/mint-tsdocs.itemplatedata.classes",
+                      "reference/mint-tsdocs.itemplatedata.constructors",
+                      "reference/mint-tsdocs.itemplatedata.enumerations",
+                      "reference/mint-tsdocs.itemplatedata.events",
+                      "reference/mint-tsdocs.itemplatedata.examples",
+                      "reference/mint-tsdocs.itemplatedata.functions",
+                      "reference/mint-tsdocs.itemplatedata.heritagetypes",
+                      "reference/mint-tsdocs.itemplatedata.interfaces",
+                      "reference/mint-tsdocs.itemplatedata.members",
+                      "reference/mint-tsdocs.itemplatedata.methods",
+                      "reference/mint-tsdocs.itemplatedata.namespaces",
+                      "reference/mint-tsdocs.itemplatedata.navigation",
+                      "reference/mint-tsdocs.itemplatedata.page",
+                      "reference/mint-tsdocs.itemplatedata.parameters",
+                      "reference/mint-tsdocs.itemplatedata.properties",
+                      "reference/mint-tsdocs.itemplatedata.returntype",
+                      "reference/mint-tsdocs.itemplatedata.typealiases",
+                      "reference/mint-tsdocs.itemplatedata.variables"
                     ]
                   },
                   {
                     "group": "ITemplateEngineOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.itemplateengineoptions",
-                      "reference/mintlify-tsdocs.itemplateengineoptions.cache",
-                      "reference/mintlify-tsdocs.itemplateengineoptions.strict",
-                      "reference/mintlify-tsdocs.itemplateengineoptions.templatedir"
+                      "reference/mint-tsdocs.itemplateengineoptions",
+                      "reference/mint-tsdocs.itemplateengineoptions.cache",
+                      "reference/mint-tsdocs.itemplateengineoptions.strict",
+                      "reference/mint-tsdocs.itemplateengineoptions.templatedir"
                     ]
                   },
                   {
                     "group": "ITemplateManagerOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.itemplatemanageroptions",
-                      "reference/mintlify-tsdocs.itemplatemanageroptions.defaulttemplatedir",
-                      "reference/mintlify-tsdocs.itemplatemanageroptions.overrides",
-                      "reference/mintlify-tsdocs.itemplatemanageroptions.usertemplatedir"
+                      "reference/mint-tsdocs.itemplatemanageroptions",
+                      "reference/mint-tsdocs.itemplatemanageroptions.defaulttemplatedir",
+                      "reference/mint-tsdocs.itemplatemanageroptions.overrides",
+                      "reference/mint-tsdocs.itemplatemanageroptions.usertemplatedir"
                     ]
                   },
                   {
                     "group": "MessageReportingItem",
                     "pages": [
-                      "reference/mintlify-tsdocs.messagereportingitem",
-                      "reference/mintlify-tsdocs.messagereportingitem.addtoapireportfile",
-                      "reference/mintlify-tsdocs.messagereportingitem.loglevel"
+                      "reference/mint-tsdocs.messagereportingitem",
+                      "reference/mint-tsdocs.messagereportingitem.addtoapireportfile",
+                      "reference/mint-tsdocs.messagereportingitem.loglevel"
                     ]
                   },
                   {
                     "group": "MintlifyTsDocsConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig._schema",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.apiextractor",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.convertreadme",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.docsjson",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.entrypoint",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.groupname",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.outputfolder",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.readmetitle",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.tabname",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.templates",
-                      "reference/mintlify-tsdocs.mintlifytsdocsconfig.tsdoc"
+                      "reference/mint-tsdocs.mintlifytsdocsconfig",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig._schema",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.apiextractor",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.convertreadme",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.docsjson",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.entrypoint",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.groupname",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.outputfolder",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.readmetitle",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.tabname",
+                      "reference/mint-tsdocs.mintlifytsdocsconfig.templates"
                     ]
                   },
                   {
                     "group": "NavigationItem",
                     "pages": [
-                      "reference/mintlify-tsdocs.navigationitem",
-                      "reference/mintlify-tsdocs.navigationitem.apikind",
-                      "reference/mintlify-tsdocs.navigationitem.displayname",
-                      "reference/mintlify-tsdocs.navigationitem.group",
-                      "reference/mintlify-tsdocs.navigationitem.icon",
-                      "reference/mintlify-tsdocs.navigationitem.page",
-                      "reference/mintlify-tsdocs.navigationitem.pages",
-                      "reference/mintlify-tsdocs.navigationitem.parentpage"
+                      "reference/mint-tsdocs.navigationitem",
+                      "reference/mint-tsdocs.navigationitem.apikind",
+                      "reference/mint-tsdocs.navigationitem.displayname",
+                      "reference/mint-tsdocs.navigationitem.group",
+                      "reference/mint-tsdocs.navigationitem.icon",
+                      "reference/mint-tsdocs.navigationitem.page",
+                      "reference/mint-tsdocs.navigationitem.pages",
+                      "reference/mint-tsdocs.navigationitem.parentpage"
                     ]
                   },
                   {
                     "group": "NavigationManagerOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.navigationmanageroptions",
-                      "reference/mintlify-tsdocs.navigationmanageroptions.docsjsonpath",
-                      "reference/mintlify-tsdocs.navigationmanageroptions.enablemenu",
-                      "reference/mintlify-tsdocs.navigationmanageroptions.groupname",
-                      "reference/mintlify-tsdocs.navigationmanageroptions.outputfolder",
-                      "reference/mintlify-tsdocs.navigationmanageroptions.tabname"
+                      "reference/mint-tsdocs.navigationmanageroptions",
+                      "reference/mint-tsdocs.navigationmanageroptions.docsjsonpath",
+                      "reference/mint-tsdocs.navigationmanageroptions.enablemenu",
+                      "reference/mint-tsdocs.navigationmanageroptions.groupname",
+                      "reference/mint-tsdocs.navigationmanageroptions.outputfolder",
+                      "reference/mint-tsdocs.navigationmanageroptions.tabname"
                     ]
                   },
                   {
                     "group": "ResolvedConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.resolvedconfig",
-                      "reference/mintlify-tsdocs.resolvedconfig.apiextractor",
-                      "reference/mintlify-tsdocs.resolvedconfig.convertreadme",
-                      "reference/mintlify-tsdocs.resolvedconfig.docsjson",
-                      "reference/mintlify-tsdocs.resolvedconfig.entrypoint",
-                      "reference/mintlify-tsdocs.resolvedconfig.groupname",
-                      "reference/mintlify-tsdocs.resolvedconfig.outputfolder",
-                      "reference/mintlify-tsdocs.resolvedconfig.readmetitle",
-                      "reference/mintlify-tsdocs.resolvedconfig.tabname",
-                      "reference/mintlify-tsdocs.resolvedconfig.templates",
-                      "reference/mintlify-tsdocs.resolvedconfig.tsdoc"
+                      "reference/mint-tsdocs.resolvedconfig",
+                      "reference/mint-tsdocs.resolvedconfig.apiextractor",
+                      "reference/mint-tsdocs.resolvedconfig.convertreadme",
+                      "reference/mint-tsdocs.resolvedconfig.docsjson",
+                      "reference/mint-tsdocs.resolvedconfig.entrypoint",
+                      "reference/mint-tsdocs.resolvedconfig.groupname",
+                      "reference/mint-tsdocs.resolvedconfig.outputfolder",
+                      "reference/mint-tsdocs.resolvedconfig.readmetitle",
+                      "reference/mint-tsdocs.resolvedconfig.tabname",
+                      "reference/mint-tsdocs.resolvedconfig.templates"
                     ]
                   },
                   {
                     "group": "TemplateConfig",
                     "pages": [
-                      "reference/mintlify-tsdocs.templateconfig",
-                      "reference/mintlify-tsdocs.templateconfig.cache",
-                      "reference/mintlify-tsdocs.templateconfig.strict",
-                      "reference/mintlify-tsdocs.templateconfig.usertemplatedir"
-                    ]
-                  },
-                  {
-                    "group": "TsDocConfig",
-                    "pages": [
-                      "reference/mintlify-tsdocs.tsdocconfig",
-                      "reference/mintlify-tsdocs.tsdocconfig._schema",
-                      "reference/mintlify-tsdocs.tsdocconfig.extends",
-                      "reference/mintlify-tsdocs.tsdocconfig.tagdefinitions"
+                      "reference/mint-tsdocs.templateconfig",
+                      "reference/mint-tsdocs.templateconfig.cache",
+                      "reference/mint-tsdocs.templateconfig.strict",
+                      "reference/mint-tsdocs.templateconfig.usertemplatedir"
                     ]
                   },
                   {
                     "group": "TypeAnalysisCacheOptions",
                     "pages": [
-                      "reference/mintlify-tsdocs.typeanalysiscacheoptions",
-                      "reference/mintlify-tsdocs.typeanalysiscacheoptions.enabled",
-                      "reference/mintlify-tsdocs.typeanalysiscacheoptions.maxsize"
+                      "reference/mint-tsdocs.typeanalysiscacheoptions",
+                      "reference/mint-tsdocs.typeanalysiscacheoptions.enabled",
+                      "reference/mint-tsdocs.typeanalysiscacheoptions.maxsize"
                     ]
                   }
                 ]
@@ -827,7 +838,7 @@
                     "group": "(model)",
                     "pages": [
                       "reference/index",
-                      "reference/mintlify-tsdocs"
+                      "reference/mint-tsdocs"
                     ]
                   }
                 ]
@@ -836,8 +847,8 @@
                 "group": "Types",
                 "icon": "file-code",
                 "pages": [
-                  "reference/mintlify-tsdocs.debugfunction",
-                  "reference/mintlify-tsdocs.debuglevel"
+                  "reference/mint-tsdocs.debugfunction",
+                  "reference/mint-tsdocs.debuglevel"
                 ]
               }
             ]

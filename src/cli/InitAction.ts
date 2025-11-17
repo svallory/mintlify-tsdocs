@@ -16,11 +16,13 @@ import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
 import type { MintlifyTsDocsConfig } from '../config';
 import { TsConfigValidator } from '../utils/TsConfigValidator';
+import { showCliHeader } from './CliHelpers';
+import * as InitHelp from './help/InitHelp';
 
 /**
- * CLI action to initialize a new project with mintlify-tsdocs configuration
+ * CLI action to initialize a new project with mint-tsdocs configuration
  *
- * This action creates a single mintlify-tsdocs.config.json file at the project root
+ * This action creates a single mint-tsdocs.config.json file at the project root
  * with auto-detected values. The .tsdocs/ directory is used only for cache/generated files.
  */
 export class InitAction extends CommandLineAction {
@@ -34,9 +36,9 @@ export class InitAction extends CommandLineAction {
   public constructor(cliInstance: DocumenterCli) {
     super({
       actionName: 'init',
-      summary: 'Initialize mintlify-tsdocs configuration',
+      summary: 'Initialize mint-tsdocs configuration',
       documentation:
-        'Creates mintlify-tsdocs.config.json with auto-detected settings. ' +
+        'Creates mint-tsdocs.config.json with auto-detected settings. ' +
         'Optionally initializes Mintlify (mint new) if not already set up.'
     });
 
@@ -72,11 +74,18 @@ export class InitAction extends CommandLineAction {
     });
   }
 
-  protected override async onExecuteAsync(): Promise<void> {
+  public override async onExecuteAsync(): Promise<void> {
+    // Check if --help was requested (check process.argv since ts-command-line intercepts it)
+    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+      InitHelp.showHelp();
+      return;
+    }
+
     const useDefaults = this._yesParameter.value;
 
+    showCliHeader();
     if (!useDefaults) {
-      clack.intro(Colorize.bold("Let's setup mintlify-tsdocs for your project!"));
+      console.log('\n' + Colorize.bold("Let's setup mint-tsdocs for your project!"));
     }
 
     const projectDir = this._projectDirParameter.value || process.cwd();
@@ -101,11 +110,11 @@ export class InitAction extends CommandLineAction {
       }
 
       // Check if config already exists
-      const configPath = path.join(absoluteProjectDir, 'mintlify-tsdocs.config.json');
+      const configPath = path.join(absoluteProjectDir, 'mint-tsdocs.config.json');
       if (FileSystem.exists(configPath)) {
         if (!useDefaults) {
           const shouldOverwrite = await clack.confirm({
-            message: 'mintlify-tsdocs.config.json already exists. Overwrite?',
+            message: 'mint-tsdocs.config.json already exists. Overwrite?',
             initialValue: false
           });
 
@@ -149,8 +158,8 @@ export class InitAction extends CommandLineAction {
         if (!useDefaults) {
           tabName = (await clack.text({
             message: 'Tab name in Mintlify navigation?',
-            placeholder: 'API Reference',
-            defaultValue: 'API Reference'
+            placeholder: 'Code Reference',
+            defaultValue: 'Code Reference'
           })) as string;
 
           if (clack.isCancel(tabName)) {
@@ -158,10 +167,20 @@ export class InitAction extends CommandLineAction {
             process.exit(0);
           }
 
+          // Read package name for default group name
+          const packageJson = JSON.parse(FileSystem.readFile(packageJsonPath));
+          const packageName = packageJson.name || 'API';
+
           groupName = (await clack.text({
-            message: 'Group name in navigation?',
-            placeholder: 'API',
-            defaultValue: 'API'
+            message: 'Group name for sidebar (used when multiple projects share a site)',
+            placeholder: packageName,
+            defaultValue: packageName,
+            validate: (value) => {
+              if (!value || value.trim() === '') {
+                return 'Group name cannot be empty';
+              }
+              return undefined;
+            }
           })) as string;
 
           if (clack.isCancel(groupName)) {
@@ -169,8 +188,10 @@ export class InitAction extends CommandLineAction {
             process.exit(0);
           }
         } else {
+          // Read package name for default group name
+          const packageJson = JSON.parse(FileSystem.readFile(packageJsonPath));
           tabName = 'API Reference';
-          groupName = 'API';
+          groupName = packageJson.name || 'API';
         }
       }
 
@@ -188,6 +209,9 @@ export class InitAction extends CommandLineAction {
         }
       });
 
+      // Create tsdoc.json at project root
+      this._createTsDocConfig(absoluteProjectDir);
+
       // Create .tsdocs directory and README
       const tsdocsDir = path.join(docsDir, '.tsdocs');
       FileSystem.ensureFolder(tsdocsDir);
@@ -198,16 +222,16 @@ export class InitAction extends CommandLineAction {
 
       clack.outro(Colorize.green('✓ Configuration created successfully!'));
 
-      // Auto-add mint-ts script to package.json if needed
+      // Auto-add mint-tsdocs script to package.json if needed
       const scriptAdded = this._addScriptToPackageJson(packageJsonPath);
 
       const nextSteps = `${Colorize.bold('Next steps:')}
-${Colorize.cyan('  Run: mint-ts generate')}
+${Colorize.cyan('  Run: mint-tsdocs generate')}
 
 ${Colorize.dim('(TypeScript will be compiled automatically)')}${scriptAdded ? `
 
 ${Colorize.bold('📋 Added to package.json:')}
-${Colorize.cyan('  "mint-ts": "mint-ts generate"')}` : ''}`;
+${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
 
       clack.note(nextSteps);
 
@@ -507,16 +531,16 @@ ${Colorize.cyan('  "mint-ts": "mint-ts generate"')}` : ''}`;
   }
 
   /**
-   * Create mintlify-tsdocs.config.json
+   * Create mint-tsdocs.config.json
    */
   private async _createConfig(
     projectDir: string,
     config: Partial<MintlifyTsDocsConfig>
   ): Promise<void> {
-    const configPath = path.join(projectDir, 'mintlify-tsdocs.config.json');
+    const configPath = path.join(projectDir, 'mint-tsdocs.config.json');
 
     const fullConfig: MintlifyTsDocsConfig = {
-      $schema: './node_modules/mintlify-tsdocs/lib/schemas/config.schema.json',
+      $schema: './node_modules/mint-tsdocs/lib/schemas/config.schema.json',
       entryPoint: config.entryPoint,
       outputFolder: config.outputFolder,
       ...(config.docsJson && { docsJson: config.docsJson }),
@@ -525,7 +549,91 @@ ${Colorize.cyan('  "mint-ts": "mint-ts generate"')}` : ''}`;
     };
 
     FileSystem.writeFile(configPath, JSON.stringify(fullConfig, null, 2));
-    clack.log.success('Created mintlify-tsdocs.config.json');
+    clack.log.success('Created mint-tsdocs.config.json');
+  }
+
+  /**
+   * Create or update tsdoc.json at project root
+   */
+  private _createTsDocConfig(projectDir: string): void {
+    const tsdocPath = path.join(projectDir, 'tsdoc.json');
+
+    const requiredConfig = {
+      $schema: 'https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json',
+      extends: ['@microsoft/api-extractor/extends/tsdoc-base.json'],
+      tagDefinitions: [
+        {
+          tagName: '@default',
+          syntaxKind: 'block',
+          allowMultiple: false
+        }
+      ],
+      supportForTags: {
+        '@default': true
+      }
+    };
+
+    // If file doesn't exist, create it
+    if (!FileSystem.exists(tsdocPath)) {
+      FileSystem.writeFile(tsdocPath, JSON.stringify(requiredConfig, null, 2));
+      clack.log.success('Created tsdoc.json');
+      return;
+    }
+
+    // File exists - validate and potentially update it
+    try {
+      const existingContent = FileSystem.readFile(tsdocPath);
+      const existing = JSON.parse(existingContent);
+      const updates: string[] = [];
+
+      // Check 1: Must extend tsdoc-base.json
+      if (!existing.extends || !existing.extends.includes('@microsoft/api-extractor/extends/tsdoc-base.json')) {
+        updates.push('- Add extends: ["@microsoft/api-extractor/extends/tsdoc-base.json"]');
+        existing.extends = existing.extends || [];
+        if (!existing.extends.includes('@microsoft/api-extractor/extends/tsdoc-base.json')) {
+          existing.extends.unshift('@microsoft/api-extractor/extends/tsdoc-base.json');
+        }
+      }
+
+      // Check 2: Should have @default tag definition
+      const hasDefaultTag = existing.tagDefinitions?.some((tag: any) => tag.tagName === '@default');
+      if (!hasDefaultTag) {
+        updates.push('- Add @default tag definition');
+        existing.tagDefinitions = existing.tagDefinitions || [];
+        existing.tagDefinitions.push({
+          tagName: '@default',
+          syntaxKind: 'block',
+          allowMultiple: false
+        });
+      }
+
+      // Check 3: Should have @default tag support
+      if (!existing.supportForTags || !existing.supportForTags['@default']) {
+        updates.push('- Enable @default tag support');
+        existing.supportForTags = existing.supportForTags || {};
+        existing.supportForTags['@default'] = true;
+      }
+
+      // Check 4: Should have $schema for IDE support
+      if (!existing.$schema) {
+        updates.push('- Add $schema for IDE autocomplete');
+        existing.$schema = 'https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json';
+      }
+
+      // If updates are needed, write the file
+      if (updates.length > 0) {
+        clack.log.warn('tsdoc.json exists but is missing required configuration:');
+        updates.forEach(update => clack.log.info('  ' + update));
+        FileSystem.writeFile(tsdocPath, JSON.stringify(existing, null, 2));
+        clack.log.success('Updated tsdoc.json with required configuration');
+      } else {
+        clack.log.info('tsdoc.json already exists with correct configuration');
+      }
+    } catch (error) {
+      clack.log.warn('Could not parse existing tsdoc.json - creating new one');
+      FileSystem.writeFile(tsdocPath, JSON.stringify(requiredConfig, null, 2));
+      clack.log.success('Created tsdoc.json');
+    }
   }
 
   /**
@@ -542,20 +650,22 @@ This directory contains auto-generated files used during documentation generatio
 
 ## Generated Files
 
-- **api-extractor.json** - Auto-generated from your mintlify-tsdocs.config.json
-- **tsdoc.json** - Auto-generated TSDoc configuration
+- **api-extractor.json** - Auto-generated from your mint-tsdocs.config.json
 - **\*.api.json** - API model files generated by API Extractor
 - **tsdoc-metadata.json** - TSDoc metadata
 
-## Configuration
+## Configuration Files
 
-Your actual configuration is in **mintlify-tsdocs.config.json** at the project root.
-
-To customize, edit that file instead of these generated files.
+- **mint-tsdocs.config.json** (project root) - Main configuration for mint-tsdocs
+- **tsdoc.json** (project root) - TSDoc configuration for custom tag definitions
+  - Created during \`mint-tsdocs init\`
+  - Committed to version control
+  - Edit this file directly to customize TSDoc tags
+- **api-extractor.json** (here, auto-generated) - Generated from mint-tsdocs.config.json
 
 ## Need Help?
 
-- **Documentation**: https://mintlify-tsdocs.saulo.engineer
+- **Documentation**: https://mint-tsdocs.saulo.engineer
 - **API Extractor**: https://api-extractor.com
 - **TSDoc**: https://tsdoc.org
 `;
@@ -564,7 +674,7 @@ To customize, edit that file instead of these generated files.
   }
 
   /**
-   * Add mint-ts script to package.json if no existing script uses mintlify-tsdocs
+   * Add mint-tsdocs script to package.json if no existing script uses mint-tsdocs
    * @returns true if script was added, false if skipped
    */
   private _addScriptToPackageJson(packageJsonPath: string): boolean {
@@ -576,11 +686,11 @@ To customize, edit that file instead of these generated files.
       const packageJsonContent = FileSystem.readFile(packageJsonPath);
       const packageJson = JSON.parse(packageJsonContent);
 
-      // Check if any existing script uses mintlify-tsdocs or mint-ts
+      // Check if any existing script uses mint-tsdocs or mint-tsdocs
       if (packageJson.scripts) {
         const scriptValues = Object.values(packageJson.scripts) as string[];
         const hasExistingScript = scriptValues.some(
-          (script) => script.includes('mintlify-tsdocs') || script.includes('mint-ts')
+          (script) => script.includes('mint-tsdocs') || script.includes('mint-tsdocs')
         );
 
         if (hasExistingScript) {
@@ -588,11 +698,11 @@ To customize, edit that file instead of these generated files.
         }
       }
 
-      // Add mint-ts script
+      // Add mint-tsdocs script
       if (!packageJson.scripts) {
         packageJson.scripts = {};
       }
-      packageJson.scripts['mint-ts'] = 'mint-ts generate';
+      packageJson.scripts['mint-tsdocs'] = 'mint-tsdocs generate';
 
       // Write back with proper formatting
       FileSystem.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
@@ -615,11 +725,11 @@ To customize, edit that file instead of these generated files.
       if (!gitignoreContent.includes(relativeTsdocsDir)) {
         FileSystem.writeFile(
           gitignorePath,
-          gitignoreContent.trimEnd() + '\n\n# mintlify-tsdocs cache\n' + gitignoreEntry + '\n'
+          gitignoreContent.trimEnd() + '\n\n# mint-tsdocs cache\n' + gitignoreEntry + '\n'
         );
       }
     } else {
-      FileSystem.writeFile(gitignorePath, '# mintlify-tsdocs cache\n' + gitignoreEntry + '\n');
+      FileSystem.writeFile(gitignorePath, '# mint-tsdocs cache\n' + gitignoreEntry + '\n');
     }
 
     clack.log.success('Updated .gitignore');

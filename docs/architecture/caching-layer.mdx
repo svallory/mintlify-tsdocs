@@ -1,7 +1,6 @@
 ---
 title: Caching Layer
 description: Performance optimization through intelligent caching systems
-description: Performance optimization through intelligent caching systems
 icon: "database"
 ---
 
@@ -355,60 +354,66 @@ public printStats(): void
 
 <AccordionGroup>
   <Accordion title="Cache Size Tuning" icon="sliders">
-**Development**:
-- Smaller caches (500-1000 items)
-- Enable statistics for monitoring
-- Focus on debugging cache behavior
 
-**Production**:
-- Larger caches (1000-2000 items)
-- Disable statistics for performance
-- Monitor hit rates in logs
+    **Development**:
+    - Smaller caches (500-1000 items)
+    - Enable statistics for monitoring
+    - Focus on debugging cache behavior
 
-**Large Codebases**:
-- Increase TypeAnalysisCache size
-- Consider separate cache instances
-- Monitor memory usage
+    **Production**:
+    - Larger caches (1000-2000 items)
+    - Disable statistics for performance
+    - Monitor hit rates in logs
+
+    **Large Codebases**:
+    - Increase TypeAnalysisCache size
+    - Consider separate cache instances
+    - Monitor memory usage
+
   </Accordion>
 
   <Accordion title="When to Disable Caching" icon="toggle-off">
-**Disable for**:
-- Testing cache behavior
-- Debugging type analysis issues
-- Memory-constrained environments
-- Very small projects (minimal benefit)
 
-**How to Disable**:
+    **Disable for**:
+    - Testing cache behavior
+    - Debugging type analysis issues
+    - Memory-constrained environments
+    - Very small projects (minimal benefit)
+
+    **How to Disable**:
 ```typescript
-const cacheManager = new CacheManager({
-  enabled: false // Disables all caches
-});
+    const cacheManager = new CacheManager({
+    enabled: false // Disables all caches
+    });
 
-// Or disable individual caches
-const cacheManager = new CacheManager({
-  typeAnalysis: { enabled: false },
-  apiResolution: { enabled: true }
-});
+    // Or disable individual caches
+    const cacheManager = new CacheManager({
+    typeAnalysis: { enabled: false },
+    apiResolution: { enabled: true }
+    });
 ```
+
   </Accordion>
 
   <Accordion title="Monitoring Performance" icon="chart-line">
-**Enable Statistics**:
-```typescript
-const cacheManager = new CacheManager({
-  enableStats: true,
-  typeAnalysis: { enabled: true },
-  apiResolution: { enabled: true }
-});
 
-// Print after generation
-cacheManager.printStats();
+    **Enable Statistics**:
+```typescript
+    const cacheManager = new CacheManager({
+    enableStats: true,
+    typeAnalysis: { enabled: true },
+    apiResolution: { enabled: true }
+    });
+
+    // Print after generation
+    cacheManager.printStats();
 ```
 
-**Interpret Results**:
-- **Hit Rate > 40%**: Good cache effectiveness
-- **Hit Rate < 20%**: Consider tuning or disabling
-- **Memory Usage**: Monitor cache sizes vs. benefit
+    **Interpret Results**:
+    - **Hit Rate > 40%**: Good cache effectiveness
+    - **Hit Rate < 20%**: Consider tuning or disabling
+    - **Memory Usage**: Monitor cache sizes vs. benefit
+
   </Accordion>
 </AccordionGroup>
 
@@ -416,45 +421,51 @@ cacheManager.printStats();
 
 <AccordionGroup>
   <Accordion title="Low Hit Rates" icon="exclamation-triangle">
-**Symptoms**: Cache statistics show < 20% hit rate
 
-**Causes**:
-- Too many unique type patterns
-- Insufficient repetitive structures
-- Cache size too small
+    **Symptoms**: Cache statistics show < 20% hit rate
 
-**Solutions**:
-- Increase cache size
-- Analyze type diversity
-- Consider disabling for small projects
+    **Causes**:
+    - Too many unique type patterns
+    - Insufficient repetitive structures
+    - Cache size too small
+
+    **Solutions**:
+    - Increase cache size
+    - Analyze type diversity
+    - Consider disabling for small projects
+
   </Accordion>
 
   <Accordion title="Memory Issues" icon="memory">
-**Symptoms**: High memory usage during generation
 
-**Causes**:
-- Cache sizes too large
-- Retaining too many cached items
-- Memory leaks in cache implementation
+    **Symptoms**: High memory usage during generation
 
-**Solutions**:
-- Reduce cache sizes
-- Enable LRU eviction
-- Monitor memory usage patterns
+    **Causes**:
+    - Cache sizes too large
+    - Retaining too many cached items
+    - Memory leaks in cache implementation
+
+    **Solutions**:
+    - Reduce cache sizes
+    - Enable LRU eviction
+    - Monitor memory usage patterns
+
   </Accordion>
 
   <Accordion title="Cache Corruption" icon="bug">
-**Symptoms**: Incorrect type analysis or resolution results
 
-**Causes**:
-- Hash collisions in cache keys
-- Stale cache data
-- Race conditions (rare)
+    **Symptoms**: Incorrect type analysis or resolution results
 
-**Solutions**:
-- Clear caches between runs
-- Check cache key generation
-- Validate cached data integrity
+    **Causes**:
+    - Hash collisions in cache keys
+    - Stale cache data
+    - Race conditions (rare)
+
+    **Solutions**:
+    - Clear caches between runs
+    - Check cache key generation
+    - Validate cached data integrity
+
   </Accordion>
 </AccordionGroup>
 

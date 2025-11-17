@@ -6,7 +6,7 @@ icon: "terminal"
 
 ## Overview
 
-The CLI layer is the entry point for `mintlify-tsdocs`, responsible for parsing user commands and initiating the documentation generation process. Built on `@rushstack/ts-command-line`, it provides a robust, typed command-line interface.
+The CLI layer is the entry point for `mint-tsdocs`, responsible for parsing user commands and initiating the documentation generation process. Built on `@rushstack/ts-command-line`, it provides a robust, typed command-line interface.
 
 <Info>
   **Entry Point**: `src/start.ts` creates the CLI instance and runs the parser
@@ -40,7 +40,7 @@ The CLI layer is the entry point for `mintlify-tsdocs`, responsible for parsing 
     export class DocumenterCli extends CommandLineParser {
       constructor() {
         super({
-          toolFilename: 'mintlify-tsdocs',
+          toolFilename: 'mint-tsdocs',
           toolDescription: 'Generates Mintlify-compatible MDX documentation'
         });
         this._populateActions();
@@ -101,7 +101,7 @@ The CLI layer is the entry point for `mintlify-tsdocs`, responsible for parsing 
     </ParamField>
 
     <ParamField path="tab-name" type="string">
-      Tab name in Mintlify navigation (default: "API Reference")
+      Tab name in Mintlify navigation (default: "Code Reference")
     </ParamField>
 
     <ParamField path="group" type="string">
@@ -134,7 +134,7 @@ sequenceDiagram
     participant BaseAction
     participant Documenter
 
-    User->>start.ts: mintlify-tsdocs markdown ...
+    User->>start.ts: mint-tsdocs markdown ...
     start.ts->>DocumenterCli: new DocumenterCli()
     start.ts->>DocumenterCli: executeAsync()
     DocumenterCli->>MarkdownAction: onExecuteAsync()
@@ -153,7 +153,7 @@ sequenceDiagram
   <Accordion title="1. Command Invocation" icon="play">
     User runs the command:
     ```bash
-    mintlify-tsdocs markdown -i ./temp -o ./docs/api --docs-json ./docs/docs.json
+    mint-tsdocs markdown -i ./temp -o ./docs/api --docs-json ./docs/docs.json
     ```
 
     - Binary executes `lib/start.js`

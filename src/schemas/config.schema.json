@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "mintlify-tsdocs Configuration",
-  "description": "Unified configuration for mintlify-tsdocs documentation generator.",
+  "title": "mint-tsdocs Configuration",
+  "description": "Unified configuration for mint-tsdocs documentation generator.",
   "type": "object",
   "properties": {
     "$schema": {
@@ -60,31 +60,6 @@
         }
       }
     },
-    "tsdoc": {
-      "description": "TSDoc configuration. Will be written to .tsdocs/tsdoc.json",
-      "type": "object",
-      "properties": {
-        "$schema": {
-          "type": "string",
-          "default": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json"
-        },
-        "extends": {
-          "description": "Paths to other tsdoc.json files to extend from.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": ["@microsoft/api-extractor/extends/tsdoc-base.json"]
-        },
-        "tagDefinitions": {
-          "description": "Custom TSDoc tag definitions.",
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        }
-      }
-    },
     "apiExtractor": {
       "description": "API Extractor configuration. Will be written to .tsdocs/api-extractor.json. See https://api-extractor.com/pages/configs/api-extractor_json/",
       "type": "object",
@@ -99,7 +74,7 @@
           "items": {
             "type": "string"
           },
-          "default": []
+          "default": [ ]
         },
         "compiler": {
           "description": "TypeScript compiler options.",

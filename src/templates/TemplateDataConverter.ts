@@ -29,11 +29,12 @@ export class TemplateDataConverter {
     navigation?: { id: string; title: string; group?: string };
     getLinkFilenameForApiItem: (apiItem: ApiItem) => string | undefined;
   }): ITemplateData {
+    const normalizedDisplayName = Utilities.normalizeDisplayName(apiItem.displayName);
     const baseData: ITemplateData = {
       apiItem: {
-        name: apiItem.displayName,
+        name: normalizedDisplayName,
         kind: apiItem.kind,
-        displayName: apiItem.displayName,
+        displayName: normalizedDisplayName,
         description: this._getDescription(apiItem),
         summary: this._getSummary(apiItem),
         remarks: this._getRemarks(apiItem),
@@ -150,7 +151,7 @@ export class TemplateDataConverter {
 
   private _createTableRows(apiItems: ApiItem[], getLinkFilename: (apiItem: ApiItem) => string | undefined): ITableRow[] {
     return apiItems.map(apiItem => ({
-      title: apiItem.displayName,
+      title: Utilities.normalizeDisplayName(apiItem.displayName),
       titlePath: getLinkFilename(apiItem),
       modifiers: this._getModifiers(apiItem),
       type: this._getTypeDisplay(apiItem),

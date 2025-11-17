@@ -1,7 +1,6 @@
 ---
 title: Utilities Layer
 description: Type analysis, caching utilities, and helper components
-description: Type analysis, caching utilities, and helper components
 icon: "wrench"
 ---
 
@@ -608,79 +607,81 @@ try {
 
 <AccordionGroup>
   <Accordion title="Cache Configuration" icon="sliders">
-**Environment-Based Tuning**:
+    **Environment-Based Tuning**:
 ```typescript
-// Development: Smaller caches, statistics enabled
-const devCache = CacheManager.createDevelopment({
-  enableStats: true,
-  typeAnalysis: { maxSize: 500 }
-});
+    // Development: Smaller caches, statistics enabled
+    const devCache = CacheManager.createDevelopment({
+    enableStats: true,
+    typeAnalysis: { maxSize: 500 }
+    });
 
-// Production: Larger caches, statistics disabled
-const prodCache = CacheManager.createProduction({
-  enableStats: false,
-  typeAnalysis: { maxSize: 2000 }
-});
+    // Production: Larger caches, statistics disabled
+    const prodCache = CacheManager.createProduction({
+    enableStats: false,
+    typeAnalysis: { maxSize: 2000 }
+    });
 ```
 
-**Cache Size Guidelines**:
-- **Small Projects** (1000 types): 500-1000 cache entries
-- **Medium Projects** (5000 types): 1000-2000 cache entries
-- **Large Projects** (10000+ types): 2000+ cache entries
+    **Cache Size Guidelines**:
+    - **Small Projects** (1000 types): 500-1000 cache entries
+    - **Medium Projects** (5000 types): 1000-2000 cache entries
+    - **Large Projects** (10000+ types): 2000+ cache entries
 
-**Monitoring**:
-- Track hit rates during development
-- Adjust sizes based on usage patterns
-- Monitor memory usage vs. performance gains
+    **Monitoring**:
+    - Track hit rates during development
+    - Adjust sizes based on usage patterns
+    - Monitor memory usage vs. performance gains
+
   </Accordion>
 
   <Accordion title="Performance Optimization" icon="rocket">
-**Measurement Strategy**:
-```typescript
-// Measure expensive operations
-const result = performanceMonitor.measure('Complex Type Analysis', () => {
-  return analyzeComplexType(typeString);
-}, {
-  type: typeString,
-  complexity: getComplexityScore(typeString)
-});
 
-// Batch measurement for loops
-performanceMonitor.measure('Batch Processing', () => {
-  for (const item of items) {
+    **Measurement Strategy**:
+```typescript
+    // Measure expensive operations
+    const result = performanceMonitor.measure('Complex Type Analysis', () => {
+    return analyzeComplexType(typeString);
+    }, {
+    type: typeString,
+    complexity: getComplexityScore(typeString)
+    });
+
+    // Batch measurement for loops
+    performanceMonitor.measure('Batch Processing', () => {
+    for (const item of items) {
     processItem(item);
-  }
-}, { itemCount: items.length });
+    }
+    }, { itemCount: items.length });
 ```
 
-**Optimization Workflow**:
-1. Identify bottlenecks through measurement
-2. Apply caching to expensive operations
-3. Measure improvement
-4. Tune cache configurations
-5. Monitor in production
+    **Optimization Workflow**:
+    1. Identify bottlenecks through measurement
+    2. Apply caching to expensive operations
+    3. Measure improvement
+    4. Tune cache configurations
+    5. Monitor in production
   </Accordion>
 
   <Accordion title="Security Best Practices" icon="shield">
-**Input Validation**:
+    **Input Validation**:
 ```typescript
-// Always validate file paths
-const safePath = SecurityUtils.validateFilePath(baseDirectory, userInput);
+    // Always validate file paths
+    const safePath = SecurityUtils.validateFilePath(baseDirectory, userInput);
 
-// Validate JSON content
-SecurityUtils.validateJsonContent(jsonString);
+    // Validate JSON content
+    SecurityUtils.validateJsonContent(jsonString);
 
-// Check size limits
-if (content.length > MAX_ALLOWED_SIZE) {
-  throw new ValidationError('Content too large');
-}
+    // Check size limits
+    if (content.length > MAX_ALLOWED_SIZE) {
+    throw new ValidationError('Content too large');
+    }
 ```
 
-**Error Handling**:
-- Never expose internal errors to users
-- Log security violations
-- Use specific error types
-- Provide actionable error messages
+    **Error Handling**:
+    - Never expose internal errors to users
+    - Log security violations
+    - Use specific error types
+    - Provide actionable error messages
   </Accordion>
 </AccordionGroup>
 
@@ -688,91 +689,91 @@ if (content.length > MAX_ALLOWED_SIZE) {
 
 <AccordionGroup>
   <Accordion title="Cache Performance Issues" icon="gauge">
-**Symptoms**: Low hit rates or poor performance improvement
+    **Symptoms**: Low hit rates or poor performance improvement
 
-**Common Causes**:
-- Cache size too small for project diversity
-- Too many unique type patterns
-- Cache key collisions
-- Improper cache configuration
+    **Common Causes**:
+    - Cache size too small for project diversity
+    - Too many unique type patterns
+    - Cache key collisions
+    - Improper cache configuration
 
-**Diagnostic Steps**:
+    **Diagnostic Steps**:
 ```typescript
-const stats = cacheManager.getStats();
-console.log('Overall hit rate:', stats.totalHitRate);
-console.log('Type analysis hit rate:', stats.typeAnalysis.hitRate);
-console.log('API resolution hit rate:', stats.apiResolution.hitRate);
-console.log('Cache utilization:', `${stats.typeAnalysis.size}/${stats.typeAnalysis.maxSize}`);
+    const stats = cacheManager.getStats();
+    console.log('Overall hit rate:', stats.totalHitRate);
+    console.log('Type analysis hit rate:', stats.typeAnalysis.hitRate);
+    console.log('API resolution hit rate:', stats.apiResolution.hitRate);
+    console.log('Cache utilization:', `${stats.typeAnalysis.size}/${stats.typeAnalysis.maxSize}`);
 ```
 
-**Solutions**:
-- Increase cache sizes
-- Analyze type diversity patterns
-- Check cache key generation
-- Consider disabling for very small projects
+    **Solutions**:
+    - Increase cache sizes
+    - Analyze type diversity patterns
+    - Check cache key generation
+    - Consider disabling for very small projects
   </Accordion>
 
   <Accordion title="Memory Usage Problems" icon="memory">
-**Symptoms**: High memory usage or memory leaks
+    **Symptoms**: High memory usage or memory leaks
 
-**Common Causes**:
-- Cache sizes too large
-- Retaining unnecessary data
-- Circular references
-- Improper cleanup
+    **Common Causes**:
+    - Cache sizes too large
+    - Retaining unnecessary data
+    - Circular references
+    - Improper cleanup
 
-**Diagnostic Steps**:
+    **Diagnostic Steps**:
 ```typescript
-// Monitor memory usage
-const memoryUsage = process.memoryUsage();
-console.log('Memory usage:', {
-  rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB`,
-  heapUsed: `${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
-  heapTotal: `${(memoryUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`
-});
+    // Monitor memory usage
+    const memoryUsage = process.memoryUsage();
+    console.log('Memory usage:', {
+    rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB`,
+    heapUsed: `${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
+    heapTotal: `${(memoryUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`
+    });
 
-// Check cache sizes
-const cacheStats = cacheManager.getStats();
-console.log('Cache utilization:', cacheStats);
+    // Check cache sizes
+    const cacheStats = cacheManager.getStats();
+    console.log('Cache utilization:', cacheStats);
 ```
 
-**Solutions**:
-- Reduce cache sizes
-- Implement proper cleanup
-- Use LRU eviction effectively
-- Monitor memory growth patterns
+    **Solutions**:
+    - Reduce cache sizes
+    - Implement proper cleanup
+    - Use LRU eviction effectively
+    - Monitor memory growth patterns
   </Accordion>
 
   <Accordion title="Type Analysis Errors" icon="exclamation-triangle">
-**Symptoms**: Incorrect type parsing or analysis failures
+    **Symptoms**: Incorrect type parsing or analysis failures
 
-**Common Causes**:
-- Complex generic types
-- Malformed type strings
-- Unsupported type patterns
-- Recursive type cycles
+    **Common Causes**:
+    - Complex generic types
+    - Malformed type strings
+    - Unsupported type patterns
+    - Recursive type cycles
 
-**Diagnostic Steps**:
+    **Diagnostic Steps**:
 ```typescript
-// Debug type analysis
-try {
-  const result = typeAnalyzer.analyzeType(typeString);
-  console.log('Type analysis result:', result);
-} catch (error) {
-  console.error('Type analysis failed:', error);
-  console.log('Input type:', typeString);
-}
+    // Debug type analysis
+    try {
+    const result = typeAnalyzer.analyzeType(typeString);
+    console.log('Type analysis result:', result);
+    } catch (error) {
+    console.error('Type analysis failed:', error);
+    console.log('Input type:', typeString);
+    }
 
-// Check cache behavior
-const cached = typeAnalysisCache.get(typeString);
-console.log('Cached result:', cached);
+    // Check cache behavior
+    const cached = typeAnalysisCache.get(typeString);
+    console.log('Cached result:', cached);
 ```
 
-**Solutions**:
-- Validate input type strings
-- Handle unsupported patterns gracefully
-- Implement proper error boundaries
-- Add comprehensive logging
+    **Solutions**:
+    - Validate input type strings
+    - Handle unsupported patterns gracefully
+    - Implement proper error boundaries
+    - Add comprehensive logging
   </Accordion>
 </AccordionGroup>
 

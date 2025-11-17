@@ -4,7 +4,8 @@
       "Bash(cat:*)",
       "Bash(npx tsc:*)",
       "Bash(bun add:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(bun x api-extractor-model-info:*)"
     ],
     "deny": [],
     "ask": []

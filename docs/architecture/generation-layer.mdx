@@ -6,7 +6,7 @@ icon: "cogs"
 
 ## Overview
 
-The generation layer is the central orchestrator of `mintlify-tsdocs`. It traverses the API model and constructs the semantic structure of each documentation page using TSDoc AST nodes. The layer has been refactored to use modular components for navigation management, caching, and performance monitoring.
+The generation layer is the central orchestrator of `mint-tsdocs`. It traverses the API model and constructs the semantic structure of each documentation page using TSDoc AST nodes. The layer has been refactored to use modular components for navigation management, caching, and performance monitoring.
 
 <Info>
   **Primary Component**: `src/documenters/MarkdownDocumenter.ts`
@@ -90,75 +90,76 @@ The generation layer is the central orchestrator of `mintlify-tsdocs`. It traver
 
 <AccordionGroup>
   <Accordion title="Navigation Management Extraction" icon="map">
-**Before**: Navigation logic was embedded in `MarkdownDocumenter`
+    **Before**: Navigation logic was embedded in `MarkdownDocumenter`
 
-**After**: Dedicated `NavigationManager` handles all navigation concerns:
+    **After**: Dedicated `NavigationManager` handles all navigation concerns:
 
 ```typescript
-// Initialization
-this._navigationManager = new NavigationManager({
-  docsJsonPath: options.docsJsonPath,
-  tabName: options.tabName,
-  groupName: options.groupName,
-  enableMenu: options.enableMenu,
-  outputFolder: this._outputFolder
-});
+    // Initialization
+    this._navigationManager = new NavigationManager({
+    docsJsonPath: options.docsJsonPath,
+    tabName: options.tabName,
+    groupName: options.groupName,
+    enableMenu: options.enableMenu,
+    outputFolder: this._outputFolder
+    });
 
-// Usage
-this._navigationManager.addApiItem(apiItem, filename);
-this._navigationManager.generateNavigation();
+    // Usage
+    this._navigationManager.addApiItem(apiItem, filename);
+    this._navigationManager.generateNavigation();
 ```
 
-**Benefits**:
-- Separation of concerns
-- Reusable navigation logic
-- Better testability
-- Mintlify v4 compatibility
+    **Benefits**:
+    - Separation of concerns
+    - Reusable navigation logic
+    - Mintlify v4 compatibility
+
   </Accordion>
 
   <Accordion title="Caching Integration" icon="database">
-**Performance Optimization**: Coordinates with caching layer for improved performance:
+
+    **Performance Optimization**: Coordinates with caching layer for improved performance:
 
 ```typescript
-// Initialize cache manager
-const cacheManager = getGlobalCacheManager({
-  enabled: true,
-  enableStats: true,
-  typeAnalysis: { maxSize: 1000, enabled: true },
-  apiResolution: { maxSize: 500, enabled: true }
-});
+    // Initialize cache manager
+    const cacheManager = getGlobalCacheManager({
+    enabled: true,
+    enableStats: true,
+    typeAnalysis: { maxSize: 1000, enabled: true },
+    apiResolution: { maxSize: 500, enabled: true }
+    });
 
-// Cache statistics reported after generation
-cacheManager.printStats();
+    // Cache statistics reported after generation
+    cacheManager.printStats();
 ```
 
-**Performance Improvements**:
-- 30-50% faster type analysis
-- 20-40% faster API resolution
-- Significant speedup for large codebases
+    **Performance Improvements**:
+    - 30-50% faster type analysis
+    - 20-40% faster API resolution
+    - Significant speedup for large codebases
   </Accordion>
 
   <Accordion title="Performance Monitoring" icon="gauge-high">
-**Built-in Performance Tracking**: Integrated monitoring for optimization:
+    **Built-in Performance Tracking**: Integrated monitoring for optimization:
 
 ```typescript
-// Initialize performance monitoring
-const performanceMonitor = getGlobalPerformanceMonitor(true);
+    // Initialize performance monitoring
+    const performanceMonitor = getGlobalPerformanceMonitor(true);
 
-// Measure overall generation
-performanceMonitor.measure('Documentation Generation', () => {
-  // Generation logic here
-});
+    // Measure overall generation
+    performanceMonitor.measure('Documentation Generation', () => {
+    // Generation logic here
+    });
 
-// Print performance statistics
-performanceMonitor.printSummary();
+    // Print performance statistics
+    performanceMonitor.printSummary();
 ```
 
-**Metrics Tracked**:
-- Operation execution times
-- Cache hit rates
-- Generation statistics
-- Performance bottlenecks
+    **Metrics Tracked**:
+    - Operation execution times
+    - Cache hit rates
+    - Generation statistics
+    - Performance bottlenecks
   </Accordion>
 </AccordionGroup>
 

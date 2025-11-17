@@ -68,31 +68,31 @@ The NavigationManager supports two Mintlify navigation formats:
 
 <AccordionGroup>
   <Accordion title="Automatic Icon Assignment" icon="icons">
-Each API item type gets an appropriate icon:
+    Each API item type gets an appropriate icon:
 
-| API Item Type | Icon | Display Name |
-|---------------|------|--------------|
-| `ApiItemKind.Class` | `box` | Classes |
-| `ApiItemKind.Interface` | `plug` | Interfaces |
-| `ApiItemKind.Function` | `function` | Functions |
-| `ApiItemKind.TypeAlias` | `file-code` | Types |
-| `ApiItemKind.Variable` | `variable` | Variables |
-| `ApiItemKind.Enum` | `list` | Enums |
-| `ApiItemKind.Namespace` | `folder` | Namespaces |
+    | API Item Type | Icon | Display Name |
+    |---------------|------|--------------|
+    | `ApiItemKind.Class` | `box` | Classes |
+    | `ApiItemKind.Interface` | `plug` | Interfaces |
+    | `ApiItemKind.Function` | `function` | Functions |
+    | `ApiItemKind.TypeAlias` | `file-code` | Types |
+    | `ApiItemKind.Variable` | `variable` | Variables |
+    | `ApiItemKind.Enum` | `list` | Enums |
+    | `ApiItemKind.Namespace` | `folder` | Namespaces |
   </Accordion>
 
   <Accordion title="Hierarchical Organization" icon="folder-tree">
-Pages are automatically grouped by API item type:
+    Pages are automatically grouped by API item type:
 
-1. **Classes** - All class documentation
-2. **Interfaces** - All interface documentation
-3. **Functions** - All function documentation
-4. **Types** - All type alias documentation
-5. **Variables** - All variable documentation
-6. **Enums** - All enum documentation
-7. **Namespaces** - All namespace documentation
-n
-Each group is sorted alphabetically for easy navigation.
+    1. **Classes** - All class documentation
+    2. **Interfaces** - All interface documentation
+    3. **Functions** - All function documentation
+    4. **Types** - All type alias documentation
+    5. **Variables** - All variable documentation
+    6. **Enums** - All enum documentation
+    7. **Namespaces** - All namespace documentation
+    n
+    Each group is sorted alphabetically for easy navigation.
   </Accordion>
 </AccordionGroup>
 
@@ -180,7 +180,7 @@ interface NavigationManagerOptions {
   docsJsonPath?: string;
 
   /**
-   * Tab name in Mintlify navigation (default: "API Reference")
+   * Tab name in Mintlify navigation (default: "Code Reference")
    */
   tabName?: string;
 
@@ -239,24 +239,28 @@ The NavigationManager is integrated into the document generation workflow:
 
 <AccordionGroup>
   <Accordion title="Path Validation" icon="shield">
-Uses `SecurityUtils.validateFilePath()` to ensure:
-- Paths are within allowed directories
-- No directory traversal attempts
-- Safe file operations
+
+    Uses `SecurityUtils.validateFilePath()` to ensure:
+    - Paths are within allowed directories
+    - No directory traversal attempts
+    - Safe file operations
+
   </Accordion>
 
   <Accordion title="JSON Validation" icon="code">
-Uses `SecurityUtils.validateJsonContent()` to:
-- Validate JSON structure
-- Prevent malicious content
-- Ensure data integrity
+
+    Uses `SecurityUtils.validateJsonContent()` to:
+    - Validate JSON structure
+    - Prevent malicious content
+    - Ensure data integrity
+
   </Accordion>
 
   <Accordion title="Size Limits" icon="ruler">
-Enforces maximum JSON size of 10MB to:
-- Prevent memory exhaustion
-- Ensure reasonable file sizes
-- Maintain performance
+    Enforces maximum JSON size of 10MB to:
+    - Prevent memory exhaustion
+    - Ensure reasonable file sizes
+    - Maintain performance
   </Accordion>
 </AccordionGroup>
 

@@ -8,10 +8,10 @@ import { FileSystem } from '@rushstack/node-core-library';
 import type { MintlifyTsDocsConfig, ResolvedConfig } from './types';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 
-const MODULE_NAME = 'mintlify-tsdocs';
+const MODULE_NAME = 'mint-tsdocs';
 
 /**
- * Search for and load the mintlify-tsdocs configuration
+ * Search for and load the mint-tsdocs configuration
  */
 export function loadConfig(searchFrom?: string): ResolvedConfig {
   const explorer = cosmiconfigSync(MODULE_NAME, {
@@ -150,11 +150,6 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
       cache: config.templates?.cache ?? true,
       strict: config.templates?.strict ?? true
     },
-    tsdoc: {
-      $schema: 'https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json',
-      extends: ['@microsoft/api-extractor/extends/tsdoc-base.json'],
-      ...config.tsdoc
-    },
     apiExtractor: {
       bundledPackages: [],
       compiler: {},
@@ -204,22 +199,41 @@ export function generateApiExtractorConfig(
     return null;
   }
 
-  const relativeEntryPoint = path.relative(tsdocsDir, resolved.entryPoint);
-  const relativeApiJsonPath = path.relative(tsdocsDir, path.join(tsdocsDir, '<unscopedPackageName>.api.json'));
+  // Since config is in .tsdocs/, projectFolder points to parent (project root)
+  const projectFolderFromCache = path.relative(tsdocsDir, configDir);
+
+  // Convert absolute entryPoint to <projectFolder> relative path
+  const entryPointFromProject = path.relative(configDir, resolved.entryPoint);
 
   return {
     $schema: 'https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json',
-    mainEntryPointFilePath: relativeEntryPoint,
+
+    // Set projectFolder so we can use <projectFolder> token
+    projectFolder: projectFolderFromCache,
+
+    // Use <projectFolder> token for paths
+    mainEntryPointFilePath: `<projectFolder>/${entryPointFromProject.replace(/\\/g, '/')}`,
+
     bundledPackages: resolved.apiExtractor.bundledPackages || [],
+
     compiler: resolved.apiExtractor.compiler || {},
+
     apiReport: resolved.apiExtractor.apiReport || { enabled: false },
+
     docModel: {
       enabled: true,
-      apiJsonFilePath: relativeApiJsonPath,
+      // API JSON is generated in the .tsdocs/ folder itself
+      apiJsonFilePath: '<unscopedPackageName>.api.json',
       ...resolved.apiExtractor.docModel
     },
+
     dtsRollup: resolved.apiExtractor.dtsRollup || { enabled: false },
-    tsdocMetadata: {},
+
+    // Use <lookup> to auto-detect tsdoc-metadata.json location from package.json
+    tsdocMetadata: {
+      enabled: true
+    },
+
     messages: resolved.apiExtractor.messages || {
       compilerMessageReporting: {
         default: { logLevel: 'warning' }

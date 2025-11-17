@@ -4,7 +4,7 @@
 
 ## Overview
 
-The CLI module provides the command-line interface for mintlify-tsdocs. It's built on top of [@rushstack/ts-command-line](https://www.npmjs.com/package/@rushstack/ts-command-line) and offers a clean, extensible architecture for adding new documentation generation commands.
+The CLI module provides the command-line interface for mint-tsdocs. It's built on top of [@rushstack/ts-command-line](https://www.npmjs.com/package/@rushstack/ts-command-line) and offers a clean, extensible architecture for adding new documentation generation commands.
 
 ## Architecture
 
@@ -30,11 +30,13 @@ ApiDocumenterCommandLine (DocumenterCli)
 Main CLI parser and entry point for the tool.
 
 **Responsibilities:**
+
 - Register available commands/actions
 - Parse command-line arguments
 - Delegate to appropriate action
 
 **Key Features:**
+
 ```typescript
 const cli = new DocumenterCli();
 // Registers: markdown, init-templates
@@ -42,12 +44,14 @@ cli.execute();
 ```
 
 **Usage:**
+
 ```bash
-mintlify-tsdocs markdown -i ./input -o ./docs/api
-mintlify-tsdocs init-templates --template-dir ./my-templates
+mint-tsdocs markdown -i ./input -o ./docs/api
+mint-tsdocs init-templates --template-dir ./my-templates
 ```
 
 **Code Quality:** ⭐⭐⭐⭐⭐
+
 - Clean, focused responsibility
 - Well-documented
 - Easy to extend
@@ -59,6 +63,7 @@ mintlify-tsdocs init-templates --template-dir ./my-templates
 Abstract base class providing common CLI functionality.
 
 **Responsibilities:**
+
 - Define standard CLI parameters (`--input-folder`, `--output-folder`)
 - Build and validate API model from .api.json files
 - Apply `@inheritDoc` tag processing (temporary workaround)
@@ -67,6 +72,7 @@ Abstract base class providing common CLI functionality.
 **Key Features:**
 
 1. **buildApiModel()**: Core method that loads API documentation
+
 ```typescript
 protected buildApiModel(): IBuildApiModelResult {
   // 1. Validate input/output folders
@@ -78,20 +84,23 @@ protected buildApiModel(): IBuildApiModelResult {
 ```
 
 2. **Path Resolution**: Supports monorepo structures
+
 ```typescript
 // Allows parent directories for monorepo context
 const validatedOutputFolder = path.resolve(process.cwd(), outputFolder);
 ```
 
 3. **Error Boundary**: Fail-fast error handling
+
 ```typescript
 const errorBoundary = new ErrorBoundary({
   continueOnError: false,
-  logErrors: true
+  logErrors: true,
 });
 ```
 
 **API:**
+
 ```typescript
 interface IBuildApiModelResult {
   apiModel: ApiModel;
@@ -109,25 +118,27 @@ interface IBuildApiModelResult {
 CLI action for generating Mintlify-compatible MDX documentation.
 
 **Responsibilities:**
+
 - Define Mintlify-specific CLI parameters
 - Configure and execute MarkdownDocumenter
 
 **CLI Parameters:**
 
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `--input-folder` / `-i` | string | Input folder with .api.json files | `./input` |
+| Parameter                | Type   | Description                       | Default           |
+| ------------------------ | ------ | --------------------------------- | ----------------- |
+| `--input-folder` / `-i`  | string | Input folder with .api.json files | `./input`         |
 | `--output-folder` / `-o` | string | Output folder (contents deleted!) | `./${actionName}` |
-| `--docs-json` | string | Path to docs.json for navigation | None |
-| `--tab-name` | string | Tab name in Mintlify navigation | `"API Reference"` |
-| `--group` | string | Group name within the tab | None |
-| `--menu` | flag | Enable menu for the group | `false` |
-| `--readme` | flag | Convert README.md to index.mdx | `false` |
-| `--readme-title` | string | Custom title for README page | `"README"` |
+| `--docs-json`            | string | Path to docs.json for navigation  | None              |
+| `--tab-name`             | string | Tab name in Mintlify navigation   | `"API Reference"` |
+| `--group`                | string | Group name within the tab         | None              |
+| `--menu`                 | flag   | Enable menu for the group         | `false`           |
+| `--readme`               | flag   | Convert README.md to index.mdx    | `false`           |
+| `--readme-title`         | string | Custom title for README page      | `"README"`        |
 
 **Usage Example:**
+
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i docs/reference \
   --tab-name Reference \
   --group 'Code API' \
@@ -138,6 +149,7 @@ mintlify-tsdocs markdown \
 ```
 
 **Execution Flow:**
+
 ```
 onExecuteAsync()
   └─> buildApiModel() [from BaseAction]
@@ -146,6 +158,7 @@ onExecuteAsync()
 ```
 
 **Code Quality:** ⭐⭐⭐⭐⭐
+
 - Clean delegation pattern
 - Well-documented parameters
 - Simple and focused
@@ -157,6 +170,7 @@ onExecuteAsync()
 CLI action to initialize a template directory with default Liquid templates.
 
 **Responsibilities:**
+
 - Copy default templates to user-specified directory
 - Add helpful documentation headers to templates
 - Prevent accidental overwrites (unless `--force`)
@@ -164,24 +178,26 @@ CLI action to initialize a template directory with default Liquid templates.
 
 **CLI Parameters:**
 
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `--template-dir` / `-t` | string | Directory for templates | `./templates` |
-| `--force` / `-f` | flag | Overwrite existing templates | `false` |
+| Parameter               | Type   | Description                  | Default       |
+| ----------------------- | ------ | ---------------------------- | ------------- |
+| `--template-dir` / `-t` | string | Directory for templates      | `./templates` |
+| `--force` / `-f`        | flag   | Overwrite existing templates | `false`       |
 
 **Usage Example:**
+
 ```bash
 # Initialize with default location
-mintlify-tsdocs init-templates
+mint-tsdocs init-templates
 
 # Custom location
-mintlify-tsdocs init-templates --template-dir ./my-templates
+mint-tsdocs init-templates --template-dir ./my-templates
 
 # Overwrite existing templates
-mintlify-tsdocs init-templates --force
+mint-tsdocs init-templates --force
 ```
 
 **Execution Flow:**
+
 ```
 onExecuteAsync()
   ├─> Check if directory exists
@@ -195,6 +211,7 @@ onExecuteAsync()
 ```
 
 **Template Header Injection:**
+
 ```liquid
 <!--
   Mintlify TypeDoc Template
@@ -206,7 +223,7 @@ onExecuteAsync()
   - page: Page metadata (title, description, icon, breadcrumb)
   ...
 
-  Learn more: https://docs.mintlify-tsdocs.com/templates
+  Learn more: https://mint-tsdocs.saulo.engineer/templates
 -->
 ```
 
@@ -216,26 +233,27 @@ onExecuteAsync()
 
 ### Adding a New CLI Action
 
-To add a new command (e.g., `mintlify-tsdocs html`):
+To add a new command (e.g., `mint-tsdocs html`):
 
 1. **Create action class:**
+
 ```typescript
 // src/cli/HtmlAction.ts
-import { BaseAction } from './BaseAction';
+import { BaseAction } from "./BaseAction";
 
 export class HtmlAction extends BaseAction {
   public constructor(parser: DocumenterCli) {
     super({
-      actionName: 'html',
-      summary: 'Generate HTML documentation',
-      documentation: 'Generates API documentation as HTML files.'
+      actionName: "html",
+      summary: "Generate HTML documentation",
+      documentation: "Generates API documentation as HTML files.",
     });
 
     // Define custom parameters
     this._styleParameter = this.defineStringParameter({
-      parameterLongName: '--style',
-      argumentName: 'THEME',
-      description: 'HTML theme to use'
+      parameterLongName: "--style",
+      argumentName: "THEME",
+      description: "HTML theme to use",
     });
   }
 
@@ -246,7 +264,7 @@ export class HtmlAction extends BaseAction {
     const htmlDocumenter = new HtmlDocumenter({
       apiModel,
       outputFolder,
-      theme: this._styleParameter.value
+      theme: this._styleParameter.value,
     });
     htmlDocumenter.generateFiles();
   }
@@ -254,6 +272,7 @@ export class HtmlAction extends BaseAction {
 ```
 
 2. **Register in DocumenterCli:**
+
 ```typescript
 // ApiDocumenterCommandLine.ts
 import { HtmlAction } from './HtmlAction';
@@ -266,33 +285,36 @@ private _populateActions(): void {
 ```
 
 3. **Test:**
+
 ```bash
 bun run build
-./bin/mintlify-tsdocs html --help
+./bin/mint-tsdocs html --help
 ```
 
 ### Working with CLI Parameters
 
 **String Parameter:**
+
 ```typescript
 this._myParam = this.defineStringParameter({
-  parameterLongName: '--my-param',
-  parameterShortName: '-m',  // Optional
-  argumentName: 'VALUE',      // Placeholder in help
-  description: 'Description for help text',
-  defaultValue: 'default'     // Optional
+  parameterLongName: "--my-param",
+  parameterShortName: "-m", // Optional
+  argumentName: "VALUE", // Placeholder in help
+  description: "Description for help text",
+  defaultValue: "default", // Optional
 });
 
 // Access value:
-const value = this._myParam.value || 'fallback';
+const value = this._myParam.value || "fallback";
 ```
 
 **Flag Parameter:**
+
 ```typescript
 this._myFlag = this.defineFlagParameter({
-  parameterLongName: '--my-flag',
-  parameterShortName: '-f',
-  description: 'Enable something'
+  parameterLongName: "--my-flag",
+  parameterShortName: "-f",
+  description: "Enable something",
 });
 
 // Access value (true/false):
@@ -300,11 +322,12 @@ const enabled = this._myFlag.value;
 ```
 
 **Integer Parameter:**
+
 ```typescript
 this._myNumber = this.defineIntegerParameter({
-  parameterLongName: '--my-number',
-  argumentName: 'NUMBER',
-  description: 'Numeric value'
+  parameterLongName: "--my-number",
+  argumentName: "NUMBER",
+  description: "Numeric value",
 });
 
 const num = this._myNumber.value || 10;
@@ -313,33 +336,37 @@ const num = this._myNumber.value || 10;
 ### Error Handling Best Practices
 
 **Use DocumentationError hierarchy:**
+
 ```typescript
-import { DocumentationError, ErrorCode, FileSystemError } from '../errors/DocumentationError';
+import {
+  DocumentationError,
+  ErrorCode,
+  FileSystemError,
+} from "../errors/DocumentationError";
 
 // Specific error type
 throw new FileSystemError(
-  'Failed to read template',
+  "Failed to read template",
   ErrorCode.FILE_READ_ERROR,
   {
     resource: templatePath,
-    operation: 'readTemplate',
-    cause: originalError
+    operation: "readTemplate",
+    cause: originalError,
   }
 );
 
 // Generic error
-throw new DocumentationError(
-  'Something went wrong',
-  ErrorCode.UNKNOWN_ERROR,
-  { suggestion: 'Check your input files' }
-);
+throw new DocumentationError("Something went wrong", ErrorCode.UNKNOWN_ERROR, {
+  suggestion: "Check your input files",
+});
 ```
 
 **Use ErrorBoundary for complex operations:**
+
 ```typescript
 const errorBoundary = new ErrorBoundary({
   continueOnError: false,
-  logErrors: true
+  logErrors: true,
 });
 
 const result = errorBoundary.executeSync(() => {
@@ -355,11 +382,12 @@ if (!result.success) {
 ### Security Considerations
 
 **Always validate user input:**
+
 ```typescript
 // Validate CLI input
 const inputFolder = SecurityUtils.validateCliInput(
   this._inputParameter.value,
-  'Input folder'
+  "Input folder"
 );
 
 // Validate filenames (prevents path traversal)
@@ -373,6 +401,7 @@ SecurityUtils.validateJsonContent(fileContent);
 ```
 
 **Path resolution for monorepo:**
+
 ```typescript
 // ✅ Correct: Use path.resolve for monorepo support
 const outputFolder = path.resolve(process.cwd(), userInput);
@@ -384,12 +413,13 @@ const outputFolder = SecurityUtils.validateFilePath(process.cwd(), userInput);
 ### Testing CLI Actions
 
 **Unit Testing:**
-```typescript
-import { MarkdownAction } from '../MarkdownAction';
-import { DocumenterCli } from '../ApiDocumenterCommandLine';
 
-describe('MarkdownAction', () => {
-  it('should parse parameters correctly', () => {
+```typescript
+import { MarkdownAction } from "../MarkdownAction";
+import { DocumenterCli } from "../ApiDocumenterCommandLine";
+
+describe("MarkdownAction", () => {
+  it("should parse parameters correctly", () => {
     const cli = new DocumenterCli();
     const action = new MarkdownAction(cli);
 
@@ -398,30 +428,31 @@ describe('MarkdownAction', () => {
     expect(action._docsJsonParameter).toBeDefined();
   });
 
-  it('should validate input folder', async () => {
+  it("should validate input folder", async () => {
     // Mock FileSystem
     const action = new MarkdownAction(cli);
 
     await expect(action.onExecuteAsync()).rejects.toThrow(
-      'input folder does not exist'
+      "input folder does not exist"
     );
   });
 });
 ```
 
 **Integration Testing:**
+
 ```bash
 # Test the actual CLI
 bun run build
 
 # Test with valid input
-./bin/mintlify-tsdocs markdown -i ./test-fixtures -o ./test-output
+./bin/mint-tsdocs markdown -i ./test-fixtures -o ./test-output
 
 # Test error handling
-./bin/mintlify-tsdocs markdown -i ./nonexistent
+./bin/mint-tsdocs markdown -i ./nonexistent
 
 # Test help text
-./bin/mintlify-tsdocs markdown --help
+./bin/mint-tsdocs markdown --help
 ```
 
 ## Common Workflows
@@ -430,10 +461,10 @@ bun run build
 
 ```bash
 # Basic usage
-mintlify-tsdocs markdown -i ./input -o ./output
+mint-tsdocs markdown -i ./input -o ./output
 
 # With Mintlify integration
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i docs/reference \
   -o docs/reference \
   --docs-json docs/docs.json \
@@ -447,13 +478,13 @@ mintlify-tsdocs markdown \
 
 ```bash
 # 1. Initialize templates
-mintlify-tsdocs init-templates --template-dir ./custom-templates
+mint-tsdocs init-templates --template-dir ./custom-templates
 
 # 2. Edit templates
 vim ./custom-templates/class.liquid
 
 # 3. Generate with custom templates
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./input \
   -o ./output \
   --template-dir ./custom-templates
@@ -468,10 +499,12 @@ mintlify-tsdocs markdown \
 ### 🟡 Major
 
 1. **Outdated Template Documentation** (InitTemplatesAction.ts:143-147)
+
    - **Issue**: Template header comment still references `tables.*` structure
    - **Impact**: Misleading documentation for users customizing templates
    - **Location**: `_copyTemplates()` method
    - **Fix**: Update header comment to reflect semantic variable names:
+
    ```typescript
    // OLD (incorrect):
    // - tables: Structured data for constructors, properties, methods, etc.
@@ -483,15 +516,18 @@ mintlify-tsdocs markdown \
    ```
 
 2. **TODO: @inheritDoc Processing** (BaseAction.ts:159-161)
+
    - **Issue**: Temporary workaround for @inheritDoc tag processing
    - **Impact**: Should be handled by API Extractor instead
    - **Status**: Marked as TODO, needs tracking
    - **Action**: Create issue to migrate this to api-extractor's DocCommentEnhancer
 
 3. **Inconsistent Error Handling**
+
    - **Issue**: InitTemplatesAction wraps errors; MarkdownAction doesn't
    - **Impact**: Inconsistent error messages and debugging experience
    - **Fix**: Add consistent error wrapping to all actions:
+
    ```typescript
    protected override async onExecuteAsync(): Promise<void> {
      try {
@@ -512,24 +548,27 @@ mintlify-tsdocs markdown \
    - **Fix**: Add template directory parameter to MarkdownAction:
    ```typescript
    this._templateDirParameter = this.defineStringParameter({
-     parameterLongName: '--template-dir',
-     parameterShortName: '-t',
-     argumentName: 'DIRECTORY',
-     description: 'Custom template directory'
+     parameterLongName: "--template-dir",
+     parameterShortName: "-t",
+     argumentName: "DIRECTORY",
+     description: "Custom template directory",
    });
    ```
 
 ### 🟢 Minor
 
 5. **Documentation Link May Not Exist** (InitTemplatesAction.ts:106, 149)
-   - **Issue**: References `https://docs.mintlify-tsdocs.com/templates`
+
+   - **Issue**: References `https://mint-tsdocs.saulo.engineer/templates`
    - **Impact**: Users may get 404 if documentation not deployed
    - **Fix**: Update to actual documentation URL or use placeholder
 
 6. **No Path Comment** (BaseAction.ts:84)
+
    - **Issue**: Path resolution change (strict validation → path.resolve) lacks explanation
    - **Impact**: Future maintainers may not understand security trade-off
    - **Fix**: Add comment explaining monorepo support:
+
    ```typescript
    // NOTE: Use path.resolve instead of strict validation to support
    // monorepo structures where output may be in parent directories.
@@ -544,10 +583,10 @@ mintlify-tsdocs markdown \
    ```typescript
    // src/cli/constants.ts
    export const CLI_DEFAULTS = {
-     INPUT_FOLDER: './input',
-     TEMPLATE_DIR: './templates',
-     TAB_NAME: 'API Reference',
-     README_TITLE: 'README'
+     INPUT_FOLDER: "./input",
+     TEMPLATE_DIR: "./templates",
+     TAB_NAME: "API Reference",
+     README_TITLE: "README",
    } as const;
    ```
 
@@ -555,11 +594,11 @@ mintlify-tsdocs markdown \
 
 ### Time Complexity
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| Parameter parsing | O(n) | n = number of CLI arguments |
-| API model loading | O(m × s) | m = .api.json files, s = avg file size |
-| @inheritDoc resolution | O(i × d) | i = items with @inheritDoc, d = tree depth |
+| Operation              | Complexity | Notes                                      |
+| ---------------------- | ---------- | ------------------------------------------ |
+| Parameter parsing      | O(n)       | n = number of CLI arguments                |
+| API model loading      | O(m × s)   | m = .api.json files, s = avg file size     |
+| @inheritDoc resolution | O(i × d)   | i = items with @inheritDoc, d = tree depth |
 
 ### Memory Usage
 
@@ -576,6 +615,7 @@ mintlify-tsdocs markdown \
 ## Dependencies
 
 ### External Dependencies
+
 - `@rushstack/ts-command-line` - CLI framework
 - `@rushstack/node-core-library` - FileSystem utilities
 - `@rushstack/terminal` - Terminal output (colors)
@@ -583,6 +623,7 @@ mintlify-tsdocs markdown \
 - `@microsoft/tsdoc` - TSDoc comment parsing
 
 ### Internal Dependencies
+
 - `../documenters/MarkdownDocumenter` - MDX generation
 - `../templates/TemplateMerger` - Template management
 - `../utils/SecurityUtils` - Input validation
@@ -617,17 +658,19 @@ mintlify-tsdocs markdown \
 
 ```typescript
 // Input/output (inherited from BaseAction)
--i, --input-folder
--o, --output-folder
-
-// Template customization
--t, --template-dir
+-i,
+  --input - folder - o,
+  --output -
+    folder -
+    // Template customization
+    t,
+  --template - dir;
 
 // Boolean flags
---menu, --readme, --force
+--menu, --readme, --force;
 
 // String values
---tab-name, --group, --docs-json
+--tab - name, --group, --docs - json;
 ```
 
 ### Error Handling Template
@@ -642,7 +685,7 @@ try {
   throw new DocumentationError(
     `Operation failed: ${error.message}`,
     ErrorCode.APPROPRIATE_CODE,
-    { cause: error, operation: 'operationName' }
+    { cause: error, operation: "operationName" }
   );
 }
 ```

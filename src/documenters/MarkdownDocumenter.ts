@@ -70,6 +70,10 @@ import { LiquidTemplateManager, TemplateDataConverter } from '../templates';
 
 const debug: Debugger = createDebugger('markdown-documenter');
 
+/**
+ * Configuration options for MarkdownDocumenter
+ * @public
+ */
 export interface IMarkdownDocumenterOptions {
   apiModel: ApiModel;
   outputFolder: string;
@@ -237,7 +241,18 @@ export class MarkdownDocumenter {
   /**
    * Generate documentation page using templates (new approach)
    */
-  private async _writeApiItemPageTemplate(apiItem: ApiItem): Promise<void> {
+  private async _writeApiItemPageTemplate(apiItem: ApiItem, parentApiItem?: ApiItem): Promise<void> {
+    // Skip generating pages for EntryPoints - they're just containers
+    // Process their members directly instead
+    if (apiItem.kind === ApiItemKind.EntryPoint) {
+      if ('members' in apiItem) {
+        for (const member of (apiItem as any).members) {
+          await this._writeApiItemPageTemplate(member);
+        }
+      }
+      return;
+    }
+
     const icon = this._getIconForApiItem(apiItem);
     const description = this._getDescription(apiItem) || `${apiItem.displayName} API documentation`;
 
@@ -294,10 +309,17 @@ export class MarkdownDocumenter {
       );
     }
 
-    // Process child items recursively
+    // Add to navigation (all items, with parent tracking for members)
+    const navigationConfig = this._navigationManager.getStats();
+    if (navigationConfig.tabName) {
+      const parentFilename = parentApiItem ? this._getFilenameForApiItem(parentApiItem) : undefined;
+      this._addToNavigation(apiItem, filename, parentFilename);
+    }
+
+    // Process child items recursively, passing current item as parent
     if ('members' in apiItem) {
       for (const member of (apiItem as any).members) {
-        await this._writeApiItemPageTemplate(member);
+        await this._writeApiItemPageTemplate(member, apiItem);
       }
     }
   }
@@ -341,11 +363,43 @@ export class MarkdownDocumenter {
   }
 
   /**
+   * Get hierarchy of API items from root to current item
+   */
+  private _getHierarchy(apiItem: ApiItem): ApiItem[] {
+    const hierarchy: ApiItem[] = [];
+    let current: ApiItem | undefined = apiItem;
+
+    while (current) {
+      hierarchy.unshift(current);
+      current = current.parent;
+    }
+
+    return hierarchy;
+  }
+
+  /**
+   * Get scoped name within package (e.g., "Namespace.Class.method")
+   */
+  private _getScopedNameWithinPackage(apiItem: ApiItem): string {
+    const parts: string[] = [];
+    let current: ApiItem | undefined = apiItem;
+
+    while (current && current.kind !== ApiItemKind.Package && current.kind !== ApiItemKind.Model) {
+      if (current.kind !== ApiItemKind.EntryPoint && current.displayName) {
+        parts.unshift(Utilities.normalizeDisplayName(current.displayName));
+      }
+      current = current.parent;
+    }
+
+    return parts.join('.') || Utilities.normalizeDisplayName(apiItem.displayName) || 'unknown';
+  }
+
+  /**
    * Build breadcrumb navigation data for template
    */
   private _buildBreadcrumb(apiItem: ApiItem): Array<{ name: string; path?: string }> {
     const breadcrumb: Array<{ name: string; path?: string }> = [];
-    const ancestors = apiItem.getHierarchy();
+    const ancestors = this._getHierarchy(apiItem);
 
     for (const ancestor of ancestors) {
       if (ancestor === this._apiModel) {
@@ -392,7 +446,33 @@ export class MarkdownDocumenter {
    * Get page title for API item
    */
   private _getPageTitle(apiItem: ApiItem): string {
-    const scopedName = apiItem.getScopedNameWithinPackage();
+    // Check if this is a member of a class or interface
+    const isMemberItem = apiItem.parent && [
+      ApiItemKind.Class,
+      ApiItemKind.Interface
+    ].includes(apiItem.parent.kind);
+
+    // For member items (methods, properties, constructors), use just the display name (normalized)
+    if (isMemberItem) {
+      const displayName = Utilities.normalizeDisplayName(apiItem.displayName);
+
+      switch (apiItem.kind) {
+        case ApiItemKind.Method:
+        case ApiItemKind.MethodSignature:
+          return displayName;
+        case ApiItemKind.Constructor:
+        case ApiItemKind.ConstructSignature:
+          return displayName;
+        case ApiItemKind.Property:
+        case ApiItemKind.PropertySignature:
+          return displayName;
+        default:
+          return displayName;
+      }
+    }
+
+    // For top-level items, use the scoped name
+    const scopedName = this._getScopedNameWithinPackage(apiItem);
 
     switch (apiItem.kind) {
       case ApiItemKind.Class:
@@ -451,7 +531,7 @@ export class MarkdownDocumenter {
 
     this._writeBreadcrumb(output, apiItem);
 
-    const scopedName: string = apiItem.getScopedNameWithinPackage();
+    const scopedName: string = this._getScopedNameWithinPackage(apiItem);
 
     switch (apiItem.kind) {
       case ApiItemKind.Class:
@@ -1552,7 +1632,7 @@ export class MarkdownDocumenter {
       })
     );
 
-    for (const hierarchyItem of apiItem.getHierarchy()) {
+    for (const hierarchyItem of this._getHierarchy(apiItem)) {
       switch (hierarchyItem.kind) {
         case ApiItemKind.Model:
         case ApiItemKind.EntryPoint:
@@ -1663,7 +1743,7 @@ export class MarkdownDocumenter {
     }
 
     let baseName: string = '';
-    for (const hierarchyItem of apiItem.getHierarchy()) {
+    for (const hierarchyItem of this._getHierarchy(apiItem)) {
       // Skip items that should not be included in filename or have empty names
       switch (hierarchyItem.kind) {
         case ApiItemKind.Model:
@@ -1671,8 +1751,14 @@ export class MarkdownDocumenter {
         case ApiItemKind.EnumMember:
           continue;
         case ApiItemKind.Package:
-          baseName = Utilities.getSafeFilenameForName(PackageName.getUnscopedName(hierarchyItem.displayName));
+          const packageName = hierarchyItem.displayName || 'package';
+          baseName = Utilities.getSafeFilenameForName(PackageName.getUnscopedName(packageName));
           continue;
+      }
+
+      // Skip items with no displayName
+      if (!hierarchyItem.displayName) {
+        continue;
       }
 
       // For overloaded methods, add a suffix such as "MyClass.myMethod_2".
@@ -1750,8 +1836,8 @@ export class MarkdownDocumenter {
   }
 
   private _getTitle(apiItem: ApiItem): string {
-    const scopedName: string = apiItem.getScopedNameWithinPackage();
-    
+    const scopedName: string = this._getScopedNameWithinPackage(apiItem);
+
     switch (apiItem.kind) {
       case ApiItemKind.Class:
         return `${scopedName} class`;
@@ -1761,7 +1847,8 @@ export class MarkdownDocumenter {
         return `${scopedName} interface`;
       case ApiItemKind.Constructor:
       case ApiItemKind.ConstructSignature:
-        return scopedName;
+        // For constructors, use just "constructor" without parentheses
+        return Utilities.normalizeDisplayName(scopedName);
       case ApiItemKind.Method:
       case ApiItemKind.MethodSignature:
         return `${scopedName} method`;
@@ -1870,8 +1957,8 @@ export class MarkdownDocumenter {
     ].includes(apiItem.kind);
   }
 
-  private _addToNavigation(apiItem: ApiItem, filename: string): void {
-    this._navigationManager.addApiItem(apiItem, filename);
+  private _addToNavigation(apiItem: ApiItem, filename: string, parentFilename?: string): void {
+    this._navigationManager.addApiItem(apiItem, filename, parentFilename);
   }
 
   public generateNavigation(): void {
@@ -1901,34 +1988,32 @@ export class MarkdownDocumenter {
     // When compiled, this will be in lib/documenters/, components will be in lib/components/
     const componentsSource = path.resolve(__dirname, '../components');
 
+    // Check if components source exists
+    if (!FileSystem.exists(componentsSource)) {
+      throw new DocumentationError(
+        `INTERNAL ERROR: Components directory not found: ${componentsSource}\n` +
+        `This indicates the package was not built correctly. The build script should copy src/components/ to lib/components/.\n` +
+        `Please report this issue at: https://github.com/anthropics/claude-code/issues`,
+        ErrorCode.FILE_NOT_FOUND,
+        {
+          resource: componentsSource,
+          operation: 'copyMintlifyComponents',
+          suggestion: 'Rebuild the package with: bun run rebuild'
+        }
+      );
+    }
+
     // Ensure snippets folder exists
     FileSystem.ensureFolder(snippetsFolder);
 
-    // List of components to copy
-    const components = ['TypeTree.jsx'];
+    // Dynamically discover all component files
+    const componentFiles = this._discoverComponentFiles(componentsSource);
 
     clack.log.info('📦 Installing Mintlify components...');
 
-    for (const componentFile of components) {
+    for (const componentFile of componentFiles) {
       const sourcePath = path.join(componentsSource, componentFile);
       const targetPath = path.join(snippetsFolder, componentFile);
-
-      // Check if source file exists
-      if (!FileSystem.exists(sourcePath)) {
-        // This should never happen in a properly built package
-        throw new DocumentationError(
-          `INTERNAL ERROR: Component source not found in package: ${componentFile}\n` +
-          `Expected location: ${sourcePath}\n` +
-          `This indicates the package was not built correctly. The build script should copy src/components/ to lib/components/.\n` +
-          `Please report this issue at: https://github.com/anthropics/claude-code/issues`,
-          ErrorCode.FILE_NOT_FOUND,
-          {
-            resource: sourcePath,
-            operation: 'copyMintlifyComponents',
-            suggestion: 'Rebuild the package with: bun run rebuild'
-          }
-        );
-      }
 
       // Check if we should update the component
       let shouldCopy = true;
@@ -1938,6 +2023,7 @@ export class MarkdownDocumenter {
       }
 
       if (shouldCopy) {
+        FileSystem.ensureFolder(path.dirname(targetPath));
         const componentContent = FileSystem.readFile(sourcePath);
         FileSystem.writeFile(targetPath, componentContent);
         clack.log.success(`   ✓ Installed ${componentFile}`);
@@ -1945,6 +2031,32 @@ export class MarkdownDocumenter {
         clack.log.info(`   ✓ ${componentFile} is up to date`);
       }
     }
+  }
+
+  /**
+   * Recursively discover all component files in the components directory
+   */
+  private _discoverComponentFiles(dir: string, baseDir: string = dir): string[] {
+    const files: string[] = [];
+    const items = FileSystem.readFolderItemNames(dir);
+
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stats = FileSystem.getStatistics(fullPath);
+
+      if (stats.isDirectory()) {
+        // Recursively search subdirectories
+        files.push(...this._discoverComponentFiles(fullPath, baseDir));
+      } else if (stats.isFile()) {
+        // Include .jsx, .tsx, .js, .ts, and .md files
+        if (/\.(jsx|tsx|js|ts|md)$/i.test(item)) {
+          const relativePath = path.relative(baseDir, fullPath);
+          files.push(relativePath);
+        }
+      }
+    }
+
+    return files;
   }
 
   /**
@@ -2086,7 +2198,7 @@ export class MarkdownDocumenter {
     mdxContent = mdxContent.replace(/^\s*\n/, '');
     
     // Add auto-generation notice
-    const notice = '{/* This file was auto-generated from README.md by mintlify-tsdocs */}\n\n';
+    const notice = '{/* This file was auto-generated from README.md by mint-tsdocs */}\n\n';
     
     return `${frontmatter}\n${notice}${mdxContent}`;
   }

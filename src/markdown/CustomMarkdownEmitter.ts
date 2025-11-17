@@ -4,6 +4,7 @@
 import type { DocNode, DocLinkTag, DocPlainText, DocSection, DocParagraph } from '@microsoft/tsdoc';
 import { StringBuilder } from '@microsoft/tsdoc';
 import type { ApiModel, IResolveDeclarationReferenceResult, ApiItem } from '@microsoft/api-extractor-model';
+import { ApiItemKind } from '@microsoft/api-extractor-model';
 import { Colorize } from '@rushstack/terminal';
 
 import { CustomDocNodeKind } from '../nodes/CustomDocNodeKind';
@@ -28,6 +29,10 @@ import { createDebugger, type Debugger } from '../utils/debug';
 
 const debug: Debugger = createDebugger('custom-markdown-emitter');
 
+/**
+ * Configuration options for CustomMarkdownEmitter
+ * @public
+ */
 export interface ICustomMarkdownEmitterOptions extends IMarkdownEmitterOptions {
   contextApiItem: ApiItem | undefined;
 
@@ -51,6 +56,23 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     this._apiModel = apiModel;
     this._docHelper = new DocumentationHelper();
     this._apiResolutionCache = new ApiResolutionCache({ enabled: true, maxSize: 500 });
+  }
+
+  /**
+   * Get scoped name within package (e.g., "Namespace.Class.method")
+   */
+  private _getScopedNameWithinPackage(apiItem: ApiItem): string {
+    const parts: string[] = [];
+    let current: ApiItem | undefined = apiItem;
+
+    while (current && current.kind !== ApiItemKind.Package && current.kind !== ApiItemKind.Model) {
+      if (current.kind !== ApiItemKind.EntryPoint && current.displayName) {
+        parts.unshift(current.displayName);
+      }
+      current = current.parent;
+    }
+
+    return parts.join('.') || apiItem.displayName || 'unknown';
   }
 
   public emit(
@@ -163,7 +185,7 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
         let linkText: string = docLinkTag.linkText || '';
         if (linkText.length === 0) {
           // Generate a name such as Namespace1.Namespace2.MyClass.myMethod()
-          linkText = result.resolvedApiItem.getScopedNameWithinPackage();
+          linkText = this._getScopedNameWithinPackage(result.resolvedApiItem);
         }
         if (linkText.length > 0) {
           const encodedLinkText: string = this.getEscapedText(linkText.replace(/\s+/g, ' '));
@@ -692,7 +714,7 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
           }
 
           // Fallback to the scoped name
-          stringBuilder.append(apiItem.getScopedNameWithinPackage());
+          stringBuilder.append(this._getScopedNameWithinPackage(apiItem));
         } else {
           // Enhanced fallback: try to extract inline object literal from the current context
           if (contextApiItem) {

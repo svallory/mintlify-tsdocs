@@ -10,19 +10,30 @@ description: Complete command-line reference for mint-tsdocs with examples and u
 bun install -g mint-tsdocs
 
 # Or use with npx (no installation needed)
-npx mint-tsdocs init
+npx mint-tsdocs
 npx mint-tsdocs generate
 ```
 
 ## Default Behavior
 
-Running `mint-tsdocs` without any command defaults to `generate`:
+Running `mint-tsdocs` without arguments defaults to `generate` for the current directory:
+
+```bash
+# These are all equivalent
+mint-tsdocs
+mint-tsdocs generate
+mint-tsdocs generate .
+```
+
+If you provide a path that isn't a known command, it's treated as the project directory:
 
 ```bash
 # These are equivalent
-mint-tsdocs
-mint-tsdocs generate
+mint-tsdocs ./packages/core
+mint-tsdocs generate ./packages/core
 ```
+
+**Smart initialization:** If no configuration exists, `generate` will prompt you to run `init` automatically.
 
 ## Commands
 
@@ -60,7 +71,7 @@ mint-tsdocs init --skip-mintlify
 2. Searches for existing docs.json (Mintlify config)
 3. Creates `mint-tsdocs.config.json` with detected settings
 4. Optionally initializes Mintlify if not already set up
-5. Adds `"mint-ts"` script to package.json
+5. Adds `"mint-tsdocs"` script to package.json
 
 ---
 
@@ -75,7 +86,7 @@ mint-tsdocs [PROJECT_DIR]  # shorthand
 ```
 
 **Options:**
-- `--skip-extractor` - Skip running api-extractor (use existing .api.json files)
+- `--skip-extractor` - Skip extraction step (use cached data)
 - `--project-dir PATH` - Project directory (alternative to positional argument)
 
 **Global Options:**
@@ -96,7 +107,7 @@ mint-tsdocs generate ./packages/utils
 # Generate with verbose output
 mint-tsdocs generate --verbose
 
-# Skip api-extractor (use existing .api.json files)
+# Skip extraction (use cached data)
 mint-tsdocs generate --skip-extractor
 
 # Debug mode for troubleshooting
@@ -106,12 +117,10 @@ mint-tsdocs generate --debug
 **What it does:**
 1. Loads configuration from `mint-tsdocs.config.json`
 2. Prompts to run init if config not found
-3. Creates `.tsdocs/` cache directory
-4. Generates `api-extractor.json` and `tsdoc.json` in `.tsdocs/`
-5. Validates and compiles TypeScript
-6. Runs api-extractor to generate `.api.json` files
-7. Converts `.api.json` to MDX documentation
-8. Updates Mintlify navigation in `docs.json`
+3. Validates and compiles your TypeScript
+4. Extracts API information from your types
+5. Generates MDX files with Mintlify components
+6. Updates navigation in `docs.json`
 
 ---
 
@@ -304,7 +313,7 @@ No installation required when using npx:
 
 ```bash
 # Run any command directly
-npx mint-tsdocs init
+npx mint-tsdocs
 npx mint-tsdocs generate
 npx mint-tsdocs ./packages/my-lib
 npx mint-tsdocs show stats
@@ -314,7 +323,7 @@ npx mint-tsdocs show stats
 ```json
 {
   "scripts": {
-    "docs:init": "npx mint-tsdocs init",
+    "docs:init": "npx mint-tsdocs",
     "docs:generate": "npx mint-tsdocs generate",
     "docs": "npx mint-tsdocs"
   }

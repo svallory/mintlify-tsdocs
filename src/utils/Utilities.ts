@@ -10,6 +10,19 @@ const debug: Debugger = createDebugger('utilities');
 
 export class Utilities {
   private static readonly _badFilenameCharsRegExp: RegExp = /[^a-z0-9_\-\.]/gi;
+
+  /**
+   * Normalize display name to remove parentheses from constructors
+   * API Extractor returns "(constructor)" but we want to display "constructor"
+   */
+  public static normalizeDisplayName(displayName: string): string {
+    if (!displayName) return displayName;
+
+    // Remove parentheses from constructor names
+    // Handle both standalone "(constructor)" and qualified names like "MyClass.(constructor)"
+    return displayName.replace(/\(constructor\)/g, 'constructor');
+  }
+
   /**
    * Generates a concise signature for a function.  Example: "getArea(width, height)"
    */

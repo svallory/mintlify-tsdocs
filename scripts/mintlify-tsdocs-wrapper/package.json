@@ -1,0 +1,14 @@
+{
+  "name": "mintlify-tsdocs",
+  "version": "0.0.1",
+  "description": "A wrapper for the mint-tsdocs package.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mintlify/tsdocs.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "mint-tsdocs": "0.0.1"
+  }
+}

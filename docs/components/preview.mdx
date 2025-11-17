@@ -1,83 +1,51 @@
 ---
 title: Preview
-description: Display interactive component previews with copyable source code
-icon: "code"
+description: Display content with a labeled border, similar to code blocks
+icon: "eye"
 ---
 
-import { Preview } from "/snippets/Preview.jsx"
-import { TypeTree } from "/snippets/TypeTree.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx"
 
-The `Preview` component provides a dual-tab interface for showcasing React components alongside their source code. It's perfect for component documentation, allowing users to both see the component in action and copy the code to use it.
+The `Preview` component wraps content with a title and border, using the same visual style as code blocks. It's perfect for highlighting examples or demonstrations in your documentation.
 
 ## Basic Usage
 
-Import the component and wrap your example with both the code and the rendered output:
+Wrap any content with the Preview component:
 
-<Preview
-  code={`<Preview
-  code={\`<Button variant="primary">Click me</Button>\`}
->
-  <Button variant="primary">Click me</Button>
-</Preview>`}
->
-  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded">
-    <button className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600">
-      Click me
-    </button>
+<Preview>
+  <div className="text-center p-4">
+    <p className="text-lg font-medium">This content is wrapped in a Preview component</p>
   </div>
 </Preview>
 
+```jsx
+<Preview>
+  <div className="text-center p-4">
+    <p className="text-lg font-medium">This content is wrapped in a Preview component</p>
+  </div>
+</Preview>
+```
+
 ## Properties
 
-<ResponseField name="code" type="string" required>
-  The JSX code as a string. This is displayed in the Code tab and copied to clipboard when the copy button is clicked.
-</ResponseField>
-
 <ResponseField name="children" type="ReactNode" required>
-  The rendered component to display in the Preview tab. This should be the actual component instance, not a string.
+  The content to display in the preview area. Can be any valid React node.
 </ResponseField>
 
-<ResponseField name="title" type="string">
-  Optional title displayed above the preview content. Useful for labeling specific examples.
-</ResponseField>
-
-<ResponseField name="tooltipColor" type="string" default="#0D9373">
-  Background color for the copy button tooltip. Defaults to Mintlify's primary green.
-</ResponseField>
-
-<ResponseField name="defaultTab" type="'preview' | 'code'" default="preview">
-  Which tab should be active by default when the component loads.
-</ResponseField>
-
-<ResponseField name="onCopied" type="function">
-  Callback function triggered when the copy button is clicked. Receives the copy result and the text that was copied.
-
-  ```tsx
-  (result: 'success' | 'error', textToCopy?: string) => void
-  ```
+<ResponseField name="title" type="string" default="Preview">
+  Title displayed in the header. Defaults to "Preview" if not specified.
 </ResponseField>
 
 <ResponseField name="className" type="string">
   Additional CSS classes to apply to the container element.
 </ResponseField>
 
-## With Title
+## With Custom Title
 
-Add a title to provide context for your example:
+Add a custom title to provide context:
 
-<Preview
-  title="Configuration Object Example"
-  code={`<TypeTree
-  name="config"
-  type="object"
-  description="Application configuration"
-  required={true}
-  properties={[
-    { name: "apiKey", type: "string", required: true },
-    { name: "timeout", type: "number", defaultValue: "5000" }
-  ]}
-/>`}
->
+<Preview title="Component Example">
   <TypeTree
     name="config"
     type="object"
@@ -90,119 +58,45 @@ Add a title to provide context for your example:
   />
 </Preview>
 
-## Default to Code Tab
-
-Sometimes you want to show the code first:
-
-<Preview
-  defaultTab="code"
-  code={`<TypeTree
-  name="user"
-  type="object"
-  properties={[
-    { name: "id", type: "string", required: true },
-    { name: "email", type: "string", required: true },
-    { name: "name", type: "string" }
-  ]}
-/>`}
->
+```jsx
+<Preview title="Component Example">
   <TypeTree
-    name="user"
+    name="config"
     type="object"
+    description="Application configuration"
+    required={true}
     properties={[
-      { name: "id", type: "string", required: true },
-      { name: "email", type: "string", required: true },
-      { name: "name", type: "string" }
+      { name: "apiKey", type: "string", required: true },
+      { name: "timeout", type: "number", defaultValue: "5000" }
     ]}
   />
 </Preview>
+```
 
 ## Features
 
-### Dual Tabs
+### Consistent Styling
 
-The component provides two tabs:
-- **Preview**: Shows the rendered component
-- **Code**: Shows syntax-highlighted source code
-
-### Copy to Clipboard
-
-Both tabs share a copy button in the top-right corner that copies the source code. The button:
-- Shows a tooltip on hover
-- Provides visual feedback when clicked
-- Works on both Preview and Code tabs
-- Automatically hides if the browser doesn't support the Clipboard API
+The component uses the same visual design as Mintlify code blocks:
+- Rounded corners and subtle border
+- Title header with proper spacing
+- Light/dark mode support
+- Scrollable content area
 
 ### Dark Mode
 
-The component automatically adapts to Mintlify's theme:
+Automatically adapts to Mintlify's theme:
 - Light backgrounds in light mode
 - Dark backgrounds in dark mode
 - Proper contrast for all text and borders
 
-## Code Formatting Tips
-
-### Multiline Code
-
-Use template literals with proper indentation for clean code display:
-
-```jsx
-<Preview
-  code={`<ComplexComponent
-  prop1="value1"
-  prop2="value2"
->
-  <ChildComponent />
-</ComplexComponent>`}
->
-  <ComplexComponent prop1="value1" prop2="value2">
-    <ChildComponent />
-  </ComplexComponent>
-</Preview>
-```
-
-### Extracting Code
-
-For complex examples, extract the code as a constant to keep things DRY:
-
-```jsx
-const exampleCode = `<TypeTree
-  name="example"
-  type="string"
-  required={true}
-/>`;
-
-<Preview code={exampleCode}>
-  <TypeTree name="example" type="string" required={true} />
-</Preview>
-```
-
-### Escaping Backticks
-
-If your code contains backticks, escape them properly:
-
-```jsx
-<Preview
-  code={`<code>\\\`someCode\\\`</code>`}
->
-  <code>`someCode`</code>
-</Preview>
-```
-
 ## Use Cases
 
-### Component Documentation
+### Component Demonstrations
 
-Perfect for documenting React components in your library:
+Show interactive components:
 
-<Preview
-  title="Alert Component"
-  code={`<div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-  <p className="text-blue-800 dark:text-blue-200">
-    This is an informational alert
-  </p>
-</div>`}
->
+<Preview title="Alert Component">
   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
     <p className="text-blue-800 dark:text-blue-200">
       This is an informational alert
@@ -210,29 +104,17 @@ Perfect for documenting React components in your library:
   </div>
 </Preview>
 
-### API Response Examples
+### Type Documentation
 
-Show API response structures with TypeTree:
+Display type structures with TypeTree:
 
-<Preview
-  title="API Response Structure"
-  code={`<TypeTree
-  name="response"
-  type="object"
-  description="Standard API response format"
-  properties={[
-    { name: "success", type: "boolean", required: true },
-    { name: "data", type: "object", description: "Response payload" },
-    { name: "error", type: "string", description: "Error message if success is false" }
-  ]}
-/>`}
->
+<Preview title="API Response Structure">
   <TypeTree
     name="response"
     type="object"
     description="Standard API response format"
     properties={[
-      { name: "success", type: "boolean", required: true },
+      { name: "success", type="boolean", required: true },
       { name: "data", type: "object", description: "Response payload" },
       { name: "error", type: "string", description: "Error message if success is false" }
     ]}
@@ -243,26 +125,7 @@ Show API response structures with TypeTree:
 
 Document configuration objects:
 
-<Preview
-  title="Database Configuration"
-  code={`<TypeTree
-  name="database"
-  type="object"
-  required={true}
-  properties={[
-    { name: "host", type: "string", required: true },
-    { name: "port", type: "number", defaultValue: "5432" },
-    {
-      name: "ssl",
-      type: "object",
-      properties: [
-        { name: "enabled", type: "boolean", defaultValue: "false" },
-        { name: "cert", type: "string" }
-      ]
-    }
-  ]}
-/>`}
->
+<Preview title="Database Configuration">
   <TypeTree
     name="database"
     type="object"
@@ -282,71 +145,6 @@ Document configuration objects:
   />
 </Preview>
 
-## Best Practices
-
-<AccordionGroup>
-  <Accordion title="Keep Code and Preview in Sync" icon="sync">
-    The most common mistake is having the code string not match what you're rendering:
-
-    ```jsx
-    // ❌ Code and preview don't match
-    <Preview code={`<Button>Click</Button>`}>
-      <Button variant="primary">Click me</Button>
-    </Preview>
-
-    // ✅ Code and preview match
-    <Preview code={`<Button variant="primary">Click me</Button>`}>
-      <Button variant="primary">Click me</Button>
-    </Preview>
-    ```
-  </Accordion>
-
-  <Accordion title="Format Code for Readability" icon="code">
-    Use proper indentation and line breaks for complex examples:
-
-    ```jsx
-    // ✅ Well-formatted
-    <Preview
-      code={`<TypeTree
-  name="config"
-  type="object"
-  properties={[
-    { name: "host", type: "string" },
-    { name: "port", type: "number" }
-  ]}
-/>`}
-    >
-      {/* ... */}
-    </Preview>
-    ```
-  </Accordion>
-
-  <Accordion title="Add Titles for Context" icon="heading">
-    Use titles to explain what the example demonstrates:
-
-    ```jsx
-    <Preview
-      title="Required vs Optional Fields"
-      code={/* ... */}
-    >
-      {/* ... */}
-    </Preview>
-    ```
-  </Accordion>
-
-  <Accordion title="Choose the Right Default Tab" icon="tab">
-    For teaching, start with Preview. For reference, start with Code:
-
-    ```jsx
-    // Tutorial/guide - show the result first
-    <Preview defaultTab="preview" code={/* ... */}>
-
-    // API reference - show the code first
-    <Preview defaultTab="code" code={/* ... */}>
-    ```
-  </Accordion>
-</AccordionGroup>
-
 ## Integration with MDX
 
 The Preview component works seamlessly in Mintlify MDX files:
@@ -357,108 +155,95 @@ title: My Component
 description: Component documentation
 ---
 
-import { Preview } from "/snippets/Preview.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
 import { MyComponent } from "/snippets/MyComponent.jsx"
 
-## Basic Example
+## Example
 
-<Preview
-  code={`<MyComponent prop="value" />`}
->
+<Preview title="Basic Example">
   <MyComponent prop="value" />
 </Preview>
 ```
 
-## Browser Support
+## Best Practices
 
-The copy-to-clipboard functionality requires:
-- Modern browsers with Clipboard API support
-- HTTPS connection (Clipboard API security requirement)
+<AccordionGroup>
+  <Accordion title="Use Descriptive Titles" icon="heading">
+    Help readers understand what they're looking at:
 
-The component gracefully handles unsupported browsers by hiding the copy button.
+    ```jsx
+    // ✅ Clear and descriptive
+    <Preview title="Required vs Optional Fields">
+      <TypeTree ... />
+    </Preview>
 
-## Comparison with CodeBlock
+    // ❌ Too generic
+    <Preview title="Example">
+      <TypeTree ... />
+    </Preview>
+    ```
+  </Accordion>
 
-<Tabs>
-  <Tab title="Preview (Interactive)">
-    **Use when:**
-    - Documenting React components
-    - Showing visual examples
-    - Users need to see the result
-    - You want copyable code
+  <Accordion title="Pair with Code Blocks" icon="code">
+    Show the code alongside the preview:
 
-    **Advantages:**
-    - Interactive preview
-    - See the actual component
-    - Toggle between preview and code
-    - Better for learning
-  </Tab>
+    ```jsx
+    Here's how to use the component:
 
-  <Tab title="CodeBlock (Code Only)">
-    **Use when:**
-    - Showing implementation details
-    - Documenting functions/utilities
-    - No visual output
-    - Code-only reference
+    ```jsx
+    <MyComponent prop="value" />
+    ```
 
-    **Advantages:**
-    - Simpler
-    - Syntax highlighting
-    - Multiple language support
-    - File name display
-  </Tab>
-</Tabs>
+    <Preview title="Result">
+      <MyComponent prop="value" />
+    </Preview>
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Content Readable" icon="eye">
+    Don't overcrowd the preview area:
+
+    ```jsx
+    // ✅ Focused example
+    <Preview title="Single Property">
+      <TypeTree name="id" type="string" required />
+    </Preview>
+
+    // ❌ Too much content
+    <Preview title="Everything">
+      <div>50 lines of complex content...</div>
+    </Preview>
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## Related Components
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="TypeTree" icon="diagram-project" href="/components/type-tree">
     Display type structures
   </Card>
   <Card title="CodeBlock" icon="code" href="https://mintlify.com/docs/content/code">
     Code syntax highlighting
   </Card>
-  <Card title="CodeGroup" icon="layer-group" href="https://mintlify.com/docs/content/code-groups">
-    Multiple code examples
-  </Card>
 </CardGroup>
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="Copy button not working" icon="clipboard">
-    The Clipboard API requires HTTPS. If testing locally:
-
-    1. Use `localhost` (works on HTTP)
-    2. Or set up a local HTTPS certificate
-    3. The component hides the button if unavailable
-  </Accordion>
-
-  <Accordion title="Code tab shows raw HTML" icon="code">
-    Make sure you're passing JSX as a string, not rendered HTML:
-
-    ```jsx
-    // ❌ Wrong - renders HTML
-    <Preview code={<div>Hello</div>}>
-
-    // ✅ Correct - JSX as string
-    <Preview code={`<div>Hello</div>`}>
-    ```
-  </Accordion>
-
-  <Accordion title="Syntax highlighting not working" icon="paintbrush">
-    The Preview component uses your site's configured syntax highlighter. Ensure:
-
-    1. Syntax highlighting is enabled in Mintlify
-    2. The `language-jsx` class is properly applied
-    3. Your theme includes JSX/TSX support
-  </Accordion>
-
   <Accordion title="Component not found" icon="triangle-exclamation">
-    If you see `Cannot find module "/snippets/Preview.jsx"`:
+    If you see `Cannot find module "/snippets/tsdocs/Preview.jsx"`:
 
-    1. Ensure Preview.jsx exists in your `docs/snippets/` folder
-    2. Run `mint-tsdocs` to auto-install the component
-    3. Check that the import path is correct (should start with `/snippets/`)
+    1. Ensure the component exists in your `docs/snippets/tsdocs/` folder
+    2. Run `mint-tsdocs` to auto-copy the component
+    3. Check that the import path is correct
+  </Accordion>
+
+  <Accordion title="Styling looks wrong" icon="paintbrush">
+    The Preview component relies on Tailwind CSS classes:
+
+    1. Ensure Tailwind is configured in your Mintlify project
+    2. Check that dark mode is properly set up
+    3. Verify the `scrollbar-*` utility classes are available
   </Accordion>
 </AccordionGroup>

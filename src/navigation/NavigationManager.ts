@@ -9,6 +9,7 @@ import * as path from 'path';
 import { SecurityUtils } from '../utils/SecurityUtils';
 import { DocumentationError, ErrorCode, ValidationError } from '../errors/DocumentationError';
 import { createDebugger, type Debugger } from '../utils/debug';
+import { Utilities } from '../utils/Utilities';
 
 const debug: Debugger = createDebugger('navigation-manager');
 
@@ -21,6 +22,8 @@ export interface NavigationItem {
   icon?: string;
   page?: string;
   apiKind?: ApiItemKind;
+  parentPage?: string; // Parent page for member items (methods, properties, etc.)
+  displayName?: string; // Display name for the item
 }
 
 /**
@@ -33,7 +36,7 @@ export interface NavigationManagerOptions {
   docsJsonPath?: string;
 
   /**
-   * Tab name in Mintlify navigation (default: "API Reference")
+   * Tab name in Mintlify navigation (default: "Code Reference")
    */
   tabName?: string;
 
@@ -101,23 +104,33 @@ export class NavigationManager {
 
   /**
    * Add an API item to navigation with automatic categorization
+   * @param apiItem - The API item to add
+   * @param filename - The filename of the generated page
+   * @param parentFilename - Optional parent filename for member items
    */
-  public addApiItem(apiItem: any, filename: string): void {
-    if (!this._isTopLevelItem(apiItem)) {
-      return;
-    }
-
+  public addApiItem(apiItem: any, filename: string, parentFilename?: string): void {
     try {
       // Calculate relative path from docs.json to the output file
       const docsJsonDir = path.dirname(this._docsJsonPath);
       const fullOutputPath = path.resolve(this._outputFolder, filename);
       const relativePath = path.relative(docsJsonDir, fullOutputPath);
-      const normalizedPath = relativePath.replace(/\\/g, '/'); // Normalize path separators
+      let normalizedPath = relativePath.replace(/\\/g, '/'); // Normalize path separators
+
+      // Remove .mdx extension for Mintlify (Mintlify expects paths without extensions)
+      normalizedPath = normalizedPath.replace(/\.mdx$/, '');
 
       const navigationItem: NavigationItem = {
         page: normalizedPath,
-        apiKind: apiItem.kind
+        apiKind: apiItem.kind,
+        displayName: Utilities.normalizeDisplayName(apiItem.displayName)
       };
+
+      // Track parent relationship for member items
+      if (parentFilename) {
+        const parentFullPath = path.resolve(this._outputFolder, parentFilename);
+        const parentRelativePath = path.relative(docsJsonDir, parentFullPath);
+        navigationItem.parentPage = parentRelativePath.replace(/\\/g, '/').replace(/\.mdx$/, '');
+      }
 
       this.addNavigationItem(navigationItem);
     } catch (error) {
@@ -330,13 +343,25 @@ export class NavigationManager {
   }
 
   /**
-   * Generate default hierarchical navigation grouped by API item types
+   * Generate default hierarchical navigation grouped by API item types with nested members
    */
   private _generateDefaultHierarchicalNavigation(): any[] {
-    const groups = new Map<string, string[]>();
+    // Separate top-level items from member items
+    const topLevelItems: NavigationItem[] = [];
+    const memberItems: NavigationItem[] = [];
 
-    // Categorize navigation items by API kind
     for (const item of this._navigationItems) {
+      if (item.parentPage) {
+        memberItems.push(item);
+      } else {
+        topLevelItems.push(item);
+      }
+    }
+
+    // Group top-level items by category
+    const groups = new Map<string, NavigationItem[]>();
+
+    for (const item of topLevelItems) {
       if (item.apiKind) {
         const categoryInfo = NavigationManager.CATEGORY_INFO[item.apiKind] ||
           { displayName: 'Miscellaneous', icon: 'file-text' };
@@ -345,23 +370,51 @@ export class NavigationManager {
           groups.set(categoryInfo.displayName, []);
         }
 
-        if (item.page) {
-          groups.get(categoryInfo.displayName)!.push(item.page);
-        }
+        groups.get(categoryInfo.displayName)!.push(item);
       }
     }
 
-    // Convert to array format
+    // Build hierarchical structure with nested members
     const result: any[] = [];
-    for (const [groupName, pages] of groups) {
+    for (const [groupName, items] of groups) {
       const categoryInfo = Object.values(NavigationManager.CATEGORY_INFO).find(
         cat => cat.displayName === groupName
       ) || { displayName: groupName, icon: 'file-text' };
 
+      const pages: any[] = [];
+
+      // Sort items by display name
+      const sortedItems = items.sort((a, b) =>
+        (a.displayName || '').localeCompare(b.displayName || '')
+      );
+
+      for (const item of sortedItems) {
+        // Find members for this parent
+        const children = memberItems.filter(m => m.parentPage === item.page);
+
+        if (children.length > 0) {
+          // Create nested group for item with members
+          const memberPages = children
+            .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''))
+            .map(m => m.page!);
+
+          pages.push({
+            group: item.displayName || 'Unknown',
+            pages: [
+              item.page, // Parent page first
+              ...memberPages // Then all member pages
+            ]
+          });
+        } else {
+          // No members, just add the page directly
+          pages.push(item.page!);
+        }
+      }
+
       result.push({
         group: groupName,
         icon: categoryInfo.icon,
-        pages: pages.sort() // Sort pages alphabetically
+        pages: pages
       });
     }
 

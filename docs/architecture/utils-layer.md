@@ -1,6 +1,6 @@
 # Deep Dive: Utilities Layer
 
-This document explores the utilities layer of `mintlify-tsdocs`, which provides essential helper classes and functions that enable sophisticated type analysis, documentation enrichment, and output formatting.
+This document explores the utilities layer of `mint-tsdocs`, which provides essential helper classes and functions that enable sophisticated type analysis, documentation enrichment, and output formatting.
 
 **Primary Components:** `@src/utils/*.ts`
 
@@ -29,11 +29,13 @@ The utilities layer consists of five key components that work together to transf
 Analyzes a type string and extracts structured property information with full support for nested objects.
 
 **Parameters:**
+
 - `type` (string): TypeScript type string (e.g., `"{ name: string; age: number }"`)
 - `description` (string): Base description for the type
 - `propertyPath` (string): Dot-notation path for JSDoc lookup (e.g., `"config.database"`)
 
 **Returns:** `PropertyInfo` object containing:
+
 ```typescript
 {
   name: string;
@@ -46,6 +48,7 @@ Analyzes a type string and extracts structured property information with full su
 ```
 
 **Example Flow:**
+
 ```typescript
 // Input type string
 const type = "{ host: string; port?: number }";
@@ -91,11 +94,13 @@ Extracts all properties from an object literal type without JSDoc enrichment.
 The analyzer returns a `TypeAnalysis` object with different structures based on the detected type:
 
 #### Primitive Types
+
 ```typescript
 { type: 'primitive', name: 'string' | 'number' | 'boolean' | ... }
 ```
 
 #### Array Types
+
 ```typescript
 {
   type: 'array',
@@ -104,6 +109,7 @@ The analyzer returns a `TypeAnalysis` object with different structures based on 
 ```
 
 #### Union Types
+
 ```typescript
 {
   type: 'union',
@@ -112,6 +118,7 @@ The analyzer returns a `TypeAnalysis` object with different structures based on 
 ```
 
 #### Intersection Types
+
 ```typescript
 {
   type: 'intersection',
@@ -120,6 +127,7 @@ The analyzer returns a `TypeAnalysis` object with different structures based on 
 ```
 
 #### Generic Types
+
 ```typescript
 {
   type: 'generic',
@@ -129,6 +137,7 @@ The analyzer returns a `TypeAnalysis` object with different structures based on 
 ```
 
 #### Object Literals
+
 ```typescript
 {
   type: 'object-literal',
@@ -143,6 +152,7 @@ The analyzer returns a `TypeAnalysis` object with different structures based on 
 The main entry point that recursively analyzes a type string.
 
 **Handles:**
+
 - Nested braces for object literals
 - Array notation (`string[]`)
 - Union operators (`|`)
@@ -151,6 +161,7 @@ The main entry point that recursively analyzes a type string.
 - Nested structures at any depth
 
 **Example:**
+
 ```typescript
 analyzer.analyzeType("{ id: string; tags: string[] }")
 // Returns:
@@ -168,6 +179,7 @@ analyzer.analyzeType("{ id: string; tags: string[] }")
 #### `_parseObjectLiteral(objectLiteral)`
 
 Parses object literal syntax, handling:
+
 - Nested objects
 - Optional properties (`prop?:`)
 - Complex type expressions
@@ -183,6 +195,7 @@ Handles generic type parameters with nested generics (e.g., `Map<string, Promise
 ### Limitations
 
 **Current implementation uses simple regex-based parsing:**
+
 - Works well for common TypeScript patterns
 - May struggle with extremely complex or malformed types
 - Does not validate TypeScript syntax
@@ -208,6 +221,7 @@ Handles generic type parameters with nested generics (e.g., `Map<string, Promise
 Retrieves the JSDoc description for a specific property path.
 
 **Parameters:**
+
 - `propertyPath` (string): Dot-notation path (e.g., `"actionConfig.communication.actionId"`)
 
 **Returns:** Description string or empty string if not found.
@@ -217,12 +231,10 @@ Retrieves the JSDoc description for a specific property path.
 Recursively enriches a property tree with JSDoc descriptions.
 
 **Example:**
+
 ```typescript
 const properties = [
-  { name: 'database', nestedProperties: [
-    { name: 'host' },
-    { name: 'port' }
-  ]}
+  { name: "database", nestedProperties: [{ name: "host" }, { name: "port" }] },
 ];
 
 extractor.enrichWithDescriptions(properties);
@@ -238,6 +250,7 @@ extractor.enrichWithDescriptions(properties);
 ### Future Enhancement
 
 To make this production-ready, it should:
+
 1. Parse TypeScript source files using `@microsoft/tsdoc`
 2. Extract JSDoc comments from interface/type definitions
 3. Cache results for performance
@@ -264,14 +277,14 @@ const writer = new IndentedWriter();
 
 writer.writeLine('<ParamField name="config" type="object">');
 writer.increaseIndent();
-writer.writeLine('Configuration settings');
+writer.writeLine("Configuration settings");
 writer.writeLine('<ParamField name="host" type="string">');
 writer.increaseIndent();
-writer.writeLine('Database host');
+writer.writeLine("Database host");
 writer.decreaseIndent();
-writer.writeLine('</ParamField>');
+writer.writeLine("</ParamField>");
 writer.decreaseIndent();
-writer.writeLine('</ParamField>');
+writer.writeLine("</ParamField>");
 
 const result = writer.toString();
 ```
@@ -296,9 +309,10 @@ General-purpose helper functions for API item processing.
 Generates human-readable function signatures.
 
 **Example:**
+
 ```typescript
 // For a function: getUser(id: string, options?: RequestOptions)
-Utilities.getConciseSignature(apiItem)
+Utilities.getConciseSignature(apiItem);
 // Returns: "getUser(id, options)"
 ```
 
@@ -309,8 +323,9 @@ Utilities.getConciseSignature(apiItem)
 Converts API item names to safe filenames.
 
 **Example:**
+
 ```typescript
-Utilities.getSafeFilenameForName("MyClass<T>")
+Utilities.getSafeFilenameForName("MyClass<T>");
 // Returns: "myclass_t_"
 ```
 
@@ -326,14 +341,18 @@ const typeString = "{ host: string; port: number; ssl?: boolean }";
 
 // 2. Calls DocumentationHelper
 const helper = new DocumentationHelper();
-const propInfo = helper.analyzeTypeProperties(typeString, 'Database config', 'config');
+const propInfo = helper.analyzeTypeProperties(
+  typeString,
+  "Database config",
+  "config"
+);
 
 // 3. DocumentationHelper uses ObjectTypeAnalyzer
 const typeAnalysis = analyzer.analyzeType(typeString);
 // Identifies: object-literal with 3 properties
 
 // 4. DocumentationHelper uses JsDocExtractor
-const description = jsDocExtractor.getDescription('config.host');
+const description = jsDocExtractor.getDescription("config.host");
 // Gets: "The database host address"
 
 // 5. Returns structured PropertyInfo with nested properties
@@ -350,7 +369,7 @@ const description = jsDocExtractor.getDescription('config.host');
   <ParamField name="ssl" type="boolean">
     Enable SSL connection
   </ParamField>
-</ParamField>
+</ParamField>;
 ```
 
 ## Testing Considerations

@@ -1,6 +1,6 @@
 # Usage Examples
 
-This document provides practical examples of using `mintlify-tsdocs` in real-world scenarios.
+This document provides practical examples of using `mint-tsdocs` in real-world scenarios.
 
 ## Table of Contents
 
@@ -23,8 +23,8 @@ This document provides practical examples of using `mintlify-tsdocs` in real-wor
 # Install API Extractor globally or as dev dependency
 bun add -D @microsoft/api-extractor
 
-# Install mintlify-tsdocs
-bun add -D mintlify-tsdocs
+# Install mint-tsdocs
+bun add -D mint-tsdocs
 ```
 
 ### Step 1: Configure API Extractor
@@ -61,7 +61,7 @@ api-extractor run --local
 ### Step 3: Generate Mintlify Documentation
 
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json ./docs/docs.json \
@@ -77,6 +77,7 @@ mintlify-tsdocs markdown \
 ### Scenario: Simple TypeScript Library
 
 **Project Structure:**
+
 ```
 my-library/
 ├── src/
@@ -94,13 +95,14 @@ my-library/
 ### Configuration
 
 **package.json:**
+
 ```json
 {
   "name": "my-library",
   "scripts": {
     "build": "tsc",
     "docs:extract": "api-extractor run --local",
-    "docs:generate": "mintlify-tsdocs markdown -i ./temp -o ./docs/api --docs-json ./docs/docs.json --tab-name 'API' --group 'Core'",
+    "docs:generate": "mint-tsdocs markdown -i ./temp -o ./docs/api --docs-json ./docs/docs.json --tab-name 'API' --group 'Core'",
     "docs": "bun run build && bun run docs:extract && bun run docs:generate"
   }
 }
@@ -152,6 +154,7 @@ docs/api/
 ### Scenario: Multiple Packages in a Monorepo
 
 **Project Structure:**
+
 ```
 monorepo/
 ├── packages/
@@ -175,14 +178,15 @@ monorepo/
 ### Build Script
 
 **Root package.json:**
+
 ```json
 {
   "scripts": {
     "docs:extract": "bun run --filter './packages/*' docs:extract",
     "docs:generate": "bun run docs:generate:core && bun run docs:generate:utils && bun run docs:generate:plugins",
-    "docs:generate:core": "mintlify-tsdocs markdown -i ./packages/core/temp -o ./docs/api/core --docs-json ./docs/docs.json --tab-name 'API' --group 'Core Package'",
-    "docs:generate:utils": "mintlify-tsdocs markdown -i ./packages/utils/temp -o ./docs/api/utils --docs-json ./docs/docs.json --tab-name 'API' --group 'Utilities'",
-    "docs:generate:plugins": "mintlify-tsdocs markdown -i ./packages/plugins/temp -o ./docs/api/plugins --docs-json ./docs/docs.json --tab-name 'API' --group 'Plugins'",
+    "docs:generate:core": "mint-tsdocs markdown -i ./packages/core/temp -o ./docs/api/core --docs-json ./docs/docs.json --tab-name 'API' --group 'Core Package'",
+    "docs:generate:utils": "mint-tsdocs markdown -i ./packages/utils/temp -o ./docs/api/utils --docs-json ./docs/docs.json --tab-name 'API' --group 'Utilities'",
+    "docs:generate:plugins": "mint-tsdocs markdown -i ./packages/plugins/temp -o ./docs/api/plugins --docs-json ./docs/docs.json --tab-name 'API' --group 'Plugins'",
     "docs": "bun run docs:extract && bun run docs:generate"
   }
 }
@@ -198,11 +202,7 @@ monorepo/
       "navigation": [
         {
           "group": "Core Package",
-          "pages": [
-            "api/core/index",
-            "api/core/engine",
-            "api/core/config"
-          ]
+          "pages": ["api/core/index", "api/core/engine", "api/core/config"]
         },
         {
           "group": "Utilities",
@@ -236,7 +236,7 @@ monorepo/
 
 ```bash
 # Public API
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp/public \
   -o ./docs/api/public \
   --docs-json ./docs/docs.json \
@@ -244,7 +244,7 @@ mintlify-tsdocs markdown \
   --group "Core"
 
 # Internal API
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp/internal \
   -o ./docs/api/internal \
   --docs-json ./docs/docs.json \
@@ -255,7 +255,7 @@ mintlify-tsdocs markdown \
 ### With Menu Enabled
 
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json ./docs/docs.json \
@@ -301,7 +301,7 @@ mintlify-tsdocs markdown \
 Many packages have a `README.md` with overview information. Convert it to an `index.mdx` page:
 
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json ./docs/docs.json \
@@ -341,6 +341,7 @@ Welcome to the documentation...
 ### Scenario: Complex TypeScript Types with Nested Objects
 
 **Source TypeScript:**
+
 ```typescript
 /**
  * Configuration for database connection
@@ -398,13 +399,15 @@ Configuration for database connection
 <ParamField name="connection" type="object" required>
   Connection settings
 
-  <ParamField name="host" type="string" required>
-    Database host address
-  </ParamField>
+{" "}
+<ParamField name="host" type="string" required>
+  Database host address
+</ParamField>
 
-  <ParamField name="port" type="number" required>
-    Database port number
-  </ParamField>
+{" "}
+<ParamField name="port" type="number" required>
+  Database port number
+</ParamField>
 
   <ParamField name="ssl" type="object">
     SSL configuration
@@ -416,14 +419,15 @@ Configuration for database connection
     <ParamField name="cert" type="string">
       Path to certificate
     </ParamField>
+
   </ParamField>
 </ParamField>
 
 <ParamField name="pool" type="object">
   Connection pool settings
 
-  <ParamField name="min" type="number" required>
-  </ParamField>
+{" "}
+<ParamField name="min" type="number" required></ParamField>
 
   <ParamField name="max" type="number" required>
   </ParamField>
@@ -433,6 +437,7 @@ Configuration for database connection
 ### Rendered in Mintlify
 
 The above generates an interactive, expandable UI where users can:
+
 - Expand/collapse nested objects
 - See type information for each property
 - Identify required vs. optional fields
@@ -445,6 +450,7 @@ The above generates an interactive, expandable UI where users can:
 ### GitHub Actions
 
 **`.github/workflows/docs.yml`:**
+
 ```yaml
 name: Generate API Documentation
 
@@ -490,6 +496,7 @@ jobs:
 ### GitLab CI
 
 **`.gitlab-ci.yml`:**
+
 ```yaml
 stages:
   - build
@@ -524,6 +531,7 @@ docs:
 ### Pre-commit Hook
 
 **`.husky/pre-commit`:**
+
 ```bash
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
@@ -545,20 +553,23 @@ fi
 ### Issue 1: No MDX Files Generated
 
 **Symptoms:**
+
 - Command runs without error
 - No files in output directory
 
 **Common Causes:**
+
 1. No `*.api.json` files in input folder
 2. Input folder path is incorrect
 
 **Solution:**
+
 ```bash
 # Verify .api.json files exist
 ls -la ./temp/*.api.json
 
 # Run with absolute paths
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i "$(pwd)/temp" \
   -o "$(pwd)/docs/api" \
   --docs-json "$(pwd)/docs/docs.json"
@@ -567,15 +578,18 @@ mintlify-tsdocs markdown \
 ### Issue 2: docs.json Not Updated
 
 **Symptoms:**
+
 - MDX files generated correctly
 - Navigation doesn't include new pages
 
 **Common Causes:**
+
 1. `--docs-json` path is incorrect
 2. `docs.json` has syntax errors
 3. File permissions
 
 **Solution:**
+
 ```bash
 # Verify docs.json exists and is valid
 cat docs/docs.json | jq .
@@ -584,7 +598,7 @@ cat docs/docs.json | jq .
 chmod 644 docs/docs.json
 
 # Try with absolute path
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json "$(pwd)/docs/docs.json"
@@ -593,16 +607,19 @@ mintlify-tsdocs markdown \
 ### Issue 3: Nested Properties Not Showing
 
 **Symptoms:**
+
 - Object types show as `object` without nested fields
 - Expected `<ParamField>` nesting doesn't appear
 
 **Common Causes:**
+
 1. Type is a reference, not an object literal
 2. JSDoc comments missing on nested properties
 
 **Solution:**
 
 **❌ Won't expand:**
+
 ```typescript
 type Connection = {
   host: string;
@@ -610,14 +627,16 @@ type Connection = {
 };
 
 interface Config {
-  connection: Connection;  // Type reference
+  connection: Connection; // Type reference
 }
 ```
 
 **✅ Will expand:**
+
 ```typescript
 interface Config {
-  connection: {  // Inline object literal
+  connection: {
+    // Inline object literal
     host: string;
     port: number;
   };
@@ -627,15 +646,17 @@ interface Config {
 ### Issue 4: Special Characters in Output
 
 **Symptoms:**
+
 - Markdown/MDX syntax appears incorrectly
 - Special characters like `<`, `>`, `|` cause rendering issues
 
 **Common Causes:**
+
 1. Type strings with special characters not properly escaped
 2. JSDoc comments with Markdown syntax
 
 **Solution:**
-API Extractor and mintlify-tsdocs handle most escaping automatically. If you encounter issues:
+API Extractor and mint-tsdocs handle most escaping automatically. If you encounter issues:
 
 1. Use code blocks in JSDoc comments
 2. Escape special characters in type names
@@ -644,19 +665,22 @@ API Extractor and mintlify-tsdocs handle most escaping automatically. If you enc
 ### Issue 5: Build Performance
 
 **Symptoms:**
+
 - Documentation generation is slow
 - Large memory usage
 
 **Common Causes:**
+
 1. Very large API surface
 2. Deeply nested types
 3. Many packages processed together
 
 **Solution:**
+
 ```bash
 # Process packages separately
 for pkg in packages/*/temp/*.api.json; do
-  mintlify-tsdocs markdown -i "$(dirname "$pkg")" -o "./docs/api/$(basename "$pkg" .api.json)"
+  mint-tsdocs markdown -i "$(dirname "$pkg")" -o "./docs/api/$(basename "$pkg" .api.json)"
 done
 
 # Use a more powerful machine in CI
@@ -672,11 +696,12 @@ done
 Generate docs only for public APIs:
 
 **api-extractor.json:**
+
 ```json
 {
   "docModel": {
     "enabled": true,
-    "includeForgottenExports": false  // Exclude non-exported items
+    "includeForgottenExports": false // Exclude non-exported items
   }
 }
 ```
@@ -701,10 +726,10 @@ Generate docs for multiple versions:
 
 ```bash
 # Generate for v1.x
-mintlify-tsdocs markdown -i ./temp/v1 -o ./docs/api/v1 --tab-name "API v1"
+mint-tsdocs markdown -i ./temp/v1 -o ./docs/api/v1 --tab-name "API v1"
 
 # Generate for v2.x
-mintlify-tsdocs markdown -i ./temp/v2 -o ./docs/api/v2 --tab-name "API v2"
+mint-tsdocs markdown -i ./temp/v2 -o ./docs/api/v2 --tab-name "API v2"
 ```
 
 ---
@@ -712,20 +737,24 @@ mintlify-tsdocs markdown -i ./temp/v2 -o ./docs/api/v2 --tab-name "API v2"
 ## Best Practices
 
 1. **Always run build before docs generation**
+
    ```bash
    bun run build && bun run docs:extract && bun run docs:generate
    ```
 
 2. **Use scripts in package.json**
+
    - Makes commands consistent across team
    - Easier to maintain
    - Works with CI/CD
 
 3. **Keep input and output separate**
+
    - Input: `./temp` (gitignored)
    - Output: `./docs/api` (committed)
 
 4. **Document your nested types inline**
+
    ```typescript
    // ✅ Good - will expand
    interface Config {
@@ -733,11 +762,17 @@ mintlify-tsdocs markdown -i ./temp/v2 -o ./docs/api/v2 --tab-name "API v2"
    }
 
    // ❌ Less discoverable - won't expand
-   interface DbConfig { host: string; port: number }
-   interface Config { db: DbConfig }
+   interface DbConfig {
+     host: string;
+     port: number;
+   }
+   interface Config {
+     db: DbConfig;
+   }
    ```
 
 5. **Add JSDoc comments everywhere**
+
    - Interfaces
    - Properties
    - Nested fields

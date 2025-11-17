@@ -24,8 +24,17 @@ import { IndentedWriter } from '../utils/IndentedWriter';
 import { createDebugger, type Debugger } from '../utils/debug';
 
 const debug: Debugger = createDebugger('markdown-emitter');
+
+/**
+ * Configuration options for MarkdownEmitter
+ * @public
+ */
 export interface IMarkdownEmitterOptions {}
 
+/**
+ * Context for markdown emission
+ * @public
+ */
 export interface IMarkdownEmitterContext<TOptions = IMarkdownEmitterOptions> {
   writer: IndentedWriter;
 
@@ -41,6 +50,7 @@ export interface IMarkdownEmitterContext<TOptions = IMarkdownEmitterOptions> {
 /**
  * Renders MarkupElement content in the Markdown file format.
  * For more info:  https://en.wikipedia.org/wiki/Markdown
+ * @public
  */
 export class MarkdownEmitter {
   public emit(stringBuilder: StringBuilder, docNode: DocNode, options: IMarkdownEmitterOptions): string {
@@ -168,7 +178,11 @@ export class MarkdownEmitter {
       }
       case DocNodeKind.BlockTag: {
         const tagNode: DocBlockTag = docNode as DocBlockTag;
-        debug.warn('Unsupported block tag: ' + tagNode.tagName);
+        // Skip known block tags that are handled elsewhere or don't need rendering
+        const knownBlockTags = ['@default', '@example', '@remarks', '@returns', '@param'];
+        if (!knownBlockTags.includes(tagNode.tagName)) {
+          debug.warn('Unsupported block tag: ' + tagNode.tagName);
+        }
         break;
       }
       default:

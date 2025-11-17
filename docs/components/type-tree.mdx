@@ -4,8 +4,8 @@ description: Display recursive type structures with expandable nested properties
 icon: "diagram-project"
 ---
 
-import { TypeTree, TypeTreeGroup } from "/snippets/TypeTree.jsx"
-import { Preview } from "/snippets/Preview.jsx"
+import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
 
 The `TypeTree` component provides an elegant way to document complex type structures with nested properties. It automatically handles recursive rendering and provides an intuitive expandable interface for exploring deeply nested types.
 
@@ -13,18 +13,7 @@ The `TypeTree` component provides an elegant way to document complex type struct
 
 Import the component in your MDX file and pass the type information:
 
-<Preview
-  code={`<TypeTree
-  name="config"
-  type="object"
-  description="Configuration settings for the application"
-  required={true}
-  properties={[
-    { name: "host", type: "string", description: "Database host address", required: true },
-    { name: "port", type: "number", description: "Database port number", defaultValue: "5432" }
-  ]}
-/>`}
->
+<Preview title="TypeTree Preview">
   <TypeTree
     name="config"
     type="object"
@@ -36,6 +25,8 @@ Import the component in your MDX file and pass the type information:
     ]}
   />
 </Preview>
+
+HAHAHA
 
 ## Properties
 

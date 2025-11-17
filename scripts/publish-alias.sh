@@ -1,16 +1,15 @@
 #!/bin/bash
 set -e
 
-# Save original package.json
-cp package.json package.json.backup
+echo "Publishing mintlify-tsdocs wrapper..."
 
-# Update package name to mint-ts
-node -e "const pkg=require('./package.json'); pkg.name='mint-ts'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')"
+# Navigate to the wrapper package directory
+cd scripts/mintlify-tsdocs-wrapper
 
-# Publish as mint-ts
+# Publish the wrapper package
 npm publish
 
-# Restore original package.json
-mv package.json.backup package.json
+# Navigate back to the root directory
+cd ../..
 
-echo "✓ Published as mint-ts"
+echo "✓ Published mintlify-tsdocs"

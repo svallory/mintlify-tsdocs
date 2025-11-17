@@ -1,13 +1,13 @@
 /**
- * Config file for mintlify-tsdocs.
+ * Config file for mint-tsdocs.
  *
- * This file stores default configuration options for the mintlify-tsdocs documentation generator.
- * It's typically created by running `mintlify-tsdocs init` and stored in `.tsdocs/mintlify-tsdocs.json`.
+ * This file stores default configuration options for the mint-tsdocs documentation generator.
+ * It's typically created by running `mint-tsdocs init` and stored in `.tsdocs/mint-tsdocs.json`.
  *
  * For more info, visit: https://github.com/microsoft/rushstack/tree/main/apps/api-documenter
  */
 {
-  "$schema": "https://api.api-extractor.com/schemas/mintlify-tsdocs.schema.json",
+  "$schema": "https://api.api-extractor.com/schemas/mint-tsdocs.schema.json",
 
   /**
    * Directory where API Extractor outputs .api.json files.

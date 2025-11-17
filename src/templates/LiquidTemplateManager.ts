@@ -42,8 +42,8 @@ export class LiquidTemplateManager {
   public constructor(options: ILiquidTemplateManagerOptions = {}) {
     this._overrides = options.overrides || {};
     this._userTemplateDir = options.userTemplateDir;
-    // Default templates are in src/templates/defaults, accessible from compiled code
-    this._defaultTemplateDir = options.defaultTemplateDir || path.join(__dirname, '..', '..', 'src', 'templates', 'defaults');
+    // Default templates are bundled in lib/templates/defaults after build
+    this._defaultTemplateDir = options.defaultTemplateDir || path.join(__dirname, '..', 'templates', 'defaults');
     this._cache = options.cache !== false;
     this._strict = options.strict !== false;
 

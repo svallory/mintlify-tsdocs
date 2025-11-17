@@ -5,13 +5,16 @@ import { CommandLineParser, type CommandLineFlagParameter } from '@rushstack/ts-
 import { GenerateAction } from './GenerateAction';
 import { CustomizeAction } from './CustomizeAction';
 import { InitAction } from './InitAction';
+import { HelpAction } from './HelpAction';
+import { VersionAction } from './VersionAction';
+import { ShowAction } from './ShowAction';
 
 /**
- * Main CLI parser for the mintlify-tsdocs tool.
+ * Main CLI parser for the mint-tsdocs tool.
  *
  * This class sets up the command-line interface for generating Mintlify-compatible
  * MDX documentation from TypeScript API documentation. The tool supports three main actions:
- * - `init`: Initialize a project with mintlify-tsdocs configuration
+ * - `init`: Initialize a project with mint-tsdocs configuration
  * - `generate`: Run api-extractor and generate MDX documentation files
  * - `customize`: Create customizable template files for documentation generation
  *
@@ -27,7 +30,7 @@ export class DocumenterCli extends CommandLineParser {
    */
   public constructor() {
     super({
-      toolFilename: 'mintlify-tsdocs',
+      toolFilename: 'mint-tsdocs',
       toolDescription:
         'Reads *.api.json files produced by api-extractor and generates ' +
         'Mintlify-compatible MDX documentation with proper frontmatter and navigation.'
@@ -80,11 +83,33 @@ export class DocumenterCli extends CommandLineParser {
   }
 
   /**
+   * Override executeAsync to handle default action and directory argument
+   */
+  public override async executeAsync(args?: string[]): Promise<boolean> {
+    // Get the arguments (default to process.argv)
+    const actualArgs = args || process.argv.slice(2);
+
+    // If no arguments provided, default to 'generate'
+    if (actualArgs.length === 0) {
+      return super.executeAsync(['generate']);
+    }
+
+    const firstArg = actualArgs[0];
+
+    // If first arg doesn't start with '-' and isn't a known action, treat it as a directory for generate
+    const knownActions = ['init', 'generate', 'customize', 'show', 'help', 'version', '--help', '-h', '--version', '-v'];
+    if (!firstArg.startsWith('-') && !knownActions.includes(firstArg)) {
+      // Treat as positional argument for generate
+      // Insert 'generate' action and pass remaining args as remainder
+      return super.executeAsync(['generate', ...actualArgs]);
+    }
+
+    // Default behavior - pass through to parent
+    return super.executeAsync(actualArgs);
+  }
+
+  /**
    * Registers all available CLI actions.
-   * Supports three actions:
-   * - `init`: Initialize project configuration
-   * - `generate`: Run api-extractor and generate MDX documentation
-   * - `customize`: Initialize customizable template files
    *
    * @private
    */
@@ -92,5 +117,8 @@ export class DocumenterCli extends CommandLineParser {
     this.addAction(new InitAction(this));
     this.addAction(new GenerateAction(this));
     this.addAction(new CustomizeAction());
+    this.addAction(new ShowAction());
+    this.addAction(new HelpAction(this));
+    this.addAction(new VersionAction());
   }
 }

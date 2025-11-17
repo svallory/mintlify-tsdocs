@@ -5,7 +5,7 @@ description: 'Customize your documentation output using Liquid templates'
 
 # Template System
 
-The Mintlify-TSdocs template system allows you to **fully customize** how your API documentation is generated using [Liquid](https://shopify.github.io/liquid/) templates. You can override individual templates or create your own template directory.
+The mint-tsdocs template system allows you to **fully customize** how your API documentation is generated using [Liquid](https://shopify.github.io/liquid/) templates. You can override individual templates or create your own template directory.
 
 ## Quick Start
 
@@ -14,13 +14,13 @@ The Mintlify-TSdocs template system allows you to **fully customize** how your A
 First, create a template directory with default templates:
 
 ```bash
-mintlify-tsdocs init-templates --template-dir ./my-templates
+mint-tsdocs init-templates --template-dir ./my-templates
 ```
 
 ### Use Custom Templates
 
 ```typescript
-import { MarkdownDocumenter } from 'mintlify-tsdocs';
+import { MarkdownDocumenter } from 'mint-tsdocs';
 
 const documenter = new MarkdownDocumenter({
   apiModel: apiModel,
@@ -236,11 +236,11 @@ Our Liquid implementation includes these custom filters:
 
 | Filter | Description | Example |
 |--------|-------------|---------|
-| `kebab_case` | Convert to kebab-case | `{{ "MyClass" \| kebab_case }}` → `my-class` |
-| `snake_case` | Convert to snake_case | `{{ "MyClass" \| snake_case }}` → `my_class` |
-| `title_case` | Convert to Title Case | `{{ "myClass" \| title_case }}` → `My Class` |
-| `pluralize` | Simple pluralization | `{{ "item" \| pluralize: 2 }}` → `items` |
-| `truncate` | Truncate text | `{{ text \| truncate: 50 }}` → `First 50 chars...` |
+| `kebab_case` | Convert to kebab-case | `\{\{ "MyClass" \| kebab_case \}\}` → `my-class` |
+| `snake_case` | Convert to snake_case | `\{\{ "MyClass" \| snake_case \}\}` → `my_class` |
+| `title_case` | Convert to Title Case | `\{\{ "myClass" \| title_case \}\}` → `My Class` |
+| `pluralize` | Simple pluralization | `\{\{ "item" \| pluralize: 2 \}\}` → `items` |
+| `truncate` | Truncate text | `\{\{ text \| truncate: 50 \}\}` → `First 50 chars...` |
 
 ## Examples
 
@@ -323,10 +323,10 @@ If you were using EJS templates, here's how to migrate to Liquid:
 
 | EJS | Liquid | Notes |
 |-----|--------|-------|
-| `\u003c%= variable %\u003e` | `{{ variable }}` | Output variable |
+| `\u003c%= variable %\u003e` | `\{\{ variable \}\}` | Output variable |
 | `\u003c% if (condition) { %\u003e` | `{% if condition %}` | Conditional |
 | `\u003c% for (item of items) { %\u003e` | `{% for item in items %}` | Loop |
-| `\u003c%= items.join(', ') %\u003e` | `{{ items | join: ', ' }}` | Array join |
+| `\u003c%= items.join(', ') %\u003e` | `\{\{ items \| join: ', ' \}\}` | Array join |
 | `\u003c% } %\u003e` | `{% endfor %}` | End loop |
 | `\u003c% } %\u003e` | `{% endif %}` | End conditional |
 

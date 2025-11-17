@@ -1,40 +1,40 @@
 # Schemas Module
 
-**JSON Schema definitions for mintlify-tsdocs configuration**
+**JSON Schema definitions for mint-tsdocs configuration**
 
 ## Overview
 
-The schemas module contains JSON Schema definitions for mintlify-tsdocs configuration files. These schemas enable IDE autocomplete and validation for the `mintlify-tsdocs.config.json` configuration file created by `mint-ts init`.
+The schemas module contains JSON Schema definitions for mint-tsdocs configuration files. These schemas enable IDE autocomplete and validation for the `mint-tsdocs.config.json` configuration file created by `mint-tsdocs init`.
 
 ## Files
 
 ### `config.schema.json`
 
-Unified JSON Schema definition for mintlify-tsdocs configuration.
+Unified JSON Schema definition for mint-tsdocs configuration.
 
-**Purpose:** Provides IDE autocomplete and validation for `mintlify-tsdocs.config.json` at the project root.
+**Purpose:** Provides IDE autocomplete and validation for `mint-tsdocs.config.json` at the project root.
 
 **Key Configuration Options:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `$schema` | string | JSON Schema URL for validation |
-| `entryPoint` | string | Path to TypeScript entry point (.d.ts file) - auto-detected if not specified |
-| `outputFolder` | string | Directory where MDX files will be generated (default: `./docs/reference`) |
-| `docsJson` | string | Path to Mintlify's docs.json for navigation - auto-detected if not specified |
-| `tabName` | string | Tab name in Mintlify navigation (default: "API Reference") |
-| `groupName` | string | Group name within the tab (default: "API") |
-| `convertReadme` | boolean | Convert README.md to index.mdx (default: false) |
-| `readmeTitle` | string | Custom title for README page (default: "README") |
-| `templates` | object | Template customization options |
-| `tsdoc` | object | TSDoc configuration (written to .tsdocs/tsdoc.json) |
-| `apiExtractor` | object | API Extractor configuration (written to .tsdocs/api-extractor.json) |
+| Property        | Type    | Description                                                                  |
+| --------------- | ------- | ---------------------------------------------------------------------------- |
+| `$schema`       | string  | JSON Schema URL for validation                                               |
+| `entryPoint`    | string  | Path to TypeScript entry point (.d.ts file) - auto-detected if not specified |
+| `outputFolder`  | string  | Directory where MDX files will be generated (default: `./docs/reference`)    |
+| `docsJson`      | string  | Path to Mintlify's docs.json for navigation - auto-detected if not specified |
+| `tabName`       | string  | Tab name in Mintlify navigation (default: "Code Reference")                  |
+| `groupName`     | string  | Group name within the tab (default: "API")                                   |
+| `convertReadme` | boolean | Convert README.md to index.mdx (default: false)                              |
+| `readmeTitle`   | string  | Custom title for README page (default: "README")                             |
+| `templates`     | object  | Template customization options                                               |
+| `tsdoc`         | object  | TSDoc configuration (written to .tsdocs/tsdoc.json)                          |
+| `apiExtractor`  | object  | API Extractor configuration (written to .tsdocs/api-extractor.json)          |
 
 **Usage in IDE:**
 
 ```json
 {
-  "$schema": "./node_modules/mintlify-tsdocs/lib/schemas/config.schema.json",
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
   "entryPoint": "./lib/index.d.ts",
   "outputFolder": "./docs/reference",
   "docsJson": "./docs/docs.json",
@@ -52,24 +52,26 @@ Unified JSON Schema definition for mintlify-tsdocs configuration.
 The configuration file is automatically created by running:
 
 ```bash
-mint-ts init
+mint-tsdocs init
 ```
 
-This creates `mintlify-tsdocs.config.json` at the project root with auto-detected settings.
+This creates `mint-tsdocs.config.json` at the project root with auto-detected settings.
 
 ### Manual Configuration
 
 If you need to manually create or modify the configuration:
 
 1. **Create the file:**
+
 ```bash
-touch mintlify-tsdocs.config.json
+touch mint-tsdocs.config.json
 ```
 
 2. **Add configuration:**
+
 ```json
 {
-  "$schema": "./node_modules/mintlify-tsdocs/lib/schemas/config.schema.json",
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
   "entryPoint": "./lib/index.d.ts",
   "outputFolder": "./docs/reference",
   "docsJson": "./docs/docs.json",
@@ -79,15 +81,16 @@ touch mintlify-tsdocs.config.json
 ```
 
 3. **Generate documentation:**
+
 ```bash
-mint-ts generate
+mint-tsdocs generate
 ```
 
-The configuration is automatically loaded from `mintlify-tsdocs.config.json` using cosmiconfig.
+The configuration is automatically loaded from `mint-tsdocs.config.json` using cosmiconfig.
 
 ## Auto-Detection
 
-mintlify-tsdocs can auto-detect many settings:
+mint-tsdocs can auto-detect many settings:
 
 - **Entry point:** Checks `package.json` `types`/`typings` field, then common paths (`./lib/index.d.ts`, `./dist/index.d.ts`, etc.)
 - **docs.json location:** Searches `./docs.json`, `./docs/docs.json`, `./documentation/docs.json`
@@ -109,7 +112,8 @@ The schemas are copied to `lib/schemas/` during build:
 
 To add a new configuration option:
 
-1. **Update schema** (`mintlify-tsdocs.schema.json`):
+1. **Update schema** (`mint-tsdocs.schema.json`):
+
 ```json
 {
   "properties": {
@@ -121,7 +125,8 @@ To add a new configuration option:
 }
 ```
 
-2. **Update template** (`mintlify-tsdocs-template.json`):
+2. **Update template** (`mint-tsdocs-template.json`):
+
 ```jsonc
 {
   /**
@@ -133,6 +138,7 @@ To add a new configuration option:
 ```
 
 3. **Update GenerateAction** to load the option:
+
 ```typescript
 private _loadConfigDefaults(): {
   // ... existing options
@@ -147,10 +153,11 @@ private _loadConfigDefaults(): {
 ```
 
 4. **Use in MarkdownDocumenter**:
+
 ```typescript
 const markdownDocumenter = new MarkdownDocumenter({
   // ... existing options
-  myNewOption: this._myNewOptionParameter.value || configDefaults.myNewOption
+  myNewOption: this._myNewOptionParameter.value || configDefaults.myNewOption,
 });
 ```
 

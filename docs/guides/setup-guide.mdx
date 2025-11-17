@@ -1,0 +1,264 @@
+---
+title: Setup Guide
+description: Detailed setup and configuration for all scenarios
+icon: "wrench"
+---
+
+This guide covers advanced setup scenarios, manual configuration, and troubleshooting.
+
+<Note>
+  Most users won't need this. Run `npx mint-tsdocs` and you're done. This guide is for special cases and understanding what happens under the hood.
+</Note>
+
+## TypeScript Configuration
+
+Your `tsconfig.json` must generate declaration files:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "declaration": true,        // Required - generates .d.ts files
+    "declarationMap": true,     // Optional - better IDE support
+    "outDir": "./dist",         // Where .d.ts files go
+    // ... other options
+  }
+}
+```
+
+Without `declaration: true`, API Extractor has nothing to extract.
+
+## API Extractor Configuration
+
+When you run `mint-tsdocs init`, it creates `.tsdocs/api-extractor.json` automatically. For manual setup:
+
+```json .tsdocs/api-extractor.json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/index.d.ts",
+  "apiReport": {
+    "enabled": false
+  },
+  "docModel": {
+    "enabled": true,
+    "apiJsonFilePath": "<projectFolder>/.tsdocs/<unscopedPackageName>.api.json"
+  },
+  "dtsRollup": {
+    "enabled": false
+  }
+}
+```
+
+**Key settings:**
+- `mainEntryPointFilePath` - Your main .d.ts file
+- `docModel.enabled: true` - Required for generating .api.json
+- Tokens like `<projectFolder>` are replaced automatically
+
+## Mintlify Configuration
+
+If you don't have Mintlify set up:
+
+```bash
+# Initialize Mintlify
+npx mintlify init
+
+# Or let mint-tsdocs do it
+mint-tsdocs init  # Will offer to run 'mint new'
+```
+
+Your `docs/docs.json` should exist. mint-tsdocs will add navigation automatically.
+
+## Gitignore
+
+Add to `.gitignore`:
+
+```bash .gitignore
+# mint-tsdocs cache directory
+.tsdocs/
+
+# Build output (optional - depends on your setup)
+dist/
+lib/
+```
+
+<Warning>
+  **Do commit** your generated docs in `docs/reference/` - they're part of your documentation site!
+</Warning>
+
+## Package.json Scripts
+
+Add convenience scripts:
+
+```json package.json
+{
+  "scripts": {
+    "build": "tsc",
+    "docs": "mint-tsdocs",
+    "docs:init": "mint-tsdocs init",
+    "docs:dev": "cd docs && mintlify dev"
+  }
+}
+```
+
+## Monorepo Setup
+
+For workspaces with multiple packages:
+
+### Option 1: Per-Package Docs
+
+```bash
+# Initialize each package separately
+cd packages/core
+mint-tsdocs init
+
+cd ../utils
+mint-tsdocs init
+```
+
+Each package gets its own config, generates to its own output folder.
+
+### Option 2: Centralized Docs
+
+Create a single docs folder at the root:
+
+```json packages/core/mint-tsdocs.config.json
+{
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "../../docs/reference/core",
+  "docsJson": "../../docs/docs.json",
+  "tabName": "API",
+  "groupName": "Core"
+}
+```
+
+```json packages/utils/mint-tsdocs.config.json
+{
+  "entryPoint": "./lib/index.d.ts",
+  "outputFolder": "../../docs/reference/utils",
+  "docsJson": "../../docs/docs.json",
+  "tabName": "API",
+  "groupName": "Utils"
+}
+```
+
+Root package.json:
+
+```json
+{
+  "scripts": {
+    "docs": "npm run docs -ws",
+    "docs:init": "npm run docs:init -ws"
+  }
+}
+```
+
+## Verification
+
+Check your setup is working:
+
+<Steps>
+  <Step title="Build TypeScript">
+    ```bash
+    npm run build
+    ls dist/*.d.ts  # Should show .d.ts files
+    ```
+  </Step>
+
+  <Step title="Run API Extractor">
+    ```bash
+    npx api-extractor run --local --config .tsdocs/api-extractor.json
+    ls .tsdocs/*.api.json  # Should show .api.json file
+    ```
+  </Step>
+
+  <Step title="Generate Docs">
+    ```bash
+    mint-tsdocs generate
+    ls docs/reference/  # Should show .mdx files
+    ```
+  </Step>
+
+  <Step title="Check Navigation">
+    ```bash
+    cat docs/docs.json  # Should include your API pages
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### No .d.ts files generated
+
+**Problem:** TypeScript build succeeds but no declaration files.
+
+**Solution:** Add `"declaration": true` to `tsconfig.json` compilerOptions.
+
+### API Extractor can't find entry point
+
+**Problem:** Error like "Unable to load file: dist/index.d.ts"
+
+**Solutions:**
+- Verify TypeScript build succeeded: `ls dist/index.d.ts`
+- Check `entryPoint` in config matches your outDir
+- Ensure path is relative to project root
+
+### No .api.json generated
+
+**Problem:** API Extractor runs but no .api.json file appears.
+
+**Solutions:**
+- Check `docModel.enabled: true` in api-extractor.json
+- Verify output path in `apiJsonFilePath`
+- Look for errors in API Extractor output
+
+### No MDX files generated
+
+**Problem:** Command succeeds but docs folder is empty.
+
+**Solutions:**
+- Verify .api.json exists in `.tsdocs/`
+- Check `outputFolder` path in config
+- Run with `--verbose` to see what's happening
+- Ensure your entry point exports something public
+
+### docs.json not updated
+
+**Problem:** MDX files generated but navigation unchanged.
+
+**Solutions:**
+- Verify `docsJson` path is correct
+- Check docs.json is valid JSON (no syntax errors)
+- Ensure file has write permissions
+- Look for errors in verbose output
+
+### TypeScript errors in generated docs
+
+**Problem:** Mintlify shows type errors when rendering components.
+
+**Solutions:**
+- Check your TypeScript is properly compiled
+- Verify complex types are exported (not internal)
+- Use `@public` JSDoc tag for intended public API
+- Check for circular dependencies
+
+## Advanced Configuration
+
+See [Configuration Reference](/config-reference) for all available options:
+
+- Custom templates
+- TSDoc tag definitions
+- API Extractor message levels
+- Bundled packages
+- Project folder URLs
+
+## Getting Help
+
+Still stuck?
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/svallory/mintlify-tsdocs/issues">
+    Report bugs or ask questions
+  </Card>
+  <Card title="Architecture Docs" icon="sitemap" href="/architecture/overview">
+    Understand how it all works
+  </Card>
+</CardGroup>

@@ -32,12 +32,12 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Publish mintlify-tsdocs
+      - name: Publish mint-tsdocs
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish mint-ts (alias)
+      - name: Publish mintlify-tsdocs (alias)
         run: ./scripts/publish-alias.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           body: |
             Published to npm:
+            - [`mint-tsdocs@${{ github.ref_name }}`](https://www.npmjs.com/package/mint-tsdocs)
             - [`mintlify-tsdocs@${{ github.ref_name }}`](https://www.npmjs.com/package/mintlify-tsdocs)
-            - [`mint-ts@${{ github.ref_name }}`](https://www.npmjs.com/package/mint-ts)
           draft: false
           prerelease: false

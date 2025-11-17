@@ -1,44 +1,35 @@
-{% layout "layout" %}
+{%- layout "layout" %}
 
-{% block content %}
+{%- block content %}
+{%- if parameters and parameters.size > 0 %}
+
 ## Parameters
 
-{% if parameters and parameters.size > 0 %}
-{% for parameter in parameters %}
+{%- for parameter in parameters %}
+
 ### {{ parameter.title }}
 
-{% if parameter.type %}
-**Type**: {% if parameter.typePath %}[{{ parameter.type }}]({{ parameter.typePath }}){% else %}{{ parameter.type }}{% endif %}
-{% endif %}
-
-{% if parameter.isOptional %}
+{%- if parameter.type %}
+{%- assign formatted_param_type = parameter.type | format_type %}
+{%- if formatted_param_type contains "```" %}
+**Type**:{{ formatted_param_type }}
+{%- else %}
+**Type**: {% if parameter.typePath -%}[`{{ formatted_param_type }}`]({{ parameter.typePath }}){%- else -%}`{{ formatted_param_type }}`{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if parameter.isOptional %}
 **Optional**: Yes
-{% endif %}
-
-{% if parameter.defaultValue %}
+{%- endif %}
+{%- if parameter.defaultValue %}
 **Default**: `{{ parameter.defaultValue }}`
-{% endif %}
+{%- endif %}
+{%- if parameter.description %}
 
-{% if parameter.description %}
 {{ parameter.description }}
-{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 
-{% endfor %}
-{% else %}
-*This method takes no parameters.*
-{% endif %}
-
-## Returns
-
-{% if returnType %}
-{% if returnType.type %}
-**Type**: {% if returnType.typePath %}[{{ returnType.type }}]({{ returnType.typePath }}){% else %}{{ returnType.type }}{% endif %}
-{% endif %}
-
-{% if returnType.description %}
-{{ returnType.description }}
-{% endif %}
-{% else %}
-*This method has no return value.*
-{% endif %}
-{% endblock %}
+*This constructor takes no parameters.*
+{%- endif %}
+{%- endblock %}

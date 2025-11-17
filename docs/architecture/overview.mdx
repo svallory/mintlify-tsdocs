@@ -1,12 +1,12 @@
 ---
 title: Architecture Overview
-description: Understanding the mintlify-tsdocs pipeline and component architecture
+description: Understanding the mint-tsdocs pipeline and component architecture
 icon: "sitemap"
 ---
 
 ## Introduction
 
-`mintlify-tsdocs` transforms structured API data into beautiful Mintlify documentation through a multi-stage pipeline.
+`mint-tsdocs` transforms structured API data into beautiful Mintlify documentation through a multi-stage pipeline.
 
 <Frame>
 ```mermaid
@@ -122,7 +122,7 @@ The codebase is organized into distinct layers, each with a specific responsibil
 <Accordion title="Detailed Pipeline Flow" icon="flow">
 
 ### 1. CLI Parsing
-User runs `mintlify-tsdocs markdown ...`
+User runs `mint-tsdocs markdown ...`
 - `start.ts` creates `DocumenterCli` instance
 - CLI parser invokes `MarkdownAction.onExecuteAsync()`
 - Parameters are validated and processed

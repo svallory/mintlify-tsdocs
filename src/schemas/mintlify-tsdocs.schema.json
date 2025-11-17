@@ -1,6 +1,6 @@
 {
-  "title": "mintlify-tsdocs Configuration",
-  "description": "Configuration for mintlify-tsdocs documentation generator.",
+  "title": "mint-tsdocs Configuration",
+  "description": "Configuration for mint-tsdocs documentation generator.",
   "type": "object",
   "properties": {
     "$schema": {

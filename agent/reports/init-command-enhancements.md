@@ -9,8 +9,9 @@ Enhanced the `init` command with package validation, Mintlify config checking, a
 ### 1. Package Installation Checks (src/cli/InitAction.ts:194-253)
 
 The `_checkRequiredPackages` method now:
+
 - Validates that required packages are installed:
-  - `mintlify-tsdocs`
+  - `mint-tsdocs`
   - `@microsoft/api-extractor`
 - Shows verbose logging when `--verbose` flag is used
 - Auto-installs missing packages with `--yes` flag
@@ -19,6 +20,7 @@ The `_checkRequiredPackages` method now:
 ### 2. Mintlify Config Validation (src/cli/InitAction.ts:258-296)
 
 The `_validateMintlifyConfig` method:
+
 - Checks for `mint.json` or `docs.json` (supports both formats)
 - Validates JSON structure and required fields (e.g., `name`)
 - Shows verbose logging with `--verbose` flag
@@ -27,6 +29,7 @@ The `_validateMintlifyConfig` method:
 ### 3. Flag Support
 
 #### `--yes` / `-y` Flag
+
 - Uses defaults for all prompts
 - **Does NOT override existing files** (no `--force` flag used)
 - Auto-detects TypeScript entry point from common locations:
@@ -41,12 +44,14 @@ The `_validateMintlifyConfig` method:
   - Group name: `API`
 
 #### `--verbose` / `-v` Flag
+
 - Shows command output in real-time (uses `stdio: 'inherit'`)
 - Displays package installation status
 - Shows Mintlify config validation details
 - Already defined at CLI level (src/cli/ApiDocumenterCommandLine.ts)
 
 #### `--debug` Flag
+
 - **Implies `--verbose`** (automatically enables verbose mode)
 - Shows executed commands and working directories
 - Displays command output when not in verbose mode
@@ -55,6 +60,7 @@ The `_validateMintlifyConfig` method:
 ### 4. Enhanced `_runCommand` Method (src/cli/InitAction.ts:744-828)
 
 Updated to support verbose and debug modes:
+
 - `--verbose`: Uses `stdio: 'inherit'` to show real-time output
 - `--debug`: Logs command being executed and working directory
 - Improved error messages with full context
@@ -67,54 +73,68 @@ Updated to support verbose and debug modes:
 ### 6. Updated Entry Points
 
 **src/cli/ApiDocumenterCommandLine.ts:91**
+
 - Changed `new InitAction()` to `new InitAction(this)`
 - Passes CLI instance for flag access
 
 ## Usage Examples
 
 ### Interactive Mode (Default)
+
 ```bash
-mintlify-tsdocs init
+mint-tsdocs init
 ```
+
 Prompts user for all configuration options.
 
 ### Non-Interactive Mode
+
 ```bash
-mintlify-tsdocs init --yes
+mint-tsdocs init --yes
 ```
+
 Uses defaults, auto-detects entry point, doesn't override files.
 
 ### Verbose Output
+
 ```bash
-mintlify-tsdocs init --verbose
+mint-tsdocs init --verbose
 ```
+
 Shows command output in real-time.
 
 ### Debug Mode
+
 ```bash
-mintlify-tsdocs init --debug
+mint-tsdocs init --debug
 ```
+
 Shows commands being executed and working directories.
 
 ### Combined Flags
+
 ```bash
-mintlify-tsdocs init --yes --verbose
+mint-tsdocs init --yes --verbose
 ```
+
 Non-interactive with real-time output.
 
 ```bash
-mintlify-tsdocs init --debug
+mint-tsdocs init --debug
 ```
+
 Debug mode automatically enables verbose (no need for `--verbose` flag).
 
 ## Safety Features
 
 1. **No Data Loss with `--yes`**
+
    - Never uses `--force` flag with mint new
    - Keeps existing files in docs directory
    - Fails gracefully if entry point not found
 
 2. **Package Validation**
+
    - Checks for required packages before proceeding
    - Offers to install missing packages
    - Validates package.json exists

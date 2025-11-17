@@ -1,7 +1,6 @@
 ---
 title: Performance Layer
 description: Performance monitoring and metrics collection for documentation generation
-description: Performance monitoring and metrics collection for documentation generation
 icon: "gauge-high"
 ---
 
@@ -425,65 +424,67 @@ console.log(`Average type analysis time: ${typeAnalysisStats.averageDuration.toF
 
 <AccordionGroup>
   <Accordion title="Development Guidelines" icon="code">
-**Always Monitor During Development**:
-- Enable performance monitoring
-- Review operation statistics
-- Identify performance bottlenecks
+    **Always Monitor During Development**:
+    - Enable performance monitoring
+    - Review operation statistics
+    - Identify performance bottlenecks
 
-**Use Descriptive Operation Names**:
+    **Use Descriptive Operation Names**:
 ```typescript
-// Good
-performanceMonitor.measure('Complex Type Analysis', () => { ... });
+    // Good
+    performanceMonitor.measure('Complex Type Analysis', () => { ... });
 
-// Avoid
-performanceMonitor.measure('Operation', () => { ... });
+    // Avoid
+    performanceMonitor.measure('Operation', () => { ... });
 ```
 
-**Include Relevant Metadata**:
+    **Include Relevant Metadata**:
 ```typescript
-performanceMonitor.measure('API Resolution', () => { ... }, {
-  declarationReference: ref.toString(),
-  contextItem: contextItem?.displayName,
-  resolutionType: 'link'
-});
+    performanceMonitor.measure('API Resolution', () => { ... }, {
+    declarationReference: ref.toString(),
+    contextItem: contextItem?.displayName,
+    resolutionType: 'link'
+    });
 ```
   </Accordion>
 
   <Accordion title="Production Considerations" icon="server">
-**Optional Monitoring**:
-- Make monitoring configurable
-- Consider performance overhead
-- Log summaries for analysis
+    **Optional Monitoring**:
+    - Make monitoring configurable
+    - Consider performance overhead
+    - Log summaries for analysis
 
-**Resource Management**:
+    **Resource Management**:
 ```typescript
-// Clear metrics between generations
-performanceMonitor.clear();
+    // Clear metrics between generations
+    performanceMonitor.clear();
 
-// Reset global instance if needed
-resetGlobalPerformanceMonitor();
+    // Reset global instance if needed
+    resetGlobalPerformanceMonitor();
 ```
 
-**Performance Budgets**:
-- Set acceptable performance thresholds
-- Monitor for regressions
-- Alert on significant changes
+    **Performance Budgets**:
+    - Set acceptable performance thresholds
+    - Monitor for regressions
+    - Alert on significant changes
+
   </Accordion>
 
   <Accordion title="Testing Strategies" icon="vial">
-**Consistent Benchmarks**:
-- Disable monitoring during unit tests
-- Use consistent test data
-- Control for environmental factors
 
-**Performance Regression Testing**:
+    **Consistent Benchmarks**:
+    - Disable monitoring during unit tests
+    - Use consistent test data
+    - Control for environmental factors
+
+    **Performance Regression Testing**:
 ```typescript
-const baselineStats = performanceMonitor.getOperationStats('Type Analysis');
-// Run optimized code
-const newStats = performanceMonitor.getOperationStats('Type Analysis');
+    const baselineStats = performanceMonitor.getOperationStats('Type Analysis');
+    // Run optimized code
+    const newStats = performanceMonitor.getOperationStats('Type Analysis');
 
-assert(newStats.averageDuration <= baselineStats.averageDuration * 1.1,
-  'Performance regression detected');
+    assert(newStats.averageDuration <= baselineStats.averageDuration * 1.1,
+    'Performance regression detected');
 ```
   </Accordion>
 </AccordionGroup>
@@ -492,63 +493,63 @@ assert(newStats.averageDuration <= baselineStats.averageDuration * 1.1,
 
 <AccordionGroup>
   <Accordion title="Missing Metrics" icon="search">
-**Symptoms**: No performance data collected
+    **Symptoms**: No performance data collected
 
-**Causes**:
-- Performance monitoring disabled
-- Operations not wrapped with measurement
-- Metrics cleared prematurely
+    **Causes**:
+    - Performance monitoring disabled
+    - Operations not wrapped with measurement
+    - Metrics cleared prematurely
 
-**Solutions**:
+    **Solutions**:
 ```typescript
-// Verify monitoring is enabled
-console.log('Monitoring enabled:', performanceMonitor.isEnabled());
+    // Verify monitoring is enabled
+    console.log('Monitoring enabled:', performanceMonitor.isEnabled());
 
-// Check for metrics
-const metrics = performanceMonitor.getMetrics();
-console.log('Metrics count:', metrics.length);
+    // Check for metrics
+    const metrics = performanceMonitor.getMetrics();
+    console.log('Metrics count:', metrics.length);
 
-// Ensure operations are measured
-const result = performanceMonitor.measure('My Operation', () => {
-  return performOperation();
-});
+    // Ensure operations are measured
+    const result = performanceMonitor.measure('My Operation', () => {
+    return performOperation();
+    });
 ```
   </Accordion>
 
   <Accordion title="Inconsistent Timing" icon="clock">
-**Symptoms**: Variable timing results for same operations
+    **Symptoms**: Variable timing results for same operations
 
-**Causes**:
-- Environmental factors (CPU load, other processes)
-- Garbage collection pauses
-- I/O operation variance
+    **Causes**:
+    - Environmental factors (CPU load, other processes)
+    - Garbage collection pauses
+    - I/O operation variance
 
-**Solutions**:
-- Run multiple iterations and average
-- Control test environment
-- Use statistical analysis
-- Consider warm-up runs
+    **Solutions**:
+    - Run multiple iterations and average
+    - Control test environment
+    - Use statistical analysis
+    - Consider warm-up runs
   </Accordion>
 
   <Accordion title="Memory Accumulation" icon="memory">
-**Symptoms**: Memory usage grows over time
+    **Symptoms**: Memory usage grows over time
 
-**Causes**:
-- Metrics not cleared between runs
-- Global instance retaining data
-- Memory leaks in measurement
+    **Causes**:
+    - Metrics not cleared between runs
+    - Global instance retaining data
+    - Memory leaks in measurement
 
-**Solutions**:
+    **Solutions**:
 ```typescript
-// Clear metrics regularly
-performanceMonitor.clear();
+    // Clear metrics regularly
+    performanceMonitor.clear();
 
-// Reset global instance
-resetGlobalPerformanceMonitor();
+    // Reset global instance
+    resetGlobalPerformanceMonitor();
 
-// Monitor memory usage
-const memoryUsage = process.memoryUsage();
-console.log('Memory usage:', memoryUsage);
+    // Monitor memory usage
+    const memoryUsage = process.memoryUsage();
+    console.log('Memory usage:', memoryUsage);
 ```
   </Accordion>
 </AccordionGroup>

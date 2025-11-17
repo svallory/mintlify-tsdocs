@@ -1,99 +1,109 @@
-{% layout "layout" %}
+{%- layout "layout" %}
 
-{% block content %}
+{%- block content %}
+
 ## Constructors
 
-{% if constructors and constructors.size > 0 %}
-{% for constructor in constructors %}
+{%- if constructors and constructors.size > 0 %}
+{%- for constructor in constructors %}
+
 ### {{ constructor.title }}
 
-{% if constructor.modifiers and constructor.modifiers.size > 0 %}
+{%- if constructor.modifiers and constructor.modifiers.size > 0 %}
 **Modifiers**: {{ constructor.modifiers | join: ', ' }}
-{% endif %}
+{%- endif %}
+{%- if constructor.description %}
 
-{% if constructor.description %}
 {{ constructor.description }}
-{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 
-{% endfor %}
-{% else %}
 *No constructors defined.*
-{% endif %}
+{%- endif %}
 
 ## Properties
 
-{% if properties and properties.size > 0 %}
-{% for property in properties %}
+{%- if properties and properties.size > 0 %}
+{%- for property in properties %}
+
 ### {{ property.title }}
 
-{% if property.modifiers and property.modifiers.size > 0 %}
+{%- if property.modifiers and property.modifiers.size > 0 %}
 **Modifiers**: {{ property.modifiers | join: ', ' }}
-{% endif %}
-
-{% if property.type %}
-**Type**: {% if property.typePath %}[{{ property.type }}]({{ property.typePath }}){% else %}{{ property.type }}{% endif %}
-{% endif %}
-
-{% if property.isOptional %}
+{%- endif %}
+{%- if property.type %}
+{%- assign formatted_prop_type = property.type | format_type %}
+{%- if formatted_prop_type contains "```" %}
+**Type**:{{ formatted_prop_type }}
+{%- else %}
+**Type**: {%- if property.typePath %}[`{{ formatted_prop_type }}`]({{ property.typePath }}){% else %}`{{ formatted_prop_type }}`{% endif %}
+{%- endif %}
+{%- endif %}
+{%- if property.isOptional %}
 **Optional**: Yes
-{% endif %}
-
-{% if property.isInherited %}
+{%- endif %}
+{%- if property.isInherited %}
 **Inherited**: Yes
-{% endif %}
-
-{% if property.defaultValue %}
+{%- endif %}
+{%- if property.defaultValue %}
 **Default**: `{{ property.defaultValue }}`
-{% endif %}
+{%- endif %}
+{%- if property.description %}
 
-{% if property.description %}
 {{ property.description }}
-{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 
-{% endfor %}
-{% else %}
 *No properties defined.*
-{% endif %}
+{%- endif %}
 
 ## Methods
 
-{% if methods and methods.size > 0 %}
-{% for method in methods %}
+{%- if methods and methods.size > 0 %}
+{%- for method in methods %}
+
 ### {{ method.title }}
 
-{% if method.modifiers and method.modifiers.size > 0 %}
+{%- if method.modifiers and method.modifiers.size > 0 %}
 **Modifiers**: {{ method.modifiers | join: ', ' }}
-{% endif %}
-
-{% if method.isInherited %}
+{%- endif %}
+{%- if method.isInherited %}
 **Inherited**: Yes
-{% endif %}
+{%- endif %}
+{%- if method.description %}
 
-{% if method.description %}
 {{ method.description }}
-{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 
-{% endfor %}
-{% else %}
 *No methods defined.*
-{% endif %}
+{%- endif %}
 
 ## Events
 
-{% if events and events.size > 0 %}
-{% for event in events %}
+{%- if events and events.size > 0 %}
+{%- for event in events %}
+
 ### {{ event.title }}
 
-{% if event.type %}
-**Type**: {% if event.typePath %}[{{ event.type }}]({{ event.typePath }}){% else %}{{ event.type }}{% endif %}
-{% endif %}
+{%- if event.type %}
+{%- assign formatted_event_type = event.type | format_type %}
+{%- if formatted_event_type contains "```" %}
+**Type**:{{ formatted_event_type }}
+{%- else %}
+**Type**: {%- if event.typePath %}[`{{ formatted_event_type }}`]({{ event.typePath }}){% else %}`{{ formatted_event_type }}`{% endif %}
+{%- endif %}
+{%- endif %}
+{%- if event.description %}
 
-{% if event.description %}
 {{ event.description }}
-{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 
-{% endfor %}
-{% else %}
 *No events defined.*
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}

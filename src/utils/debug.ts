@@ -12,15 +12,15 @@
  * ```
  *
  * Environment variables:
- * - `DEBUG=mintlify-tsdocs:*` - Enable all debug output
- * - `DEBUG=mintlify-tsdocs:*:error` - Only errors
- * - `DEBUG=mintlify-tsdocs:*:warn,mintlify-tsdocs:*:error` - Warnings and errors
- * - `DEBUG=mintlify-tsdocs:documenter:*` - All levels for documenter namespace
+ * - `DEBUG=mint-tsdocs:*` - Enable all debug output
+ * - `DEBUG=mint-tsdocs:*:error` - Only errors
+ * - `DEBUG=mint-tsdocs:*:warn,mint-tsdocs:*:error` - Warnings and errors
+ * - `DEBUG=mint-tsdocs:documenter:*` - All levels for documenter namespace
  */
 
 import debug from 'debug';
 
-const APP_NAMESPACE = 'mintlify-tsdocs';
+const APP_NAMESPACE = 'mint-tsdocs';
 
 /**
  * Debug levels in increasing verbosity order
@@ -127,7 +127,7 @@ export function createDebugger(namespace: string): Debugger {
  * @example
  * ```typescript
  * const debug = createScopedDebugger('templates', 'liquid');
- * // Creates debugger with namespace: mintlify-tsdocs:templates:liquid:*
+ * // Creates debugger with namespace: mint-tsdocs:templates:liquid:*
  * ```
  */
 export function createScopedDebugger(parentNamespace: string, childNamespace: string): Debugger {
@@ -142,10 +142,10 @@ export function createScopedDebugger(parentNamespace: string, childNamespace: st
  * @example
  * ```typescript
  * // Enable all levels for all namespaces
- * enableDebug('mintlify-tsdocs:*');
+ * enableDebug('mint-tsdocs:*');
  *
  * // Enable only errors and warnings
- * enableDebug('mintlify-tsdocs:*:error,mintlify-tsdocs:*:warn');
+ * enableDebug('mint-tsdocs:*:error,mint-tsdocs:*:warn');
  *
  * // Disable all
  * enableDebug('');

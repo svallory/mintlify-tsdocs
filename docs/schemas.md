@@ -1,12 +1,12 @@
 # JSON Schemas
 
-This document explains the JSON schemas included in `mintlify-tsdocs` and their purpose.
+This document explains the JSON schemas included in `mint-tsdocs` and their purpose.
 
 **Location:** `@src/schemas/`
 
 ## Overview
 
-The schemas directory contains JSON Schema files that define the structure and validation rules for configuration files used by `mintlify-tsdocs`. These schemas enable:
+The schemas directory contains JSON Schema files that define the structure and validation rules for configuration files used by `mint-tsdocs`. These schemas enable:
 
 - **Editor support** - IntelliSense and autocomplete in VS Code and other IDEs
 - **Validation** - Automatic validation of configuration files
@@ -14,17 +14,17 @@ The schemas directory contains JSON Schema files that define the structure and v
 
 ## Schema Files
 
-### 1. mintlify-tsdocs.schema.json
+### 1. mint-tsdocs.schema.json
 
 **Purpose:** Defines the configuration file structure for API Documenter.
 
-**Location:** `src/schemas/mintlify-tsdocs.schema.json`
+**Location:** `src/schemas/mint-tsdocs.schema.json`
 
 **Usage:** Reference this schema in your configuration file to enable validation:
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mintlify-tsdocs.schema.json"
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mint-tsdocs.schema.json"
 }
 ```
 
@@ -74,32 +74,38 @@ The schemas directory contains JSON Schema files that define the structure and v
 #### Properties Explained
 
 ##### `outputTarget`
+
 **Type:** `"docfx" | "markdown"`
 **Purpose:** Specifies output format
 
-**Note:** For `mintlify-tsdocs`, this is largely legacy. The tool now focuses on Mintlify-compatible MDX output, which is invoked via the CLI rather than configuration file.
+**Note:** For `mint-tsdocs`, this is largely legacy. The tool now focuses on Mintlify-compatible MDX output, which is invoked via the CLI rather than configuration file.
 
 ##### `newlineKind`
+
 **Type:** `"crlf" | "lf" | "os"`
 **Default:** `"crlf"`
 **Purpose:** Controls line ending style in generated files
 
 **Recommendations:**
+
 - `"lf"` - For Linux/macOS projects or when committing to Git
 - `"crlf"` - For Windows projects
 - `"os"` - Match the operating system default
 
 ##### `newDocfxNamespaces`
+
 **Type:** `boolean`
 **Purpose:** Enables namespace documentation for DocFX output
 
 **Note:** This is a DocFX-specific feature and doesn't apply to Mintlify MDX generation.
 
 ##### `plugins`
+
 **Type:** `array`
 **Purpose:** Defines plugin packages to extend functionality
 
 **Example:**
+
 ```json
 {
   "plugins": [
@@ -114,29 +120,31 @@ The schemas directory contains JSON Schema files that define the structure and v
 **Note:** Plugin support is inherited from the original API Documenter. Custom Mintlify plugins are not currently supported but could be added in future versions.
 
 ##### `tableOfContents`
+
 **Type:** `object`
 **Purpose:** Configures table of contents generation
 
 **Note:** For Mintlify, navigation is controlled via the `docs.json` file and CLI parameters (`--tab-name`, `--group`) rather than this configuration.
 
 ##### `showInheritedMembers`
+
 **Type:** `boolean`
 **Default:** `false`
 **Purpose:** When true, inherited members are documented on each class's page
 
-### 2. mintlify-tsdocs-template.json
+### 2. mint-tsdocs-template.json
 
 **Purpose:** Provides a template/example configuration file with comments explaining each option.
 
-**Location:** `src/schemas/mintlify-tsdocs-template.json`
+**Location:** `src/schemas/mint-tsdocs-template.json`
 
-**Usage:** Copy this file to your project root as `api-documenter.json` or `mintlify-tsdocs.json` and customize as needed.
+**Usage:** Copy this file to your project root as `api-documenter.json` or `mint-tsdocs.json` and customize as needed.
 
 #### Key Sections
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mintlify-tsdocs.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mint-tsdocs.schema.json",
 
   "outputTarget": "markdown",
 
@@ -160,6 +168,7 @@ The schemas directory contains JSON Schema files that define the structure and v
 ### When to Use Configuration Files
 
 Configuration files (`api-documenter.json`) are useful for:
+
 - Setting default output preferences
 - Configuring plugins
 - Defining table of contents structure for DocFX output
@@ -169,7 +178,7 @@ Configuration files (`api-documenter.json`) are useful for:
 For Mintlify-specific features, use CLI parameters instead:
 
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json ./docs/docs.json \
@@ -189,7 +198,7 @@ Create `api-documenter.json` in your project root:
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mintlify-tsdocs.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mint-tsdocs.schema.json",
   "outputTarget": "markdown",
   "newlineKind": "lf",
   "showInheritedMembers": false
@@ -197,15 +206,16 @@ Create `api-documenter.json` in your project root:
 ```
 
 Then run:
+
 ```bash
-mintlify-tsdocs markdown -i ./temp -o ./docs/api
+mint-tsdocs markdown -i ./temp -o ./docs/api
 ```
 
 ### Example 2: With Plugins
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mintlify-tsdocs.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mint-tsdocs.schema.json",
   "outputTarget": "markdown",
   "plugins": [
     {
@@ -220,7 +230,7 @@ mintlify-tsdocs markdown -i ./temp -o ./docs/api
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mintlify-tsdocs.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/mint-tsdocs.schema.json",
   "outputTarget": "markdown",
   "showInheritedMembers": true
 }
@@ -242,6 +252,7 @@ When you create a configuration file with the `$schema` property, VS Code automa
 ### Other IDEs
 
 Most modern IDEs that support JSON Schema will provide similar features:
+
 - IntelliJ IDEA
 - WebStorm
 - Sublime Text (with plugins)
@@ -254,11 +265,11 @@ You can validate configuration files in your CI pipeline:
 ```bash
 # Using ajv-cli
 npm install -g ajv-cli
-ajv validate -s src/schemas/mintlify-tsdocs.schema.json -d api-documenter.json
+ajv validate -s src/schemas/mint-tsdocs.schema.json -d api-documenter.json
 
 # Using check-jsonschema
 pip install check-jsonschema
-check-jsonschema --schemafile src/schemas/mintlify-tsdocs.schema.json api-documenter.json
+check-jsonschema --schemafile src/schemas/mint-tsdocs.schema.json api-documenter.json
 ```
 
 ## Future Enhancements
@@ -266,16 +277,19 @@ check-jsonschema --schemafile src/schemas/mintlify-tsdocs.schema.json api-docume
 The schema system could be extended to support:
 
 1. **Mintlify-specific configuration**
+
    - Component preferences (which Mintlify components to use)
    - Icon mapping rules
    - Custom frontmatter templates
 
 2. **Template customization**
+
    - MDX template paths
    - Custom heading levels
    - Section ordering preferences
 
 3. **Type analysis configuration**
+
    - Nesting depth limits
    - Type simplification rules
    - Custom type display names
@@ -297,13 +311,15 @@ If you're migrating from the original API Documenter:
 **Example Migration:**
 
 **Before (API Documenter):**
+
 ```bash
 api-documenter markdown -i ./temp -o ./docs
 ```
 
-**After (mintlify-tsdocs):**
+**After (mint-tsdocs):**
+
 ```bash
-mintlify-tsdocs markdown \
+mint-tsdocs markdown \
   -i ./temp \
   -o ./docs/api \
   --docs-json ./docs/docs.json \

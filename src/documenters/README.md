@@ -49,28 +49,33 @@ Main documentation generator and orchestrator.
 **Responsibilities:**
 
 1. **API Model Processing**
+
    - Load API packages from .api.json files
    - Traverse API model hierarchy
    - Filter items for documentation
 
 2. **File Generation**
+
    - Generate MDX files for each API item
    - Create frontmatter (title, description, icon)
    - Generate breadcrumb navigation
    - Handle README conversion to index.mdx
 
 3. **Template Rendering**
+
    - Initialize template system
    - Convert API items to template data
    - Render Liquid templates
    - Generate table of contents structures
 
 4. **Navigation Management**
+
    - Track all generated pages
    - Update docs.json with navigation structure
    - Organize by API item kind (classes, interfaces, functions)
 
 5. **Component Installation**
+
    - Copy React components to docs/snippets/tsdocs/
    - Ensure Mintlify can find components
    - Separate from user's components to avoid conflicts
@@ -84,49 +89,49 @@ Main documentation generator and orchestrator.
 
 ```typescript
 interface IMarkdownDocumenterOptions {
-  apiModel: ApiModel;                    // API model to document
-  outputFolder: string;                  // Output directory
-  docsJsonPath?: string;                 // Path to docs.json
-  tabName?: string;                      // Mintlify tab name
-  groupName?: string;                    // Mintlify group name
-  enableMenu?: boolean;                  // Enable menu in navigation
-  convertReadme?: boolean;               // Convert README to index.mdx
-  readmeTitle?: string;                  // Custom README title
+  apiModel: ApiModel; // API model to document
+  outputFolder: string; // Output directory
+  docsJsonPath?: string; // Path to docs.json
+  tabName?: string; // Mintlify tab name
+  groupName?: string; // Mintlify group name
+  enableMenu?: boolean; // Enable menu in navigation
+  convertReadme?: boolean; // Convert README to index.mdx
+  readmeTitle?: string; // Custom README title
 }
 ```
 
 **Key Methods:**
 
-| Method | Purpose |
-|--------|---------|
-| `generateFiles()` | Main entry point - generate all documentation |
-| `_generatePageForApiItem(item)` | Generate MDX for one API item |
-| `_buildFrontmatter(item)` | Create YAML frontmatter |
-| `_buildBreadcrumb(item)` | Generate breadcrumb navigation |
-| `_getLinkFilenameForApiItem(item)` | Generate filename for API item |
-| `_installMintlifyComponents()` | Copy components to docs/snippets/tsdocs |
-| `_convertReadmeToIndex()` | Convert README.md → index.mdx |
+| Method                             | Purpose                                       |
+| ---------------------------------- | --------------------------------------------- |
+| `generateFiles()`                  | Main entry point - generate all documentation |
+| `_generatePageForApiItem(item)`    | Generate MDX for one API item                 |
+| `_buildFrontmatter(item)`          | Create YAML frontmatter                       |
+| `_buildBreadcrumb(item)`           | Generate breadcrumb navigation                |
+| `_getLinkFilenameForApiItem(item)` | Generate filename for API item                |
+| `_installMintlifyComponents()`     | Copy components to docs/snippets/tsdocs       |
+| `_convertReadmeToIndex()`          | Convert README.md → index.mdx                 |
 
 **Usage Example:**
 
 ```typescript
-import { MarkdownDocumenter } from './documenters/MarkdownDocumenter';
-import { ApiModel } from '@microsoft/api-extractor-model';
+import { MarkdownDocumenter } from "./documenters/MarkdownDocumenter";
+import { ApiModel } from "@microsoft/api-extractor-model";
 
 // Load API model
 const apiModel = new ApiModel();
-apiModel.loadPackage('./my-package.api.json');
+apiModel.loadPackage("./my-package.api.json");
 
 // Create documenter
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api',
-  docsJsonPath: './docs/docs.json',
-  tabName: 'API Reference',
-  groupName: 'Core API',
+  outputFolder: "./docs/api",
+  docsJsonPath: "./docs/docs.json",
+  tabName: "API Reference",
+  groupName: "Core API",
   enableMenu: true,
   convertReadme: true,
-  readmeTitle: 'Overview'
+  readmeTitle: "Overview",
 });
 
 // Generate documentation
@@ -144,13 +149,13 @@ docs/
 │   ├── myFunction.mdx        # Function documentation
 │   └── MyEnum.mdx            # Enum documentation
 └── snippets/
-    └── tsdocs/               # mintlify-tsdocs components (separate from user's)
+    └── tsdocs/               # mint-tsdocs components (separate from user's)
         └── TypeTree.jsx      # React component for type trees
 ```
 
 **MDX File Format:**
 
-```mdx
+````mdx
 ---
 title: "MyClass"
 description: "A sample class for demonstration"
@@ -168,6 +173,7 @@ icon: "box"
 Creates a new instance of MyClass.
 
 **Parameters:**
+
 - `options`: Configuration options
 
 ## Properties
@@ -183,6 +189,7 @@ A public property.
 ### doSomething(param)
 
 **Parameters:**
+
 - `param`: Input parameter
 
 **Returns:** `Promise<void>`
@@ -193,9 +200,11 @@ Performs an action.
 
 ```typescript
 const instance = new MyClass({ config: true });
-await instance.doSomething('test');
+await instance.doSomething("test");
 ```
-```
+````
+
+````
 
 **Critical Fixes Applied:**
 
@@ -208,9 +217,10 @@ private _buildBreadcrumb(apiItem: ApiItem): Array<{ name: string; path?: string 
   }
   // ...
 }
-```
+````
 
 2. **Filename Generation Fix:**
+
 ```typescript
 private _getLinkFilenameForApiItem(apiItem: ApiItem): string | undefined {
   // Skip EntryPoint and Model before processing
@@ -226,6 +236,7 @@ private _getLinkFilenameForApiItem(apiItem: ApiItem): string | undefined {
 ```
 
 3. **Component Installation Error Handling:**
+
 ```typescript
 private async _installMintlifyComponents(outputFolder: string): Promise<void> {
   const componentsToCopy = ['TypeTree.jsx'];
@@ -270,11 +281,11 @@ private async _installMintlifyComponents(outputFolder: string): Promise<void> {
 ### Basic Documentation Generation
 
 ```typescript
-import { MarkdownDocumenter } from '../documenters/MarkdownDocumenter';
+import { MarkdownDocumenter } from "../documenters/MarkdownDocumenter";
 
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api'
+  outputFolder: "./docs/api",
 });
 
 documenter.generateFiles();
@@ -285,11 +296,11 @@ documenter.generateFiles();
 ```typescript
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api',
-  docsJsonPath: './docs/docs.json',
-  tabName: 'API Reference',
-  groupName: 'Core',
-  enableMenu: true
+  outputFolder: "./docs/api",
+  docsJsonPath: "./docs/docs.json",
+  tabName: "API Reference",
+  groupName: "Core",
+  enableMenu: true,
 });
 
 documenter.generateFiles();
@@ -300,9 +311,9 @@ documenter.generateFiles();
 ```typescript
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api',
+  outputFolder: "./docs/api",
   convertReadme: true,
-  readmeTitle: 'Package Overview'  // Custom title
+  readmeTitle: "Package Overview", // Custom title
 });
 
 documenter.generateFiles();
@@ -313,7 +324,7 @@ documenter.generateFiles();
 To add custom processing:
 
 ```typescript
-import { MarkdownDocumenter } from './MarkdownDocumenter';
+import { MarkdownDocumenter } from "./MarkdownDocumenter";
 
 class CustomDocumenter extends MarkdownDocumenter {
   protected override _generatePageForApiItem(apiItem: ApiItem): void {
@@ -336,30 +347,30 @@ class CustomDocumenter extends MarkdownDocumenter {
 ### Testing Documentation Generation
 
 ```typescript
-import { MarkdownDocumenter } from '../documenters/MarkdownDocumenter';
-import { ApiModel } from '@microsoft/api-extractor-model';
-import * as fs from 'fs';
-import * as path from 'path';
+import { MarkdownDocumenter } from "../documenters/MarkdownDocumenter";
+import { ApiModel } from "@microsoft/api-extractor-model";
+import * as fs from "fs";
+import * as path from "path";
 
-describe('MarkdownDocumenter', () => {
+describe("MarkdownDocumenter", () => {
   let apiModel: ApiModel;
   let tempDir: string;
 
   beforeEach(() => {
     apiModel = new ApiModel();
-    apiModel.loadPackage('./test-fixtures/test-package.api.json');
+    apiModel.loadPackage("./test-fixtures/test-package.api.json");
 
-    tempDir = fs.mkdtempSync('/tmp/doc-test-');
+    tempDir = fs.mkdtempSync("/tmp/doc-test-");
   });
 
   afterEach(() => {
     fs.rmSync(tempDir, { recursive: true });
   });
 
-  it('should generate MDX files for all API items', () => {
+  it("should generate MDX files for all API items", () => {
     const documenter = new MarkdownDocumenter({
       apiModel,
-      outputFolder: tempDir
+      outputFolder: tempDir,
     });
 
     documenter.generateFiles();
@@ -367,41 +378,38 @@ describe('MarkdownDocumenter', () => {
     // Check files were created
     const files = fs.readdirSync(tempDir);
     expect(files.length).toBeGreaterThan(0);
-    expect(files).toContain('index.mdx');
+    expect(files).toContain("index.mdx");
   });
 
-  it('should include proper frontmatter', () => {
+  it("should include proper frontmatter", () => {
     const documenter = new MarkdownDocumenter({
       apiModel,
-      outputFolder: tempDir
+      outputFolder: tempDir,
     });
 
     documenter.generateFiles();
 
-    const content = fs.readFileSync(
-      path.join(tempDir, 'MyClass.mdx'),
-      'utf-8'
-    );
+    const content = fs.readFileSync(path.join(tempDir, "MyClass.mdx"), "utf-8");
 
-    expect(content).toContain('---\n');
-    expect(content).toContain('title:');
-    expect(content).toContain('description:');
+    expect(content).toContain("---\n");
+    expect(content).toContain("title:");
+    expect(content).toContain("description:");
   });
 
-  it('should update docs.json', () => {
-    const docsJsonPath = path.join(tempDir, 'docs.json');
+  it("should update docs.json", () => {
+    const docsJsonPath = path.join(tempDir, "docs.json");
 
     const documenter = new MarkdownDocumenter({
       apiModel,
       outputFolder: tempDir,
-      docsJsonPath
+      docsJsonPath,
     });
 
     documenter.generateFiles();
 
     expect(fs.existsSync(docsJsonPath)).toBe(true);
 
-    const docsJson = JSON.parse(fs.readFileSync(docsJsonPath, 'utf-8'));
+    const docsJson = JSON.parse(fs.readFileSync(docsJsonPath, "utf-8"));
     expect(docsJson.navigation).toBeDefined();
   });
 });
@@ -416,9 +424,11 @@ describe('MarkdownDocumenter', () => {
 ### 🟡 Major
 
 1. **No Parallel Processing** (MarkdownDocumenter.ts)
+
    - **Issue**: API items processed sequentially
    - **Impact**: Slow for large API surfaces (1000+ items)
    - **Enhancement**: Add parallel processing:
+
    ```typescript
    async generateFiles(): Promise<void> {
      const items = this._collectApiItems();
@@ -433,9 +443,11 @@ describe('MarkdownDocumenter', () => {
    ```
 
 2. **No Progress Reporting** (MarkdownDocumenter.ts)
+
    - **Issue**: Silent processing, no feedback during generation
    - **Impact**: User doesn't know if it's working or stuck
    - **Enhancement**: Add progress callback:
+
    ```typescript
    interface IMarkdownDocumenterOptions {
      onProgress?: (current: number, total: number, item: string) => void;
@@ -445,13 +457,15 @@ describe('MarkdownDocumenter', () => {
    ```
 
 3. **No Incremental Generation** (MarkdownDocumenter.ts)
+
    - **Issue**: Always regenerates all files
    - **Impact**: Slow for iterative development
    - **Enhancement**: Add incremental mode:
+
    ```typescript
    interface IMarkdownDocumenterOptions {
      incrementalMode?: boolean;
-     cacheFile?: string;  // Track file hashes
+     cacheFile?: string; // Track file hashes
    }
    ```
 
@@ -463,25 +477,32 @@ describe('MarkdownDocumenter', () => {
 ### 🟢 Minor
 
 5. **Hardcoded Component List** (MarkdownDocumenter.ts)
+
    - **Issue**: `componentsToCopy = ['TypeTree.jsx']` is hardcoded
    - **Enhancement**: Auto-discover components:
+
    ```typescript
-   const componentDir = path.join(__dirname, '..', 'components');
-   const componentsToCopy = fs.readdirSync(componentDir)
-     .filter(f => f.endsWith('.jsx') || f.endsWith('.tsx'));
+   const componentDir = path.join(__dirname, "..", "components");
+   const componentsToCopy = fs
+     .readdirSync(componentDir)
+     .filter((f) => f.endsWith(".jsx") || f.endsWith(".tsx"));
    ```
 
 6. **No Dry-Run Mode** (MarkdownDocumenter.ts)
+
    - **Enhancement**: Add dry-run to preview changes:
+
    ```typescript
    interface IMarkdownDocumenterOptions {
-     dryRun?: boolean;  // Don't write files, just report
+     dryRun?: boolean; // Don't write files, just report
    }
    ```
 
 7. **Limited Customization** (MarkdownDocumenter.ts)
+
    - **Issue**: Hard to customize without subclassing
    - **Enhancement**: Add hooks/plugins:
+
    ```typescript
    interface IMarkdownDocumenterOptions {
      beforeGenerate?: (item: ApiItem) => void;
@@ -506,13 +527,13 @@ describe('MarkdownDocumenter', () => {
 
 ### Time Complexity
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| Load API model | O(n) | n = .api.json file size |
-| Generate all docs | O(m) | m = number of API items |
-| Render template | O(t) | t = template complexity |
-| Write file | O(f) | f = file size |
-| Update navigation | O(m) | m = number of items |
+| Operation         | Complexity | Notes                   |
+| ----------------- | ---------- | ----------------------- |
+| Load API model    | O(n)       | n = .api.json file size |
+| Generate all docs | O(m)       | m = number of API items |
+| Render template   | O(t)       | t = template complexity |
+| Write file        | O(f)       | f = file size           |
+| Update navigation | O(m)       | m = number of items     |
 
 **Total**: O(n + m×(t + f)) where m typically >> n
 
@@ -533,11 +554,13 @@ describe('MarkdownDocumenter', () => {
 ## Dependencies
 
 ### External Dependencies
+
 - `@microsoft/api-extractor-model` - API model
 - `@rushstack/node-core-library` - File operations
 - `@rushstack/terminal` - Console output
 
 ### Internal Dependencies
+
 - `../templates/` - Template system
 - `../navigation/` - Navigation management
 - `../markdown/` - Markdown emission
@@ -548,6 +571,7 @@ describe('MarkdownDocumenter', () => {
 ## Related Modules
 
 All modules in the project are orchestrated by MarkdownDocumenter:
+
 - **cli/** - Invokes MarkdownDocumenter
 - **templates/** - Renders documentation content
 - **navigation/** - Manages docs.json
@@ -570,11 +594,11 @@ All modules in the project are orchestrated by MarkdownDocumenter:
 ### Basic Usage
 
 ```typescript
-import { MarkdownDocumenter } from './documenters';
+import { MarkdownDocumenter } from "./documenters";
 
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api'
+  outputFolder: "./docs/api",
 });
 
 documenter.generateFiles();
@@ -585,13 +609,13 @@ documenter.generateFiles();
 ```typescript
 const documenter = new MarkdownDocumenter({
   apiModel,
-  outputFolder: './docs/api',
-  docsJsonPath: './docs/docs.json',
-  tabName: 'API Reference',
-  groupName: 'Core API',
+  outputFolder: "./docs/api",
+  docsJsonPath: "./docs/docs.json",
+  tabName: "API Reference",
+  groupName: "Core API",
   enableMenu: true,
   convertReadme: true,
-  readmeTitle: 'Overview'
+  readmeTitle: "Overview",
 });
 ```
 
@@ -605,27 +629,27 @@ docs/
 │   ├── IMyInterface.mdx   # Interface docs
 │   └── myFunction.mdx     # Function docs
 └── snippets/
-    └── tsdocs/            # mintlify-tsdocs components
+    └── tsdocs/            # mint-tsdocs components
         └── TypeTree.jsx   # Component
 ```
 
 ### Integration Points
 
-| Module | Purpose |
-|--------|---------|
-| templates/ | Liquid template rendering |
-| navigation/ | docs.json updates |
-| markdown/ | TSDoc → Markdown conversion |
-| components/ | React component installation |
-| utils/ | Filename generation, security |
-| cache/ | Performance optimization |
-| errors/ | Error handling |
+| Module      | Purpose                       |
+| ----------- | ----------------------------- |
+| templates/  | Liquid template rendering     |
+| navigation/ | docs.json updates             |
+| markdown/   | TSDoc → Markdown conversion   |
+| components/ | React component installation  |
+| utils/      | Filename generation, security |
+| cache/      | Performance optimization      |
+| errors/     | Error handling                |
 
 ---
 
 ## Summary
 
-The MarkdownDocumenter is the **heart of mintlify-tsdocs**. It orchestrates all subsystems to transform TypeScript API documentation into beautiful, navigable Mintlify MDX documentation. It handles:
+The MarkdownDocumenter is the **heart of mint-tsdocs**. It orchestrates all subsystems to transform TypeScript API documentation into beautiful, navigable Mintlify MDX documentation. It handles:
 
 ✅ API model traversal
 ✅ Template rendering

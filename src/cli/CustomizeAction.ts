@@ -4,21 +4,23 @@
 import * as path from 'path';
 import { FileSystem } from '@rushstack/node-core-library';
 import {
+  CommandLineAction,
   type CommandLineStringParameter,
-  type ICommandLineActionOptions,
   CommandLineFlagParameter
 } from '@rushstack/ts-command-line';
 import { Colorize } from '@rushstack/terminal';
 import * as clack from '@clack/prompts';
 
-import { BaseAction } from './BaseAction';
-import { TemplateMerger } from '../templates/TemplateMerger';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
+import { loadConfig } from '../config/loader';
+import type { MintlifyTsDocsConfig } from '../config/types';
+import { showCliHeader } from './CliHelpers';
+import * as CustomizeHelp from './help/CustomizeHelp';
 
 /**
  * CLI action to initialize a template directory with default templates for customization
  */
-export class CustomizeAction extends BaseAction {
+export class CustomizeAction extends CommandLineAction {
   private readonly _templateDirParameter: CommandLineStringParameter;
   private readonly _forceParameter: CommandLineFlagParameter;
 
@@ -28,7 +30,8 @@ export class CustomizeAction extends BaseAction {
       summary: 'Initialize a template directory with default Liquid templates for customization',
       documentation:
         'Creates a template directory populated with default Liquid templates ' +
-        'that can be customized to override the default documentation generation behavior.'
+        'that can be customized to override the default documentation generation behavior. ' +
+        'Automatically updates mint-tsdocs.config.json to use the custom templates.'
     });
 
     this._templateDirParameter = this.defineStringParameter({
@@ -37,8 +40,7 @@ export class CustomizeAction extends BaseAction {
       argumentName: 'DIRECTORY',
       description:
         'Specifies the directory where templates should be created. ' +
-        'If omitted, defaults to "./templates"',
-      defaultValue: './templates'
+        'If omitted, you will be prompted for a location.'
     });
 
     this._forceParameter = this.defineFlagParameter({
@@ -50,12 +52,42 @@ export class CustomizeAction extends BaseAction {
   }
 
   protected override async onExecuteAsync(): Promise<void> {
-    const templateDir = this._templateDirParameter.value || './templates';
-    const force = this._forceParameter.value || false;
-
-    clack.intro(Colorize.bold('Initializing template directory: ') + Colorize.cyan(templateDir));
-
+    // Check if --help was requested (check process.argv since ts-command-line intercepts it)
+    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+      CustomizeHelp.showHelp();
+      return;
+    }
     try {
+      // Get or prompt for template directory
+      let templateDir = this._templateDirParameter.value;
+
+      if (!templateDir) {
+        // Interactive prompt for template directory
+        const response = await clack.text({
+          message: 'Where should the templates be copied to?',
+          placeholder: './templates',
+          defaultValue: './templates',
+          validate: (value) => {
+            if (!value || value.trim().length === 0) {
+              return 'Template directory is required';
+            }
+            return undefined;
+          }
+        });
+
+        if (clack.isCancel(response)) {
+          clack.cancel('Template customization cancelled');
+          process.exit(0);
+        }
+
+        templateDir = response as string;
+      }
+
+      const force = this._forceParameter.value || false;
+
+      showCliHeader();
+      console.log('\n' + Colorize.bold('Initializing template directory: ') + Colorize.cyan(templateDir));
+
       // Check if directory exists and has files
       if (FileSystem.exists(templateDir)) {
         const files = FileSystem.readFolderItemNames(templateDir);
@@ -90,18 +122,21 @@ export class CustomizeAction extends BaseAction {
 
       // Copy all default templates to user directory
       clack.log.info('Copying default templates...');
-      this._copyTemplates(defaultTemplateDir, templateDir);
+      const copiedCount = this._copyTemplates(defaultTemplateDir, templateDir);
+      clack.log.success(`✓ Copied ${copiedCount} template files`);
 
-      clack.log.success('✓ Template customization directory created successfully!');
-      
-      clack.outro(`You can now customize the templates in:
-${Colorize.cyan(`  ${path.resolve(templateDir)}`)}
+      // Update mint-tsdocs.config.json if it exists
+      await this._updateConfig(templateDir);
 
-To use your custom templates:
-1. Modify the template files as needed
-2. Run the documenter with: --template-dir ${templateDir}
+      clack.outro(`Templates ready for customization!
 
-For more information, see: https://docs.mintlify-tsdocs.com/templates
+${Colorize.cyan('Location:')} ${path.resolve(templateDir)}
+
+${Colorize.bold('Next steps:')}
+1. Customize the template files as needed
+2. Generate docs: ${Colorize.cyan('mint-tsdocs generate')}
+
+${Colorize.gray('Documentation:')} https://mint-tsdocs.saulo.engineer/templates
 `);
 
     } catch (error) {
@@ -119,8 +154,9 @@ For more information, see: https://docs.mintlify-tsdocs.com/templates
   /**
    * Copy templates from source to destination directory
    */
-  private _copyTemplates(sourceDir: string, destDir: string): void {
+  private _copyTemplates(sourceDir: string, destDir: string): number {
     const entries = FileSystem.readFolderItemNames(sourceDir);
+    let count = 0;
 
     for (const entry of entries) {
       const sourcePath = path.join(sourceDir, entry);
@@ -145,14 +181,56 @@ For more information, see: https://docs.mintlify-tsdocs.com/templates
   - examples: Array of example code strings
   - heritageTypes: Inheritance information
 
-  Learn more: https://docs.mintlify-tsdocs.com/templates
+  Learn more: https://mint-tsdocs.saulo.engineer/templates
 -->
 
 `;
 
         const finalContent = headerComment + content;
         FileSystem.writeFile(destPath, finalContent);
+        count++;
       }
+    }
+
+    return count;
+  }
+
+  /**
+   * Update mint-tsdocs.config.json with the template directory path
+   */
+  private async _updateConfig(templateDir: string): Promise<void> {
+    try {
+      // Try to load existing config
+      const result = await loadConfig(process.cwd());
+
+      if (result) {
+        const configPath = path.join(process.cwd(), 'mint-tsdocs.config.json');
+
+        if (!FileSystem.exists(configPath)) {
+          clack.log.warn('No mint-tsdocs.config.json found. Run "mint-tsdocs init" first.');
+          return;
+        }
+
+        // Read the current config file
+        const configContent = FileSystem.readFile(configPath);
+        const config = JSON.parse(configContent) as MintlifyTsDocsConfig;
+
+        // Update templates configuration
+        if (!config.templates) {
+          config.templates = {};
+        }
+        config.templates.userTemplateDir = templateDir;
+
+        // Write updated config with pretty formatting
+        FileSystem.writeFile(configPath, JSON.stringify(config, null, 2) + '\n');
+
+        clack.log.success(`✓ Updated mint-tsdocs.config.json with template directory`);
+      } else {
+        clack.log.info('No configuration file found. Templates will be used with --template-dir flag.');
+      }
+    } catch (error) {
+      // Non-fatal error - just log it
+      clack.log.warn('Could not update configuration file. You can manually set templates.userTemplateDir in mint-tsdocs.config.json');
     }
   }
 }

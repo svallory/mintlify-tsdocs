@@ -23,7 +23,7 @@ export class TemplateMerger {
     defaultTemplateDir?: string
   ): Promise<string> {
     // Create temporary directory
-    const tempDir = path.join(tmpdir(), `mintlify-tsdocs-templates-${randomBytes(8).toString('hex')}`);
+    const tempDir = path.join(tmpdir(), `mint-tsdocs-templates-${randomBytes(8).toString('hex')}`);
     await fs.promises.mkdir(tempDir, { recursive: true });
 
     try {

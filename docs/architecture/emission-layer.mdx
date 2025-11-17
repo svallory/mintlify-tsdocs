@@ -1,7 +1,6 @@
 ---
 title: Emission Layer
 description: TSDoc AST to Mintlify MDX transformation with intelligent caching
-description: TSDoc AST to Mintlify MDX transformation with intelligent caching
 icon: "file-export"
 ---
 
@@ -482,40 +481,44 @@ private _resolveApiItemReference(declarationReference: string, context: IMarkdow
 
 <AccordionGroup>
   <Accordion title="Cache Optimization" icon="tachometer-alt">
-**Monitor Cache Performance**:
-```typescript
-// Check cache statistics
-const cacheStats = emitter.getApiResolutionCache().getStats();
-console.log(`API Resolution Cache: ${cacheStats.hitRate * 100}% hit rate`);
-```
 
-**Tune Cache Size**:
-- Start with default (500 items)
-- Monitor hit rates during development
-- Increase size for large codebases
-- Consider memory usage vs. performance trade-offs
+    **Monitor Cache Performance**:
+    ```typescript
+    // Check cache statistics
+    const cacheStats = emitter.getApiResolutionCache().getStats();
+    console.log(`API Resolution Cache: ${cacheStats.hitRate * 100}% hit rate`);
+    ```
 
-**When to Disable**:
-- Very small projects (minimal benefit)
-- Memory-constrained environments
-- Debugging resolution issues
+    **Tune Cache Size**:
+    - Start with default (500 items)
+    - Monitor hit rates during development
+    - Increase size for large codebases
+    - Consider memory usage vs. performance trade-offs
+
+    **When to Disable**:
+    - Very small projects (minimal benefit)
+    - Memory-constrained environments
+    - Debugging resolution issues
+
   </Accordion>
 
   <Accordion title="Component Generation" icon="puzzle-piece">
-**Consistent Table Structure**:
-- Maintain standard column order: Name, Type, Description
-- Use consistent header names for detection
-- Include modifier information in type column
 
-**Type Documentation**:
-- Provide complete type information
-- Include examples for complex types
-- Document nested object structures
+    **Consistent Table Structure**:
+    - Maintain standard column order: Name, Type, Description
+    - Use consistent header names for detection
+    - Include modifier information in type column
 
-**Link Resolution**:
-- Use proper declaration references
-- Maintain consistent naming conventions
-- Test cross-references in generated docs
+    **Type Documentation**:
+    - Provide complete type information
+    - Include examples for complex types
+    - Document nested object structures
+
+    **Link Resolution**:
+    - Use proper declaration references
+    - Maintain consistent naming conventions
+    - Test cross-references in generated docs
+
   </Accordion>
 </AccordionGroup>
 
@@ -523,65 +526,65 @@ console.log(`API Resolution Cache: ${cacheStats.hitRate * 100}% hit rate`);
 
 <AccordionGroup>
   <Accordion title="Component Generation Issues" icon="exclamation-triangle">
-**Symptoms**: Tables not converted to Mintlify components
+    **Symptoms**: Tables not converted to Mintlify components
 
-**Causes**:
-- Incorrect table header format
-- Missing required columns
-- Non-standard table structure
+    **Causes**:
+    - Incorrect table header format
+    - Missing required columns
+    - Non-standard table structure
 
-**Solutions**:
-- Verify table headers match expected patterns
-- Ensure consistent column structure
-- Check detection logic in `_isPropertyTable()` etc.
+    **Solutions**:
+    - Verify table headers match expected patterns
+    - Ensure consistent column structure
+    - Check detection logic in `_isPropertyTable()` etc.
 
-**Debugging**:
+    **Debugging**:
 ```typescript
-console.log('Table headers:', this._getTableHeaders(docTable));
-console.log('Is property table:', this._isPropertyTable(docTable));
+    console.log('Table headers:', this._getTableHeaders(docTable));
+    console.log('Is property table:', this._isPropertyTable(docTable));
 ```
   </Accordion>
 
   <Accordion title="Cache Performance Issues" icon="gauge">
-**Symptoms**: Low cache hit rates or poor performance
+    **Symptoms**: Low cache hit rates or poor performance
 
-**Causes**:
-- Cache size too small for project
-- Too many unique references
-- Cache key collisions
+    **Causes**:
+    - Cache size too small for project
+    - Too many unique references
+    - Cache key collisions
 
-**Solutions**:
-- Increase cache size
-- Analyze reference patterns
-- Check cache key generation
-- Consider disabling for small projects
+    **Solutions**:
+    - Increase cache size
+    - Analyze reference patterns
+    - Check cache key generation
+    - Consider disabling for small projects
 
-**Monitoring**:
+    **Monitoring**:
 ```typescript
-const stats = emitter.getApiResolutionCache().getStats();
-console.log(`Hit rate: ${stats.hitRate}, Size: ${stats.size}/${stats.maxSize}`);
+    const stats = emitter.getApiResolutionCache().getStats();
+    console.log(`Hit rate: ${stats.hitRate}, Size: ${stats.size}/${stats.maxSize}`);
 ```
   </Accordion>
 
   <Accordion title="Link Resolution Failures" icon="unlink">
-**Symptoms**: Broken links or unresolved references
+    **Symptoms**: Broken links or unresolved references
 
-**Causes**:
-- Invalid declaration references
-- Missing API items
-- Incorrect context resolution
+    **Causes**:
+    - Invalid declaration references
+    - Missing API items
+    - Incorrect context resolution
 
-**Solutions**:
-- Verify declaration reference format
-- Check API model completeness
-- Validate context item
-- Review fallback behavior
+    **Solutions**:
+    - Verify declaration reference format
+    - Check API model completeness
+    - Validate context item
+    - Review fallback behavior
 
-**Debugging**:
+    **Debugging**:
 ```typescript
-console.log('Declaration reference:', declarationReference);
-console.log('Context item:', context.apiItem?.displayName);
-console.log('Resolution result:', result.resolvedApiItem);
+    console.log('Declaration reference:', declarationReference);
+    console.log('Context item:', context.apiItem?.displayName);
+    console.log('Resolution result:', result.resolvedApiItem);
 ```
   </Accordion>
 </AccordionGroup>

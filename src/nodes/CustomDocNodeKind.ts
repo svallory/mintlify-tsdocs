@@ -30,7 +30,7 @@ export class CustomDocNodes {
     if (CustomDocNodes._configuration === undefined) {
       const configuration: TSDocConfiguration = new TSDocConfiguration();
 
-      configuration.docNodeManager.registerDocNodes('@micrososft/mintlify-tsdocs', [
+      configuration.docNodeManager.registerDocNodes('@micrososft/mint-tsdocs', [
         { docNodeKind: CustomDocNodeKind.EmphasisSpan, constructor: DocEmphasisSpan },
         { docNodeKind: CustomDocNodeKind.Heading, constructor: DocHeading },
         { docNodeKind: CustomDocNodeKind.NoteBox, constructor: DocNoteBox },

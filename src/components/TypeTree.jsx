@@ -4,7 +4,7 @@
  * A recursive, expandable component for documenting complex type structures.
  * Works for TypeScript types, JSON schemas, API parameters, return types, or any structured data.
  *
- * Distributed with mintlify-tsdocs and automatically installed to docs/snippets/.
+ * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
  *
  * @version 1.0.0
  */

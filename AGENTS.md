@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**mintlify-tsdocs** generates Mintlify-compatible MDX documentation from TypeScript API documentation. It reads `*.api.json` files produced by [API Extractor](https://api-extractor.com/) and converts them to MDX files with proper frontmatter, navigation integration, and Mintlify-specific components.
+**mint-tsdocs** generates Mintlify-compatible MDX documentation from TypeScript API documentation. It reads `*.api.json` files produced by [API Extractor](https://api-extractor.com/) and converts them to MDX files with proper frontmatter, navigation integration, and Mintlify-specific components.
 
 ## Commands
 
 ### Build & Development
+
 ```bash
 # Build TypeScript to JavaScript
 bun run build
@@ -23,46 +24,50 @@ bun run rebuild
 ```
 
 ### Project Initialization
+
 ```bash
-# Initialize mintlify-tsdocs configuration
-# Creates mintlify-tsdocs.config.json at project root with auto-detected settings
+# Initialize mint-tsdocs configuration
+# Creates mint-tsdocs.config.json at project root with auto-detected settings
 # Optionally initializes Mintlify (mint new) if not already set up
-# Auto-adds "mint-ts" script to package.json
-mint-ts init
+# Auto-adds "mint-tsdocs" script to package.json
+mint-tsdocs init
 
 # Use auto-detected defaults (no prompts)
-mint-ts init --yes
+mint-tsdocs init --yes
 
 # Skip Mintlify initialization
-mint-ts init --skip-mintlify
+mint-tsdocs init --skip-mintlify
 
 # Initialize in a specific directory
-mint-ts init --project-dir <directory>
+mint-tsdocs init --project-dir <directory>
 ```
 
 ### Documentation Generation
+
 ```bash
-# Generate documentation (uses mintlify-tsdocs.config.json from project root)
+# Generate documentation (uses mint-tsdocs.config.json from project root)
 # Auto-generates API Extractor and TSDoc configs in .tsdocs/ cache directory
-mint-ts generate
+mint-tsdocs generate
 
 # Skip running api-extractor (use existing .api.json files in .tsdocs/)
-mint-ts generate --skip-extractor
+mint-tsdocs generate --skip-extractor
 
-# Recommended package.json script (auto-added by `mint-ts init`)
-# "mint-ts": "mint-ts generate"
+# Recommended package.json script (auto-added by `mint-tsdocs init`)
+# "mint-tsdocs": "mint-tsdocs generate"
 ```
 
 ### Template Customization
+
 ```bash
 # Initialize template directory for customization
-mint-ts customize -t ./templates
+mint-tsdocs customize -t ./templates
 
 # Overwrite existing templates
-mint-ts customize -t ./templates --force
+mint-tsdocs customize -t ./templates --force
 ```
 
 ### Testing
+
 ```bash
 # Run tests
 bun test
@@ -74,6 +79,7 @@ bun jest --updateSnapshot
 ```
 
 ### Linting
+
 ```bash
 # Run linter
 bun run lint
@@ -83,23 +89,27 @@ bun run lint:fix
 ```
 
 ### Local Testing
+
 To test local changes against a real project:
+
 ```bash
 # Create global symlink
 bun link
 
 # Navigate to test project and run
-mintlify-tsdocs markdown -i ./input -o ./output-test
+mint-tsdocs markdown -i ./input -o ./output-test
 ```
 
 ## Architecture
 
 ### Core Flow
+
 ```
 TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter → MDX files + docs.json
 ```
 
 1. **CLI Layer** (`src/cli/`)
+
    - `ApiDocumenterCommandLine.ts` - Main CLI parser
    - `InitAction.ts` - Handles `init` command for project setup (uses @clack/prompts)
    - `GenerateAction.ts` - Handles `generate` command (orchestrates api-extractor + docs generation)
@@ -107,6 +117,7 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
    - `BaseAction.ts` - Shared action base class
 
 2. **Documentation Generation** (`src/documenters/`)
+
    - `MarkdownDocumenter.ts` - Main orchestrator
      - Loads API model from `*.api.json` files
      - Converts API items to template data
@@ -114,6 +125,7 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
      - Updates Mintlify navigation (`docs.json`)
 
 3. **Template System** (`src/templates/`)
+
    - **LiquidJS-based** template engine with layout inheritance
    - `LiquidTemplateEngine.ts` - Liquid template renderer
    - `LiquidTemplateManager.ts` - Template resolution and override system
@@ -122,21 +134,25 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
    - Default templates in `src/templates/defaults/`
 
 4. **Markdown Rendering** (`src/markdown/`)
+
    - `CustomMarkdownEmitter.ts` - Converts TSDoc nodes to Markdown/MDX
    - Handles custom nodes (tables, note boxes, expandables)
    - Special handling for Mintlify components (`<ParamField>`, `<ResponseField>`)
 
 5. **Navigation Management** (`src/navigation/`)
+
    - `NavigationManager.ts` - Updates `docs.json` with generated pages
    - Supports tabs, groups, and menu configuration
 
 6. **Performance & Caching** (`src/cache/`)
+
    - `CacheManager.ts` - Centralized cache coordinator
    - `TypeAnalysisCache.ts` - Caches type structure analysis (LRU)
    - `ApiResolutionCache.ts` - Caches API reference resolution (LRU)
    - Use `CacheManager.createProduction()` for production builds
 
 7. **Utilities** (`src/utils/`)
+
    - `ObjectTypeAnalyzer.ts` - Parses complex TypeScript types
    - `DocumentationHelper.ts` - TSDoc extraction helpers
    - `SecurityUtils.ts` - Input sanitization
@@ -149,6 +165,7 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
 ### Template System Details
 
 **Template Variables Structure:**
+
 ```typescript
 {
   apiItem: { name, kind, displayName, description },
@@ -171,6 +188,7 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
 ```
 
 **Template Inheritance:**
+
 ```liquid
 {% layout "layout" %}
 
@@ -181,6 +199,7 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
 ```
 
 **Template Priority:**
+
 1. Individual overrides (`overrides/class.liquid`)
 2. Merged user templates (`temp/class.liquid`)
 3. Default templates (`src/templates/defaults/class.liquid`)
@@ -188,7 +207,9 @@ TypeScript → api-extractor → *.api.json → ApiModel → MarkdownDocumenter 
 ## Key Patterns
 
 ### API Item Processing
+
 The main flow in `MarkdownDocumenter.ts`:
+
 1. Load API model from `*.api.json` files
 2. Get all packages from model
 3. For each package/entry point:
@@ -198,7 +219,9 @@ The main flow in `MarkdownDocumenter.ts`:
 4. Update `docs.json` navigation
 
 ### Type Analysis Caching
+
 When analyzing complex types:
+
 ```typescript
 const cacheManager = getGlobalCacheManager();
 const cached = cacheManager.typeAnalysis.get(typeString);
@@ -209,11 +232,13 @@ cacheManager.typeAnalysis.set(typeString, result);
 ```
 
 ### Error Handling
+
 - Use `DocumentationError` with specific `ErrorCode`
 - `ErrorBoundary` wraps risky operations
 - Validation happens early (file paths, options)
 
 ### Security
+
 - All user input sanitized via `SecurityUtils`
 - Template data sanitization in `LiquidTemplateEngine`
 - Path traversal protection in file operations
@@ -222,23 +247,27 @@ cacheManager.typeAnalysis.set(typeString, result);
 ## Important Conventions
 
 ### Template Development
+
 - Use semantic variables (`properties`, not `tables.properties`)
 - Always provide `{% layout "layout" %}` for consistency
 - Use blocks (`{% block content %}`) for extensibility
 - Check for existence: `{% if properties and properties.size > 0 %}`
 
 ### Code Style
+
 - Strict TypeScript enabled
 - Prefer explicit types over inference
 - Document public APIs with JSDoc
 - Use conventional commits for commit messages
 
 ### Testing
+
 - Snapshot tests for MDX output in `src/markdown/test/`
 - Manually verify MDX renders in Mintlify after changes
 - Update snapshots only after intentional changes
 
 ### Performance
+
 - Use caching for expensive operations
 - Enable statistics in development: `CacheManager.createDevelopment({ enableStats: true })`
 - Monitor cache hit rates for optimization opportunities
@@ -261,9 +290,9 @@ src/
 ├── errors/           # Error handling
 └── performance/      # Performance monitoring
 
-# Project structure after running `mint-ts init`:
+# Project structure after running `mint-tsdocs init`:
 project-root/
-├── mintlify-tsdocs.config.json  # Main configuration file
+├── mint-tsdocs.config.json  # Main configuration file
 ├── package.json
 └── docs/
     ├── docs.json                # Mintlify navigation
@@ -285,12 +314,14 @@ project-root/
 ## Dependencies
 
 ### Key External Dependencies
+
 - `@microsoft/api-extractor-model` - API model parsing
 - `@microsoft/tsdoc` - TSDoc parsing
 - `liquidjs` - Template engine
 - `@rushstack/ts-command-line` - CLI framework
 
 ### Development Tools
+
 - TypeScript compiler for builds
 - Jest for testing
 - Bun for package management
@@ -298,40 +329,44 @@ project-root/
 ## Common Tasks
 
 ### Setting Up a New Project
-1. Run `mint-ts init` in the project directory
+
+1. Run `mint-tsdocs init` in the project directory
    - Auto-detects TypeScript entry point from package.json or common paths
    - Optionally initializes Mintlify (via `mint new`) if needed
-   - Creates `mintlify-tsdocs.config.json` at project root
+   - Creates `mint-tsdocs.config.json` at project root
    - Creates `.tsdocs/` cache directory (gitignored)
 2. Follow the interactive prompts (or use `--yes` for auto-detected defaults):
    - TypeScript entry point (.d.ts file)
    - Documentation output folder
    - Mintlify navigation settings (tab name, group name)
 3. Build your TypeScript project: `bun run build`
-4. Generate documentation: `mint-ts generate`
-   - Config is automatically loaded from `mintlify-tsdocs.config.json`
+4. Generate documentation: `mint-tsdocs generate`
+   - Config is automatically loaded from `mint-tsdocs.config.json`
    - API Extractor and TSDoc configs are auto-generated in `.tsdocs/`
 
-### Configuration File (mintlify-tsdocs.config.json)
+### Configuration File (mint-tsdocs.config.json)
 
 The config file supports cosmiconfig search locations:
-- `mintlify-tsdocs.config.json`
-- `.mintlify-tsdocsrc` / `.mintlify-tsdocsrc.json`
+
+- `mint-tsdocs.config.json`
+- `.mint-tsdocsrc` / `.mint-tsdocsrc.json`
 - `mintlifyTsdocs` field in `package.json`
 
 **Minimal example:**
+
 ```json
 {
-  "$schema": "./node_modules/mintlify-tsdocs/lib/schemas/config.schema.json",
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
   "entryPoint": "./lib/index.d.ts",
   "outputFolder": "./docs/reference"
 }
 ```
 
 **Full example with all options:**
+
 ```json
 {
-  "$schema": "./node_modules/mintlify-tsdocs/lib/schemas/config.schema.json",
+  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
   "entryPoint": "./lib/index.d.ts",
   "outputFolder": "./docs/reference",
   "docsJson": "./docs/docs.json",
@@ -357,23 +392,27 @@ The config file supports cosmiconfig search locations:
 ```
 
 **Auto-detection:**
+
 - `entryPoint` - Auto-detected from package.json `types`/`typings` field or common paths
 - `docsJson` - Auto-detected by searching for docs.json in common locations
 - `outputFolder` - Defaults to `./docs/reference`
 
 ### Adding a New Template Variable
+
 1. Update `ITemplateData` in `src/templates/TemplateEngine.ts`
 2. Add conversion logic in `src/templates/TemplateDataConverter.ts`
 3. Update template files to use new variable
 4. Update tests and snapshots
 
 ### Adding Support for New API Item Type
+
 1. Add template mapping in `src/templates/TemplateManager.ts`
 2. Create template file in `src/templates/defaults/`
 3. Add conversion logic in `TemplateDataConverter`
 4. Add tests for new item type
 
 ### Customizing MDX Output
+
 1. Modify `CustomMarkdownEmitter.ts` for structural changes
 2. Modify templates in `src/templates/defaults/` for content changes
 3. Run `bun run build` to copy templates to `lib/`
@@ -382,14 +421,17 @@ The config file supports cosmiconfig search locations:
 ## Known Issues
 
 ### Template System
+
 - Temp directories from `TemplateMerger` not cleaned up (disk space leak)
 - No template validation before render (errors only at runtime)
 - Sanitization overhead even for trusted API Extractor data
 
 ### Cache System
+
 - `ApiResolutionCache` uses slow `JSON.stringify()` for keys
 - No TTL or auto-invalidation (manual clear required)
 
 ### General
+
 - Watch mode not configured (manual rebuild required)
 - No hot reload for template development
