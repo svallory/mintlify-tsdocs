@@ -135,7 +135,7 @@ mint-tsdocs customize [-t TEMPLATE_DIR] [OPTIONS]
 
 **Options:**
 - `-t`, `--template-dir PATH` - Template directory path (if omitted, you will be prompted)
-- `--force` - Overwrite existing templates
+- `-f`, `--force` - Overwrite existing templates
 
 **Examples:**
 ```bash
@@ -201,6 +201,46 @@ Shows comprehensive documentation metrics:
 - **Generated Files**: Number of MDX files, total size, average size, and output location
 
 The stats command requires that documentation has been generated at least once.
+
+---
+
+### lint
+
+Check documentation quality and find issues in your API documentation.
+
+**Usage:**
+```bash
+mint-tsdocs lint
+```
+
+**What it checks:**
+- **Undocumented public APIs** - Classes, interfaces, and functions without documentation
+- **Missing parameter descriptions** - Function/method parameters without `@param` documentation
+- **Missing return descriptions** - Non-void functions without `@returns` documentation
+- **Missing examples** - Complex APIs (classes/interfaces) without usage examples
+- **TSDoc syntax** - Invalid TSDoc comment syntax (requires `@typescript-eslint/parser` and `eslint-plugin-tsdoc`)
+
+**Output:**
+Displays a formatted table with:
+- Issue severity (error, warning, info)
+- Issue description
+- Location (API item path or file:line:column)
+- Summary with counts by severity
+
+**Examples:**
+```bash
+# Check documentation quality
+mint-tsdocs lint
+
+# Returns exit code 1 if errors are found
+mint-tsdocs lint && echo "Docs are good!"
+```
+
+**Exit Codes:**
+- `0` - No issues found or only warnings/info
+- `1` - One or more errors found
+
+**Note:** The lint command requires that documentation has been generated at least once. Run `mint-tsdocs generate` first.
 
 ---
 
@@ -321,7 +361,7 @@ npx mint-tsdocs show stats
 ```json
 {
   "scripts": {
-    "docs:init": "npx mint-tsdocs",
+    "docs:init": "npx mint-tsdocs init",
     "docs:generate": "npx mint-tsdocs generate",
     "docs": "npx mint-tsdocs"
   }
@@ -366,17 +406,19 @@ Configuration is stored in `mint-tsdocs.config.json` at your project root.
     "cache": true,
     "strict": true
   },
-  "tsdoc": {
-    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"]
-  },
   "apiExtractor": {
     "bundledPackages": [],
+    "compiler": {
+      "tsconfigFilePath": "./tsconfig.json"
+    },
     "docModel": {
       "projectFolderUrl": "https://github.com/user/repo/tree/main"
     }
   }
 }
 ```
+
+**Note:** TSDoc configuration is stored in a separate `tsdoc.json` file at your project root. This file is created automatically by `mint-tsdocs init` and is NOT part of `mint-tsdocs.config.json`.
 
 **Alternative Locations:**
 - `mint-tsdocs.config.json` (recommended)
@@ -432,17 +474,13 @@ mint-tsdocs generate --skip-extractor
 
 ### Template Customization
 ```bash
-# 1. Copy templates
+# 1. Copy templates (automatically updates config)
 mint-tsdocs customize -t ./templates
 
 # 2. Edit templates
 vim ./templates/class.liquid
 
-# 3. Update config to use templates
-# Edit mint-tsdocs.config.json:
-# "templates": { "userTemplateDir": "./templates" }
-
-# 4. Regenerate docs
+# 3. Regenerate docs
 mint-tsdocs generate
 ```
 

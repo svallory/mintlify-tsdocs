@@ -196,6 +196,9 @@ export class InitAction extends CommandLineAction {
       // Create tsdoc.json at project root
       this._createTsDocConfig(absoluteProjectDir);
 
+      // Configure MDX support in VS Code and tsconfig
+      await this._configureMdxSupport(absoluteProjectDir, useDefaults);
+
       // Create .tsdocs directory and README
       const tsdocsDir = path.join(docsDir, '.tsdocs');
       FileSystem.ensureFolder(tsdocsDir);
@@ -617,6 +620,113 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
       clack.log.warn('Could not parse existing tsdoc.json - creating new one');
       FileSystem.writeFile(tsdocPath, JSON.stringify(requiredConfig, null, 2));
       clack.log.success('Created tsdoc.json');
+    }
+  }
+
+  /**
+   * Configure MDX support in VS Code and tsconfig.json
+   */
+  private async _configureMdxSupport(projectDir: string, useDefaults: boolean): Promise<void> {
+    // Find tsconfig.json
+    const tsconfigPath = TsConfigValidator.findTsConfig(projectDir);
+
+    if (!tsconfigPath) {
+      clack.log.warn('No tsconfig.json found - skipping MDX configuration');
+      return;
+    }
+
+    // Ask for permission to update settings
+    const shouldConfigure = useDefaults || await clack.confirm({
+      message: 'Configure VS Code and TypeScript for MDX support?',
+      initialValue: true
+    });
+
+    if (clack.isCancel(shouldConfigure) || !shouldConfigure) {
+      return;
+    }
+
+    // Update .vscode/settings.json
+    this._updateVSCodeSettings(projectDir);
+
+    // Update tsconfig.json with MDX settings
+    this._updateTsConfigForMdx(projectDir, tsconfigPath);
+  }
+
+  /**
+   * Update .vscode/settings.json to enable MDX language server
+   */
+  private _updateVSCodeSettings(projectDir: string): void {
+    const vscodeDir = path.join(projectDir, '.vscode');
+    const settingsPath = path.join(vscodeDir, 'settings.json');
+
+    try {
+      // Ensure .vscode directory exists
+      FileSystem.ensureFolder(vscodeDir);
+
+      let settings: any = {};
+
+      // Read existing settings if they exist
+      if (FileSystem.exists(settingsPath)) {
+        try {
+          const content = FileSystem.readFile(settingsPath);
+          settings = JSON.parse(content);
+        } catch (error) {
+          clack.log.warn('Could not parse existing .vscode/settings.json - will create new one');
+        }
+      }
+
+      // Add MDX server setting
+      settings['mdx.server.enable'] = true;
+
+      // Write back
+      FileSystem.writeFile(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+      clack.log.success('Updated .vscode/settings.json with MDX language server');
+    } catch (error) {
+      clack.log.warn(`Failed to update .vscode/settings.json: ${error}`);
+    }
+  }
+
+  /**
+   * Update tsconfig.json with MDX support settings
+   */
+  private _updateTsConfigForMdx(projectDir: string, tsconfigPath: string): void {
+    try {
+      const content = FileSystem.readFile(tsconfigPath);
+      const tsconfig = JSON.parse(content);
+
+      let updated = false;
+
+      // Add MDX configuration
+      if (!tsconfig.mdx) {
+        tsconfig.mdx = { checkMdx: true };
+        updated = true;
+      } else if (!tsconfig.mdx.checkMdx) {
+        tsconfig.mdx.checkMdx = true;
+        updated = true;
+      }
+
+      // Add paths configuration for snippets
+      if (!tsconfig.compilerOptions) {
+        tsconfig.compilerOptions = {};
+      }
+
+      if (!tsconfig.compilerOptions.paths) {
+        tsconfig.compilerOptions.paths = {};
+      }
+
+      if (!tsconfig.compilerOptions.paths['/snippets/*']) {
+        tsconfig.compilerOptions.paths['/snippets/*'] = ['./docs/snippets/*'];
+        updated = true;
+      }
+
+      if (updated) {
+        FileSystem.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2) + '\n');
+        clack.log.success('Updated tsconfig.json with MDX support and snippets path mapping');
+      } else {
+        clack.log.info('tsconfig.json already configured for MDX');
+      }
+    } catch (error) {
+      clack.log.warn(`Failed to update tsconfig.json: ${error}`);
     }
   }
 

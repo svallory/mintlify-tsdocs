@@ -5,10 +5,8 @@ icon: "diagram-project"
 ---
 
 import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
-import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 import { Preview } from "/snippets/tsdocs/Preview.jsx"
 
-export const info = TypeInfo;
 
 The `TypeTree` component provides an elegant way to document complex type structures with nested properties. It automatically handles recursive rendering and provides an intuitive expandable interface for exploring deeply nested types.
 
@@ -53,7 +51,6 @@ export const databaseField = {
   description: "Database configuration",
   required: true,
   properties: [
-    TypeInfo.MintTsdocs,
     { name: "host", type: "string", description: "Database host address", required: true },
     { name: "port", type: "number", description: "Database port number", defaultValue: "5432" },
     {
@@ -72,9 +69,64 @@ export const databaseField = {
   <TypeTree {...databaseField} />
 </Preview>
 
-<Preview title="TypeTree Preview">
-  <TypeTree {...TypeInfo} />
+## Using the Auto-generated TypeInfo
+
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+When you run `mint-tsdocs generate`, it automatically creates a `TypeInfo.jsx` file containing structured type information for all documented API items. This makes it incredibly easy to document your types with full IDE autocomplete support.
+
+<Info>
+  Learn more about TypeInfo in the [comprehensive TypeInfo guide](/snippets/type-info), including how to explore available types, access nested properties, and best practices.
+</Info>
+
+### Quick Start
+
+Simply import TypeInfo and spread it into a TypeTree component:
+
+```mdx Document any type from your API
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+<TypeTree {...TypeInfo.PackageName.TypeName} />
+```
+
+The TypeInfo object is organized as `TypeInfo.PackageName.TypeName`, where package names are converted to PascalCase. For example, `mint-tsdocs` becomes `MintTsdocs`.
+
+### Live Example
+
+Here's the complete `ResolvedConfig` type from mint-tsdocs, automatically generated with full nested documentation:
+
+<Preview title="Auto-generated from TypeScript source">
+  <TypeTree {...TypeInfo.MintTsdocs.ResolvedConfig} />
 </Preview>
+
+### IDE Autocomplete
+
+<Tip>
+  Your IDE will provide autocomplete suggestions when you type `TypeInfo.` - making it easy to discover and reference all available types from your codebase.
+</Tip>
+
+### Import Path Workaround
+
+<Warning>
+  Due to [a bug in the MDX extension](https://github.com/mdx-js/mdx-analyzer/issues/522) for VSCode, you may not get TypeScript autocomplete with the absolute path. As a temporary workaround while editing:
+
+  1. Change import to relative path: `import { TypeInfo } from "../snippets/tsdocs/TypeInfo.jsx"`
+  2. Get autocomplete and make your changes
+  3. Change back to absolute path: `import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"`
+  4. Save and commit
+
+  The absolute path is required for the documentation site to load correctly.
+</Warning>
+
+### Exploring Available Types
+
+To see what types are available:
+
+1. **Check the generated file**: Open `docs/snippets/tsdocs/TypeInfo.jsx` to browse all types
+2. **Use your IDE**: Start typing `TypeInfo.` and let autocomplete show available packages and types
+3. **Check the TypeScript declarations**: Open `docs/snippets/tsdocs/TypeInfo.d.ts` for the full type structure
+
+For a complete guide on using TypeInfo, see the [TypeInfo documentation](/snippets/type-info).
 
 ## Properties
 
@@ -641,3 +693,4 @@ This means you get clean, maintainable documentation without manual work!
     Create expandable sections
   </Card>
 </CardGroup>
+

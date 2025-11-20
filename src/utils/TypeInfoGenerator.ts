@@ -20,6 +20,7 @@ import {
 import { PackageName } from '@rushstack/node-core-library';
 import { Utilities } from './Utilities';
 import { createDebugger, type Debugger } from './debug';
+import { ObjectTypeAnalyzer, type TypeAnalysis, type PropertyAnalysis } from './ObjectTypeAnalyzer';
 
 const debug: Debugger = createDebugger('type-info-generator');
 
@@ -41,9 +42,11 @@ interface TypeInfo {
  */
 export class TypeInfoGenerator {
   private readonly _apiModel: ApiModel;
+  private readonly _typeAnalyzer: ObjectTypeAnalyzer;
 
   constructor(apiModel: ApiModel) {
     this._apiModel = apiModel;
+    this._typeAnalyzer = new ObjectTypeAnalyzer();
   }
 
   /**
@@ -324,18 +327,21 @@ export class TypeInfoGenerator {
     // Get default value from JSDoc
     const defaultValue = this._extractDefaultValue(apiProperty);
 
+    // Try to extract nested properties for object types
+    const nestedProperties = this._extractNestedProperties(typeString);
+
     // Basic property info
     const propertyInfo: TypeInfo = {
       name: apiProperty.displayName,
-      type: this._simplifyType(typeString),
+      // Use "object" as the type if we have nested properties, otherwise simplify the type string
+      type: (nestedProperties && nestedProperties.length > 0) ? 'object' : this._simplifyType(typeString),
       description: this._getDescription(apiProperty),
       required: isRequired,
       deprecated: isDeprecated || undefined,
       defaultValue: defaultValue || undefined
     };
 
-    // Try to extract nested properties for object types
-    const nestedProperties = this._extractNestedProperties(typeString);
+    // Add nested properties if available
     if (nestedProperties && nestedProperties.length > 0) {
       propertyInfo.properties = nestedProperties;
     }
@@ -347,16 +353,127 @@ export class TypeInfoGenerator {
    * Extract nested properties from an object type string
    */
   private _extractNestedProperties(typeString: string): TypeInfo[] | null {
-    // Simple heuristic: if it's an object literal type with braces
-    if (!typeString.includes('{') || !typeString.includes('}')) {
-      return null;
+    // First, try to resolve the type as a reference to another API item
+    const trimmedType = typeString.trim();
+
+    // Check if it's a simple type reference (not an inline object literal)
+    if (!trimmedType.includes('{')) {
+      // Try to find the referenced interface/type in the API model
+      const referencedItem = this._findApiItemByName(trimmedType);
+      if (referencedItem) {
+        // Process the referenced item to get its properties with full documentation
+        if (referencedItem.kind === ApiItemKind.Interface) {
+          const interfaceItem = referencedItem as ApiInterface;
+          const properties: TypeInfo[] = [];
+          for (const member of interfaceItem.members) {
+            if (member.kind === ApiItemKind.PropertySignature) {
+              const propInfo = this._processProperty(member as ApiPropertyItem);
+              if (propInfo) {
+                properties.push(propInfo);
+              }
+            }
+          }
+          return properties.length > 0 ? properties : null;
+        }
+      }
     }
 
-    // This is a simplified parser - for production, you'd use ObjectTypeAnalyzer
-    // For now, we'll just return null and let the type string speak for itself
-    // This can be enhanced later with the full ObjectTypeAnalyzer integration
+    // Fall back to parsing inline object types
+    if (trimmedType.includes('{') && trimmedType.includes('}')) {
+      // Use ObjectTypeAnalyzer to parse the type
+      const analysis = this._typeAnalyzer.analyzeType(typeString);
+
+      // Convert the analysis to TypeInfo format
+      if (analysis.type === 'object-literal' && analysis.properties) {
+        return this._convertPropertiesToTypeInfo(analysis.properties);
+      }
+    }
 
     return null;
+  }
+
+  /**
+   * Find an API item by name across all packages
+   */
+  private _findApiItemByName(name: string): ApiItem | undefined {
+    for (const packageItem of this._apiModel.packages) {
+      if (packageItem.entryPoints.length > 0) {
+        const entryPoint = packageItem.entryPoints[0];
+        for (const member of entryPoint.members) {
+          if (member.displayName === name) {
+            return member;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Convert PropertyAnalysis array to TypeInfo array (recursive)
+   */
+  private _convertPropertiesToTypeInfo(properties: PropertyAnalysis[]): TypeInfo[] {
+    return properties.map(prop => {
+      const typeInfo: TypeInfo = {
+        name: prop.name,
+        type: this._convertTypeAnalysisToString(prop.type),
+        required: !prop.optional
+      };
+
+      // Recursively handle nested properties
+      if (prop.type.type === 'object-literal' && prop.type.properties) {
+        typeInfo.properties = this._convertPropertiesToTypeInfo(prop.type.properties);
+      }
+
+      return typeInfo;
+    });
+  }
+
+  /**
+   * Convert TypeAnalysis to a readable type string
+   */
+  private _convertTypeAnalysisToString(analysis: TypeAnalysis): string {
+    switch (analysis.type) {
+      case 'primitive':
+        return analysis.name || 'unknown';
+
+      case 'array':
+        if (analysis.elementType) {
+          return `${this._convertTypeAnalysisToString(analysis.elementType)}[]`;
+        }
+        return 'unknown[]';
+
+      case 'union':
+        if (analysis.unionTypes) {
+          return analysis.unionTypes
+            .map(t => this._convertTypeAnalysisToString(t))
+            .join(' | ');
+        }
+        return 'unknown';
+
+      case 'intersection':
+        if (analysis.intersectionTypes) {
+          return analysis.intersectionTypes
+            .map(t => this._convertTypeAnalysisToString(t))
+            .join(' & ');
+        }
+        return 'unknown';
+
+      case 'generic':
+        if (analysis.baseType && analysis.typeParameters) {
+          return `${analysis.baseType}<${analysis.typeParameters.join(', ')}>`;
+        }
+        return analysis.baseType || 'unknown';
+
+      case 'object-literal':
+        // For object literals, we'll use 'object' as the type
+        // and the nested properties will be in the 'properties' field
+        return 'object';
+
+      case 'unknown':
+      default:
+        return analysis.name || 'unknown';
+    }
   }
 
   /**

@@ -1,0 +1,248 @@
+---
+title: "MCP Integration"
+description: "Use Model Context Protocol to help users navigate your generated API reference"
+icon: "plug"
+---
+
+<Note>
+Mintlify automatically generates an MCP server for your documentation. This guide focuses on how to leverage MCP when you have hundreds of generated API reference pages from mint-tsdocs.
+
+For general MCP setup and features, see [Mintlify's MCP documentation](https://www.mintlify.com/docs/ai/model-context-protocol).
+</Note>
+
+## Why MCP matters for mint-tsdocs
+
+When you run `mint-tsdocs generate`, you create 400+ API reference pages. MCP lets AI tools search these pages efficiently, making your API more discoverable for:
+
+- **New users**: "What caching options are available?" → AI finds CacheManager, TypeAnalysisCache, ApiResolutionCache
+- **Template developers**: "What properties does ITemplateData have?" → AI shows the full interface
+- **Troubleshooters**: "How do I configure custom templates?" → AI finds relevant config and classes
+
+Without MCP, users would need to manually browse hundreds of pages or use in-page search.
+
+## Quick setup
+
+Mintlify generates your MCP server at `https://your-docs-url/mcp` when you deploy.
+
+Connect AI tools:
+
+<CodeGroup>
+```bash Claude Code
+claude mcp add --transport http my-docs https://your-docs-url/mcp
+```
+
+```json Cursor (~/.cursor/mcp.json)
+{
+  "mcpServers": {
+    "my-docs": {
+      "transport": "http",
+      "url": "https://your-docs-url/mcp"
+    }
+  }
+}
+```
+
+```json VS Code (.vscode/mcp.json)
+{
+  "mcpServers": {
+    "my-docs": {
+      "transport": "http",
+      "url": "https://your-docs-url/mcp"
+    }
+  }
+}
+```
+</CodeGroup>
+
+See [Claude Code](/ai-tools/claude-code), [Cursor](/ai-tools/cursor), or [Mintlify's MCP docs](https://www.mintlify.com/docs/ai/model-context-protocol) for detailed setup.
+
+## Searching your generated API reference
+
+The MCP `search` tool is most useful for navigating your large API surface. Here are effective search patterns for mint-tsdocs projects:
+
+### By API item type
+
+```
+"Find all cache-related classes"
+→ Returns: CacheManager, TypeAnalysisCache, ApiResolutionCache
+
+"What template interfaces are available?"
+→ Returns: ITemplateData, ITemplateEngineOptions, ITemplateManagerOptions
+
+"Show me error classes"
+→ Returns: DocumentationError, FileSystemError, ApiModelError, etc.
+```
+
+### By functionality
+
+```
+"How do I customize templates?"
+→ Returns: Template config, LiquidTemplateManager, override docs
+
+"What debug functions exist?"
+→ Returns: createDebugger, enableDebug, disableDebug, Debugger interface
+
+"Classes for navigation management"
+→ Returns: NavigationManager class and related interfaces
+```
+
+### By specific class/interface
+
+```
+"ITemplateData properties"
+→ Returns: Full interface definition with all properties
+
+"CacheManager constructor parameters"
+→ Returns: Constructor signature and CacheManagerOptions
+
+"MarkdownDocumenter methods"
+→ Returns: Class overview with generateFiles, generateNavigation, etc.
+```
+
+<Tip>
+Use specific TypeScript terminology: "interface", "class", "type", "enum". This helps the AI find the exact API items in your reference.
+</Tip>
+
+## Optimizing discoverability
+
+### Write descriptive page titles
+
+mint-tsdocs auto-generates titles, but you can improve them in templates if needed. Good titles help MCP search:
+
+✅ `CacheManager` - Clear, matches the class name
+✅ `ITemplateData` - Follows TypeScript interface naming
+✅ `MarkdownDocumenter.generateFiles()` - Shows hierarchy
+
+### Add context in descriptions
+
+The `description` frontmatter field (auto-generated from your TSDoc `@remarks`) is searchable via MCP:
+
+```typescript
+/**
+ * Centralized cache coordinator for TypeScript analysis and API resolution.
+ *
+ * @remarks
+ * Provides production and development presets with configurable cache sizes
+ * and optional statistics tracking for performance monitoring.
+ */
+export class CacheManager {
+  // ...
+}
+```
+
+This generates frontmatter that MCP can search:
+
+```yaml
+---
+title: "CacheManager"
+description: "Centralized cache coordinator for TypeScript analysis and API resolution"
+---
+```
+
+<Note>
+To improve MCP search results, enhance your TSDoc `@remarks` and `@summary` tags in source code. mint-tsdocs uses these to generate page descriptions.
+</Note>
+
+## Common workflows
+
+### Learning your API
+
+When onboarding new contributors:
+
+```
+User: "What's the main class for generating documentation?"
+AI: [Searches MCP] "MarkdownDocumenter is the main orchestrator..."
+
+User: "How do templates work?"
+AI: [Finds template-related classes] "Templates use LiquidTemplateEngine..."
+```
+
+### Finding the right class
+
+When implementing features:
+
+```
+User: "I need to add custom navigation. Which class handles that?"
+AI: [Searches API] "NavigationManager handles docs.json updates..."
+
+User: "How do I analyze TypeScript types?"
+AI: "ObjectTypeAnalyzer provides type parsing, DocumentationHelper extracts properties..."
+```
+
+### Linking documentation
+
+When writing guides:
+
+```
+User: "I'm documenting template customization. What should I link to?"
+AI: [Scans API reference] "Link to ITemplateData, LiquidTemplateManager, and template config..."
+```
+
+## Recommendations for mint-tsdocs projects
+
+### Enable contextual menu MCP options
+
+Add to your `docs.json`:
+
+```json
+{
+  "contextual": {
+    "options": ["mcp", "cursor", "vscode"]
+  }
+}
+```
+
+This lets users install your MCP server with one click. See [Contextual Menu](/ai-tools/contextual-menu) for details.
+
+### Promote MCP in your README
+
+Help users discover this feature:
+
+```markdown
+## AI-Assisted Navigation
+
+Our API reference has 400+ pages. Connect your AI tool to search efficiently:
+
+\`\`\`bash
+claude mcp add --transport http my-project https://docs.example.com/mcp
+\`\`\`
+
+Then ask questions like "What caching options are available?"
+```
+
+### Test your MCP server
+
+After deploying, verify search works:
+
+1. Connect an AI tool to your MCP server
+2. Ask: "What classes are available in the API?"
+3. Ask: "Find the ITemplateData interface"
+4. Check that results match your generated reference pages
+
+## Troubleshooting
+
+**Search returns no results**: Wait a few minutes after deployment for indexing. Verify your docs are deployed and accessible.
+
+**Wrong pages returned**: Improve your TSDoc comments in source code. More descriptive `@remarks` = better MCP search results.
+
+**Multiple projects**: Use descriptive names when adding MCP servers: `project-a-docs`, `project-b-docs`, not generic names.
+
+## Learn more
+
+<CardGroup cols={2}>
+<Card title="Mintlify MCP Docs" icon="book" href="https://www.mintlify.com/docs/ai/model-context-protocol">
+  Full MCP features and configuration
+</Card>
+
+<Card title="Claude Code Setup" icon="asterisk" href="/ai-tools/claude-code">
+  Connect Claude Code to your docs
+</Card>
+
+<Card title="Cursor Setup" icon="arrow-pointer" href="/ai-tools/cursor">
+  Configure Cursor MCP integration
+</Card>
+
+<Card title="Contextual Menu" icon="bars" href="/ai-tools/contextual-menu">
+  Enable one-click MCP setup
+</Card>
+</CardGroup>

@@ -1,0 +1,182 @@
+---
+title: "Claude Code setup"
+description: "Configure Claude Code for your documentation workflow"
+icon: "asterisk"
+---
+
+Claude Code is Anthropic's official CLI tool. This guide shows how to set up Claude Code to help you adopt mint-tsdocs and maintain your TypeScript API documentation.
+
+## Prerequisites
+
+- Active Claude subscription (Pro, Max, or API access)
+- Your documentation site deployed (for MCP integration)
+
+## Why use Claude Code with mint-tsdocs?
+
+Connecting Claude Code to your documentation helps you:
+- **Learn faster**: Query your generated API reference without reading hundreds of pages
+- **Maintain consistency**: Get help writing docs that match your existing patterns
+- **Fix issues quickly**: Ask Claude to search your docs and fix broken links or outdated examples
+- **Customize templates**: Get context-aware help when modifying Liquid templates
+
+## Setup
+
+1. Install Claude Code globally:
+
+  ```bash
+  bun install -g @anthropic-ai/claude-code
+  ```
+
+2. Navigate to your docs directory
+3. (Optional) Add the `CLAUDE.md` file below to your project
+4. (Recommended) Connect to your documentation's MCP server
+5. Run `claude` to start
+
+## Connect to your documentation (MCP)
+
+<Note>
+Mintlify automatically generates an MCP (Model Context Protocol) server for your documentation at `https://your-docs-url/mcp`. This lets Claude Code search and reference your docs in real-time.
+</Note>
+
+Once your documentation is deployed, connect Claude Code to your MCP server:
+
+```bash
+claude mcp add --transport http mint-tsdocs https://your-docs-url/mcp
+```
+
+Replace `your-docs-url` with your actual documentation URL. For example:
+- `https://docs.yourcompany.com/mcp`
+- `https://yourproject.mintlify.app/mcp`
+
+<Tip>
+Name the MCP connection something descriptive like `my-project-docs` instead of `mint-tsdocs` if you're working on multiple projects.
+</Tip>
+
+### Verify the connection
+
+After connecting, ask Claude Code to search your documentation:
+
+```
+You: Search my docs for how to customize templates
+Claude: [Searches your MCP server and returns relevant results from your API reference]
+```
+
+## Create `CLAUDE.md`
+
+Create a `CLAUDE.md` file at the root of your documentation repository to train Claude Code on your specific documentation standards:
+
+````markdown
+# Mintlify documentation
+
+## Working relationship
+- You can push back on ideas-this can lead to better documentation. Cite sources and explain your reasoning when you do so
+- ALWAYS ask for clarification rather than making assumptions
+- NEVER lie, guess, or make up information
+
+## Project context
+- Format: MDX files with YAML frontmatter
+- Config: docs.json for navigation, theme, settings
+- Components: Mintlify components
+
+## Content strategy
+- Document just enough for user success - not too much, not too little
+- Prioritize accuracy and usability of information
+- Make content evergreen when possible
+- Search for existing information before adding new content. Avoid duplication unless it is done for a strategic reason
+- Check existing patterns for consistency
+- Start by making the smallest reasonable changes
+
+## Frontmatter requirements for pages
+- title: Clear, descriptive page title
+- description: Concise summary for SEO/navigation
+
+## Writing standards
+- Second-person voice ("you")
+- Prerequisites at start of procedural content
+- Test all code examples before publishing
+- Match style and formatting of existing pages
+- Include both basic and advanced use cases
+- Language tags on all code blocks
+- Alt text on all images
+- Relative paths for internal links
+
+## Git workflow
+- NEVER use --no-verify when committing
+- Ask how to handle uncommitted changes before starting
+- Create a new branch when no clear branch exists for changes
+- Commit frequently throughout development
+- NEVER skip or disable pre-commit hooks
+
+## Do not
+- Skip frontmatter on any MDX file
+- Use absolute URLs for internal links
+- Include untested code examples
+- Make assumptions - always ask for clarification
+````
+
+## Using your generated API reference
+
+Once you've generated your API documentation with `mint-tsdocs generate`, you have hundreds of reference pages that Claude Code can help you leverage:
+
+### Ask about your API
+
+With MCP connected, Claude can search your generated API reference:
+
+```
+You: What parameters does the CacheManager constructor accept?
+Claude: [Searches your API reference and explains CacheManagerOptions]
+
+You: Show me all the template-related interfaces in my API
+Claude: [Finds ITemplateData, ITemplateEngineOptions, etc. from your reference]
+```
+
+### Get help linking between pages
+
+```
+You: I need to link from my quickstart to the MarkdownDocumenter class reference
+Claude: Use the relative path `/reference/mint-tsdocs.markdowndocumenter`
+```
+
+### Maintain consistency
+
+```
+You: I'm adding a new guide. Can you check what frontmatter structure my existing guides use?
+Claude: [Scans your docs and shows the pattern]
+```
+
+### Update examples across pages
+
+```
+You: Find all code examples that import from 'mint-tsdocs' and update them to use the new import path
+Claude: [Searches and helps update multiple pages]
+```
+
+<Tip>
+The more you interact with your docs through Claude Code, the better it understands your project's patterns and can help maintain consistency.
+</Tip>
+
+## Common workflows
+
+### Learning mint-tsdocs
+
+When getting started:
+
+```
+You: What's the difference between ITemplateData and ITemplateEngineOptions?
+You: Show me an example of customizing a template
+You: How do I configure the navigation for generated API pages?
+```
+
+### Troubleshooting
+
+```
+You: I'm getting a template error. Search my docs for template debugging
+You: The API reference isn't generating. Check the config reference for common issues
+```
+
+### Writing guides
+
+```
+You: I'm writing a guide about template customization. What should I link to in the API reference?
+You: Check if there's already a guide about TypeInfo generation
+```

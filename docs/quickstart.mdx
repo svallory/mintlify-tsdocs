@@ -1,64 +1,95 @@
 ---
-title: Quick Start
-description: Generate API documentation in under 2 minutes
+title: Common Workflows
+description: Real-world scenarios for using mint-tsdocs
 icon: "rocket"
 ---
 
-## 1. Initialize
+## Your First Documentation
 
-Run this in your TypeScript project:
+You're starting fresh. Run this in your TypeScript project:
 
 ```bash
 npx mint-tsdocs
 ```
 
-The tool will:
-- Auto-detect your TypeScript entry point
-- Find your Mintlify docs folder
-- Ask a few configuration questions
-- Set everything up
+The tool auto-detects your TypeScript entry point and asks a few configuration questions. If you don't have a Mintlify project yet, it'll create one for you using the Mintlify CLI.
 
 <Tip>
-  Use `--yes` to accept all defaults: `npx mint-tsdocs --yes`
+  In a hurry? Use `--yes` to accept all defaults: `npx mint-tsdocs --yes`
 </Tip>
 
-## 2. Generate
+Then generate your docs:
 
 ```bash
 npx mint-tsdocs generate
 ```
 
-Done! Your API documentation is now in your docs folder.
-
-## 3. Preview
+Preview them:
 
 ```bash
-cd docs
-mintlify dev
+cd docs && mintlify dev
 ```
 
-Your docs are live at `http://localhost:3000`.
+Your docs are live at `http://localhost:3000`. You've got MDX files for every exported API item, automatic navigation in `docs.json`, and interactive components for complex types.
+
+## Keeping Docs Fresh
+
+You've shipped v1.2.0 with new features. Your types changed. Your docs need updating.
+
+Just run the generate command again:
+
+```bash
+npx mint-tsdocs generate
+```
+
+That's it. The tool regenerates everything from your source code. New classes appear in the docs, removed ones disappear, changed signatures update automatically. Your `docs.json` navigation stays in sync.
+
+<Tip>
+  Add `"docs": "mint-tsdocs generate"` to your `package.json` scripts. Now you can run `npm run docs` or `bun docs`.
+</Tip>
+
+## Customizing Output
+
+The default templates look great, but you need your own branding or structure.
+
+Initialize your template directory:
+
+```bash
+npx mint-tsdocs customize -t ./templates
+```
+
+This copies all default templates to `./templates`. Now edit them:
+
+- Change `class.liquid` to add custom sections
+- Modify `function.liquid` to highlight examples differently
+- Update `layout.liquid` to match your brand
+
+Next time you run `generate`, your customizations apply automatically. You still get updates to templates you didn't modify.
 
 <Note>
-  Don't have Mintlify installed? Run `npm install -g mintlify` first.
+  Templates use [LiquidJS](https://liquidjs.com/). Check the [Template Reference](/reference/templates) for available variables and examples.
 </Note>
 
-## What You Get
+## Troubleshooting Common Issues
 
-<CardGroup cols={2}>
-  <Card title="MDX Files" icon="file-code">
-    One page per exported class, interface, function, etc.
-  </Card>
-  <Card title="Auto Navigation" icon="map">
-    docs.json updated automatically
-  </Card>
-  <Card title="Interactive Components" icon="wand-magic-sparkles">
-    ParamField, ResponseField, Expandable
-  </Card>
-  <Card title="Type Analysis" icon="microscope">
-    Nested objects, unions, generics all supported
-  </Card>
-</CardGroup>
+**"No API items found"**
+
+Your `entryPoint` in `mint-tsdocs.config.json` probably points to the wrong file. It needs your compiled `.d.ts` file (usually in `lib/` or `dist/`), not your source `.ts` files. Run `bun build` first.
+
+**"Navigation not updating"**
+
+Check your `docsJson` path in config. The tool needs write access to update `docs.json`. Make sure the path is correct and the file exists.
+
+**"Types not rendering correctly"**
+
+Complex generic types sometimes need manual documentation. Add JSDoc comments with `@remarks` or `@example` tags to provide context that can't be inferred from type signatures alone.
+
+**"Build fails with TypeScript errors"**
+
+API Extractor is strict about type safety. If your project builds but API Extractor fails, check for:
+- Missing type annotations on exported functions
+- `any` types in public API
+- Circular dependencies
 
 ## Next Steps
 
@@ -67,15 +98,9 @@ Your docs are live at `http://localhost:3000`.
     All commands and options
   </Card>
   <Card title="Config Reference" icon="gear" href="/config-reference">
-    Configuration options
+    Configuration file details
   </Card>
-  <Card title="Components" icon="puzzle" href="/components/type-tree">
-    Custom documentation components
+  <Card title="Template Guide" icon="paintbrush" href="/guides/templates">
+    Deep dive into customization
   </Card>
 </CardGroup>
-
-## Need More Control?
-
-<Card title="Setup Guide" icon="wrench" href="/guides/setup-guide">
-  Manual configuration, monorepos, troubleshooting, and advanced scenarios
-</Card>

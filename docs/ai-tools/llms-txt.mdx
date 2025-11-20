@@ -1,0 +1,318 @@
+---
+title: "llms.txt Optimization"
+description: "Write better TSDoc comments to improve AI navigation of your API reference"
+icon: "file-lines"
+---
+
+<Note>
+Mintlify automatically generates `llms.txt` from your documentation. This guide focuses on writing TSDoc comments that produce helpful descriptions for your generated API reference.
+
+For general llms.txt information, see [Mintlify's llms.txt documentation](https://www.mintlify.com/docs/ai/llmstxt).
+</Note>
+
+## Why llms.txt matters for mint-tsdocs
+
+When you generate 400+ API reference pages, `llms.txt` acts as a table of contents for AI tools. It contains:
+
+- Page titles (your class/interface names)
+- Descriptions (from your TSDoc `@remarks`)
+- Organization (from your `docs.json` structure)
+
+Good descriptions help AI tools:
+- Find relevant classes: "What caching options exist?" → Finds CacheManager with description
+- Understand purpose: Knows CacheManager handles caching, not cache instances
+- Navigate hierarchy: Understands relationships between classes
+
+## How mint-tsdocs generates descriptions
+
+mint-tsdocs extracts frontmatter descriptions from your TSDoc comments:
+
+```typescript
+/**
+ * Centralized cache coordinator for TypeScript analysis and API resolution.
+ *
+ * @remarks
+ * Provides production and development presets with configurable cache sizes
+ * and optional statistics tracking for performance monitoring.
+ */
+export class CacheManager {
+  // ...
+}
+```
+
+Generates:
+
+```yaml
+---
+title: "CacheManager"
+description: "Centralized cache coordinator for TypeScript analysis and API resolution"
+---
+```
+
+This description appears in:
+- `llms.txt` (for AI tool indexing)
+- Page frontmatter (for SEO and navigation)
+- API reference page (below the title)
+
+## Writing effective descriptions
+
+### Classes
+
+Focus on **what it does** and **key features**:
+
+```typescript
+/**
+ * Main orchestrator for documentation generation.
+ *
+ * @remarks
+ * Coordinates template rendering, MDX generation, and navigation updates.
+ * Processes API models from API Extractor into Mintlify-compatible documentation.
+ */
+export class MarkdownDocumenter {
+  // ...
+}
+```
+
+✅ Good: Explains role, lists main responsibilities, mentions output format
+
+```typescript
+/**
+ * Manages markdown documentation.
+ */
+export class MarkdownDocumenter {
+  // ...
+}
+```
+
+❌ Too vague: Doesn't explain what "manages" means or what it produces
+
+### Interfaces
+
+Describe **what data it represents** and **where it's used**:
+
+```typescript
+/**
+ * Template variables available in Liquid templates.
+ *
+ * @remarks
+ * Provides semantic variables (properties, methods, parameters) and metadata
+ * (apiItem, page, navigation) for rendering API documentation pages.
+ */
+export interface ITemplateData {
+  // ...
+}
+```
+
+✅ Good: Explains purpose, lists variable categories, mentions usage context
+
+```typescript
+/**
+ * Template data structure.
+ */
+export interface ITemplateData {
+  // ...
+}
+```
+
+❌ Too generic: Doesn't explain what template data this represents
+
+### Functions
+
+Explain **what it does** and **key parameters/behavior**:
+
+```typescript
+/**
+ * Generates API Extractor configuration from mint-tsdocs config.
+ *
+ * @remarks
+ * Auto-detects entry points, creates .tsdocs cache directory, and generates
+ * api-extractor.json with proper paths for doc model output.
+ */
+export function generateApiExtractorConfig(config: ResolvedConfig): void {
+  // ...
+}
+```
+
+✅ Good: Clear action, mentions auto-detection, explains what it creates
+
+### Enums/Types
+
+Describe **possible values** and **use case**:
+
+```typescript
+/**
+ * Error codes for documentation generation failures.
+ *
+ * @remarks
+ * Includes validation errors (INVALID_CONFIG), file system errors (FILE_NOT_FOUND),
+ * template errors (TEMPLATE_ERROR), and API extraction errors (EXTRACTION_FAILED).
+ */
+export enum ErrorCode {
+  // ...
+}
+```
+
+✅ Good: Explains purpose, groups error categories, provides examples
+
+## Best practices
+
+### Length
+
+Aim for **10-25 words** in the first line (what becomes the description):
+
+```typescript
+/**
+ * Centralized cache coordinator for TypeScript analysis and API resolution.
+ * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ * Perfect length - descriptive but scannable
+ *
+ * @remarks
+ * Additional details go here...
+ */
+```
+
+### Specificity
+
+Use concrete terms over vague ones:
+
+✅ "Converts API models to template data for Liquid rendering"
+❌ "Handles template data conversion"
+
+✅ "LRU cache for type structure analysis with configurable size limits"
+❌ "Cache implementation"
+
+### Keywords
+
+Include TypeScript/API terminology that users might search for:
+
+```typescript
+/**
+ * Liquid template engine for rendering API documentation.
+ *           ^^^^^^^ ^^^^^^         ^^^^^^^^^ ^^^
+ * Keywords: liquid, template, engine, rendering, API, documentation
+ */
+```
+
+### Consistency
+
+Use similar patterns for similar items:
+
+```typescript
+/**
+ * Centralized cache coordinator for TypeScript analysis and API resolution.
+ */
+export class CacheManager { }
+
+/**
+ * LRU cache for type structure analysis with eviction and statistics.
+ */
+export class TypeAnalysisCache { }
+
+/**
+ * LRU cache for API reference resolution with cached decorator support.
+ */
+export class ApiResolutionCache { }
+```
+
+All cache classes follow the pattern: "[Type] cache for [purpose] with [features]"
+
+## Checking your descriptions
+
+After generating docs, review your `llms.txt`:
+
+<Steps>
+<Step title="Generate and deploy">
+  ```bash
+  bun run mint-tsdocs generate
+  # Deploy to Mintlify
+  ```
+</Step>
+
+<Step title="Access llms.txt">
+  Visit `https://your-docs-url/llms.txt` to see the generated file.
+</Step>
+
+<Step title="Review API reference section">
+  ```markdown
+  ## API Reference
+
+  - [CacheManager](reference/mint-tsdocs.cachemanager): Centralized cache coordinator...
+  - [MarkdownDocumenter](reference/mint-tsdocs.markdowndocumenter): Main orchestrator...
+  - [ITemplateData](reference/mint-tsdocs.itemplatedata): Template variables available...
+  ```
+
+  Check that descriptions are:
+  - ✅ Descriptive (not just repeating the class name)
+  - ✅ Scannable (10-25 words)
+  - ✅ Accurate (match what the class actually does)
+</Step>
+</Steps>
+
+## Impact on AI tools
+
+**Before optimization:**
+
+```
+User: "What caching options are available?"
+AI: "I see CacheManager, TypeAnalysisCache, and ApiResolutionCache classes"
+     [Can't explain what each does without reading full pages]
+```
+
+**After optimization:**
+
+```
+User: "What caching options are available?"
+AI: "There are three caching components:
+     - CacheManager: Centralized coordinator with presets
+     - TypeAnalysisCache: For type structure analysis
+     - ApiResolutionCache: For API reference resolution
+     Each supports LRU eviction and optional statistics."
+```
+
+The AI can answer from `llms.txt` alone, without fetching all pages.
+
+## Updating descriptions
+
+To improve a description:
+
+1. **Edit TSDoc in source code**:
+   ```typescript
+   /**
+    * [New description here]
+    *
+    * @remarks
+    * Additional details...
+    */
+   ```
+
+2. **Regenerate documentation**:
+   ```bash
+   bun run build  # Build your TypeScript
+   bun run mint-tsdocs generate
+   ```
+
+3. **Verify in llms.txt** after deploying
+
+<Tip>
+Focus on your most commonly used classes first. Optimize CacheManager, MarkdownDocumenter, ITemplateData, etc. before less common utilities.
+</Tip>
+
+## Learn more
+
+<CardGroup cols={2}>
+<Card title="Mintlify llms.txt Docs" icon="book" href="https://www.mintlify.com/docs/ai/llmstxt">
+  Full llms.txt specification and features
+</Card>
+
+<Card title="TSDoc Reference" icon="book" href="/tsdoc-reference">
+  Supported TSDoc tags and syntax
+</Card>
+
+<Card title="MCP Integration" icon="plug" href="/ai-tools/mcp-integration">
+  Real-time search alternative to llms.txt
+</Card>
+
+<Card title="Config Reference" icon="gear" href="/config-reference">
+  Configure frontmatter generation
+</Card>
+</CardGroup>

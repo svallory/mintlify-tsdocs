@@ -1,0 +1,465 @@
+---
+title: TypeInfo Generation
+description: Technical deep dive into how TypeInfo.jsx is generated from TypeScript API models
+icon: code-branch
+---
+
+## Overview
+
+The TypeInfo generation system converts Microsoft API Extractor's API model into a structured JSON format compatible with Mintlify's `<TypeTree>` component. The key challenge is **fully recursive type expansion** - extracting not just top-level properties, but all nested object structures with their complete documentation.
+
+## Architecture
+
+### Core Components
+
+The TypeInfo generation pipeline consists of:
+
+```
+ApiModel → TypeInfoGenerator → TypeInfo.jsx + TypeInfo.d.ts
+   ↓              ↓                        ↓
+*.api.json   Recursive        JavaScript + TypeScript
+(API Extractor) Resolution      (with autocomplete)
+```
+
+#### TypeInfoGenerator (`src/utils/TypeInfoGenerator.ts`)
+
+The main orchestrator responsible for:
+- Loading API models from API Extractor output
+- Recursively processing API items (interfaces, classes, type aliases)
+- Resolving type references across the API model
+- Converting to TypeTreeProperty-compatible format
+- Generating both `.jsx` and `.d.ts` files
+
+#### ObjectTypeAnalyzer (`src/utils/ObjectTypeAnalyzer.ts`)
+
+Utility for parsing complex TypeScript type strings:
+- Parses inline object type literals
+- Extracts nested properties, unions, intersections
+- Handles generics and array types
+- Returns structured `TypeAnalysis` objects
+
+#### CacheManager (`src/cache/`)
+
+Performance optimization layer:
+- Caches parsed type strings (TypeAnalysisCache)
+- Caches API item lookups (ApiResolutionCache)
+- LRU eviction for memory management
+
+## The Recursive Type Resolution Algorithm
+
+### Problem Statement
+
+Given a TypeScript interface like:
+
+```typescript
+interface ResolvedConfig {
+  templates: ResolvedTemplateConfig;
+}
+
+interface ResolvedTemplateConfig {
+  cache: boolean;
+  strict: boolean;
+  userTemplateDir?: string;
+}
+```
+
+We need to generate TypeInfo with **fully nested documentation**:
+
+```javascript
+{
+  name: "templates",
+  type: "object",
+  description: "Resolved template configuration...",
+  properties: [
+    {
+      name: "cache",
+      type: "boolean",
+      description: "Whether template caching is enabled",
+      required: true
+    },
+    // ... more properties with descriptions
+  ]
+}
+```
+
+### Core Algorithm
+
+The resolution happens in `_extractNestedProperties()`:
+
+```typescript
+private _extractNestedProperties(typeString: string): TypeInfo[] | null {
+  const trimmedType = typeString.trim();
+
+  // Step 1: Check if it's a type reference (not inline object)
+  if (!trimmedType.includes('{')) {
+    // Try to find the referenced interface/type in the API model
+    const referencedItem = this._findApiItemByName(trimmedType);
+
+    if (referencedItem && referencedItem.kind === ApiItemKind.Interface) {
+      const interfaceItem = referencedItem as ApiInterface;
+      const properties: TypeInfo[] = [];
+
+      // Step 2: Recursively process each member
+      for (const member of interfaceItem.members) {
+        if (member.kind === ApiItemKind.PropertySignature) {
+          // THIS IS THE KEY: _processProperty calls _extractNestedProperties
+          // Creating a recursive loop that follows type references
+          const propInfo = this._processProperty(member as ApiPropertyItem);
+          if (propInfo) {
+            properties.push(propInfo);
+          }
+        }
+      }
+
+      return properties.length > 0 ? properties : null;
+    }
+  }
+
+  // Step 3: Fall back to parsing inline object types
+  if (trimmedType.includes('{') && trimmedType.includes('}')) {
+    const analysis = this._typeAnalyzer.analyzeType(typeString);
+
+    if (analysis.type === 'object-literal' && analysis.properties) {
+      return this._convertPropertiesToTypeInfo(analysis.properties);
+    }
+  }
+
+  return null;
+}
+```
+
+### Why Named Interfaces Are Critical
+
+<Warning>
+  **API Extractor Limitation**: JSDoc comments are **not preserved** for properties within inline object type literals. Only named interfaces preserve full documentation.
+</Warning>
+
+**Bad (loses documentation)**:
+```typescript
+interface Config {
+  // This inline object won't have property descriptions
+  templates: {
+    cache: boolean;
+    strict: boolean;
+  }
+}
+```
+
+**Good (preserves documentation)**:
+```typescript
+interface Config {
+  templates: ResolvedTemplateConfig; // Reference to named interface
+}
+
+interface ResolvedTemplateConfig {
+  /** Whether template caching is enabled */
+  cache: boolean;
+  /** Whether strict mode is enabled */
+  strict: boolean;
+}
+```
+
+The algorithm handles both cases:
+1. **Named references**: Looks up in API model → gets full docs recursively
+2. **Inline objects**: Parses structure only → no property-level docs
+
+## Key Methods
+
+### `_processProperty()`
+
+Converts an API Extractor property item to TypeInfo format:
+
+```typescript
+private _processProperty(apiProperty: ApiPropertyItem): TypeInfo | null {
+  const typeString = apiProperty.propertyTypeExcerpt.text;
+
+  // Extract metadata
+  const isRequired = !apiProperty.isOptional;
+  const isReadonly = apiProperty.isReadonly;
+  const isDeprecated = apiProperty.tsdocComment?.deprecatedBlock !== undefined;
+  const defaultValue = this._extractDefaultValue(apiProperty);
+
+  // THIS IS WHERE RECURSION HAPPENS
+  const nestedProperties = this._extractNestedProperties(typeString);
+
+  return {
+    name: apiProperty.displayName,
+    type: nestedProperties ? 'object' : this._simplifyType(typeString),
+    description: this._getDescription(apiProperty),
+    required: isRequired,
+    deprecated: isDeprecated || undefined,
+    defaultValue: defaultValue || undefined,
+    properties: nestedProperties || undefined
+  };
+}
+```
+
+### `_findApiItemByName()`
+
+Critical for type reference resolution:
+
+```typescript
+private _findApiItemByName(name: string): ApiItem | undefined {
+  for (const packageItem of this._apiModel.packages) {
+    if (packageItem.entryPoints.length > 0) {
+      const entryPoint = packageItem.entryPoints[0];
+      for (const member of entryPoint.members) {
+        if (member.displayName === name) {
+          return member;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+```
+
+**Limitation**: Currently only searches entry point members. Doesn't handle:
+- Nested namespace members
+- Re-exported types from external packages
+- Types in different entry points
+
+### `_convertTypeAnalysisToString()`
+
+Converts parsed type structures back to readable type strings:
+
+```typescript
+private _convertTypeAnalysisToString(analysis: TypeAnalysis): string {
+  switch (analysis.type) {
+    case 'primitive':
+      return analysis.name || 'unknown';
+
+    case 'array':
+      return `${this._convertTypeAnalysisToString(analysis.elementType)}[]`;
+
+    case 'union':
+      return analysis.unionTypes
+        .map(t => this._convertTypeAnalysisToString(t))
+        .join(' | ');
+
+    case 'intersection':
+      return analysis.intersectionTypes
+        .map(t => this._convertTypeAnalysisToString(t))
+        .join(' & ');
+
+    case 'generic':
+      return `${analysis.baseType}<${analysis.typeParameters.join(', ')}>`;
+
+    case 'object-literal':
+      return 'object'; // Nested properties in separate field
+
+    default:
+      return 'unknown';
+  }
+}
+```
+
+## Output Generation
+
+### TypeInfo.jsx
+
+JavaScript module with the complete type structure:
+
+```javascript
+/**
+ * Type information organized by package and API item.
+ * Use this to get TypeTreeProperty-compatible data for any documented type.
+ *
+ * @example
+ * ```jsx
+ * import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+ * <TypeTree {...TypeInfo.MyPackage.MyInterface} />
+ * ```
+ */
+export const TypeInfo = {
+  "PackageName": {
+    "TypeName": {
+      name: "TypeName",
+      type: "interface",
+      description: "...",
+      properties: [...]
+    }
+  }
+};
+```
+
+### TypeInfo.d.ts
+
+TypeScript declaration for IDE autocomplete:
+
+```typescript
+/**
+ * TypeTree property structure
+ */
+export interface TypeTreeProperty {
+  name: string;
+  type: string;
+  description?: string;
+  required?: boolean;
+  deprecated?: boolean;
+  defaultValue?: string;
+  properties?: TypeTreeProperty[];
+}
+
+/**
+ * Type information organized by package and API item.
+ */
+export const TypeInfo: {
+  "PackageName": {
+    "TypeName": TypeTreeProperty;
+  }
+};
+```
+
+## Performance Considerations
+
+### Caching Strategy
+
+The system uses two-level caching:
+
+1. **Type Analysis Cache** (ObjectTypeAnalyzer)
+   - Caches parsed type strings
+   - Key: raw type string
+   - Value: TypeAnalysis object
+   - Prevents redundant parsing of common types
+
+2. **API Resolution Cache** (Future optimization)
+   - Could cache `_findApiItemByName()` lookups
+   - Currently uses `JSON.stringify()` for keys (slow)
+   - Opportunity for improvement with better key generation
+
+### Recursion Depth
+
+<Info>
+  The recursive algorithm naturally terminates because:
+  1. TypeScript doesn't allow circular type references at the value level
+  2. Each recursion processes a unique API item
+  3. Primitive types (string, number, etc.) end the recursion
+</Info>
+
+No explicit depth limit is needed, though one could be added for safety.
+
+## Integration Points
+
+### MarkdownDocumenter
+
+The TypeInfoGenerator is called from `MarkdownDocumenter._writeApiItemPage()`:
+
+```typescript
+// Generate TypeInfo files
+const typeInfoGenerator = new TypeInfoGenerator(this._apiModel);
+const typeInfoContent = typeInfoGenerator.generateTypeInfoModule();
+const typeInfoDeclaration = typeInfoGenerator.generateTypeInfoDeclaration();
+
+await FileSystem.writeFile(
+  path.join(snippetsDir, 'TypeInfo.jsx'),
+  typeInfoContent
+);
+
+await FileSystem.writeFile(
+  path.join(snippetsDir, 'TypeInfo.d.ts'),
+  typeInfoDeclaration
+);
+```
+
+### Configuration
+
+TypeInfo generation is always enabled and runs automatically during `mint-tsdocs generate`. There are currently no configuration options to disable or customize it.
+
+## Known Limitations
+
+### 1. Entry Point Scope
+
+`_findApiItemByName()` only searches the first entry point of each package. This means:
+
+**Won't resolve**:
+- Types in nested namespaces
+- Re-exported types from external packages
+- Types in additional entry points
+
+**Will resolve**:
+- Top-level interfaces, classes, type aliases
+- Types in the same package as the referencing property
+
+### 2. Inline Object Types
+
+Properties within inline object type literals don't have descriptions:
+
+```typescript
+// Won't have property descriptions in TypeInfo
+interface Config {
+  options: { foo: string; bar: number; }
+}
+```
+
+**Solution**: Always use named interfaces for types that need documentation.
+
+### 3. Complex Type References
+
+Advanced TypeScript features may not be fully resolved:
+- Conditional types
+- Mapped types
+- Template literal types
+- Utility types (Partial, Pick, etc.)
+
+These will show the raw type string without expansion.
+
+## Future Improvements
+
+### 1. Enhanced Type Resolution
+
+- Support for nested namespace members
+- Cross-package type resolution
+- Handling of re-exported types
+
+### 2. Smarter Caching
+
+- Replace `JSON.stringify()` in API resolution cache
+- Implement TTL for cache entries
+- Statistics for cache hit rates
+
+### 3. Configuration Options
+
+- Option to disable TypeInfo generation
+- Control over recursion depth
+- Custom type transformers
+
+### 4. Error Handling
+
+- Better diagnostics when type resolution fails
+- Warnings for unresolved type references
+- Validation of generated TypeInfo structure
+
+## Testing
+
+TypeInfo generation is tested through:
+
+1. **Snapshot tests**: Verify output structure remains consistent
+2. **Integration tests**: Run full generation pipeline on test projects
+3. **Manual verification**: Check generated files in actual documentation
+
+To test TypeInfo generation:
+
+```bash
+# Run full test suite
+bun test
+
+# Update snapshots after intentional changes
+bun test -- -u
+
+# Test on actual project
+mint-tsdocs generate
+cat docs/snippets/tsdocs/TypeInfo.jsx
+```
+
+## Related Architecture
+
+- [Generation Layer](/architecture/generation-layer) - Overall documentation generation flow
+- [Caching Layer](/architecture/caching-layer) - Performance optimization details
+- [Utils Layer](/architecture/utils-layer) - ObjectTypeAnalyzer and other utilities
+
+## References
+
+- [API Extractor Documentation](https://api-extractor.com/)
+- [TSDoc Specification](https://tsdoc.org/)
+- [TypeScript Type System](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html)

@@ -3,41 +3,65 @@ title: Cheat Sheet
 description: Quick reference for the most common mint-tsdocs commands
 ---
 
+## Use Without Installing
+
+```bash
+npx mint-tsdocs               # Create or configure your Mintlify docs and generate
+```
+
 ## Installation
 
 ```bash
 bun add -D mint-tsdocs        # Add to project
 bun add -g mint-tsdocs        # Install globally
-npx mint-tsdocs               # Use without installing
 ```
 
 ## Essential Commands
 
 ```bash
-# Initialize project
+# Create or Configure your docs project
 mint-tsdocs init              # Interactive setup
 mint-tsdocs init --yes        # Auto-detect everything
 
 # Generate documentation
 mint-tsdocs                   # Generate for current project
-mint-tsdocs ./packages/core   # Generate for specific package
+mint-tsdocs ./packages/core   # Generate for specific directory
 
-# View configuration
+# View information
 mint-tsdocs show config       # Show current settings
 mint-tsdocs show stats        # Show documentation statistics
+
+# Check documentation quality
+mint-tsdocs lint              # Check for doc issues
 
 # Get help
 mint-tsdocs help              # Full help
 mint-tsdocs generate --help   # Command-specific help
 ```
 
-## Common Flags
+## Global Flags
 
 ```bash
 --verbose, -v                 # Show detailed output
 --debug                       # Show debug information
 --quiet, -q                   # Suppress output (errors only)
---yes, -y                     # Skip prompts (init only)
+```
+
+## Command-Specific Flags
+
+```bash
+# init command
+--yes, -y                     # Skip prompts (auto-detect)
+--project-dir, -p DIR         # Project directory
+--skip-mintlify               # Skip Mintlify initialization
+
+# generate command
+--project-dir DIR             # Project directory
+--skip-extractor              # Skip api-extractor (use cached .api.json)
+
+# customize command
+--template-dir, -t DIR        # Template directory
+--force, -f                   # Overwrite existing templates
 ```
 
 ## Quick Start Workflow
@@ -60,12 +84,15 @@ npx mintlify dev
 
 ```bash
 # Initialize each package
-mint-tsdocs init --project-dir ./packages/core --yes
-mint-tsdocs init --project-dir ./packages/utils --yes
+mint-tsdocs init -p ./packages/core --yes
+mint-tsdocs init -p ./packages/utils --yes
 
 # Generate docs for specific packages
 mint-tsdocs ./packages/core
 mint-tsdocs ./packages/utils
+
+# Or use --project-dir flag
+mint-tsdocs generate --project-dir ./packages/core
 
 # Batch generate
 for pkg in packages/*; do mint-tsdocs "$pkg"; done
@@ -134,11 +161,17 @@ mint-tsdocs
 # Show configuration
 mint-tsdocs show config
 
+# Show documentation statistics
+mint-tsdocs show stats
+
+# Check documentation quality
+mint-tsdocs lint
+
 # Debug mode
 mint-tsdocs --debug
 
 # Skip extraction (use cached data)
-mint-tsdocs --skip-extractor
+mint-tsdocs generate --skip-extractor
 
 # Clear cache and regenerate
 rm -rf docs/.tsdocs && mint-tsdocs

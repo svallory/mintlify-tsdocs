@@ -1,0 +1,180 @@
+---
+title: TypeInfo
+description: Auto-generated type information for easy documentation with autocomplete
+icon: code
+---
+
+## What is TypeInfo?
+
+**TypeInfo** is an auto-generated JavaScript module that contains structured type information for all documented API items in your project. It provides a convenient way to reference type structures in your documentation with full IDE autocomplete support.
+
+When you run `mint-tsdocs generate`, the tool creates `TypeInfo.jsx` and `TypeInfo.d.ts` files in your snippets directory. These files contain all the type information extracted from your TypeScript API in a format compatible with Mintlify's `<TypeTree>` component.
+
+## Why Use TypeInfo?
+
+### 1. IDE Autocomplete
+
+With TypeInfo, you get full autocomplete when referencing types in your documentation:
+
+```jsx
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+// IDE will suggest all available packages and types
+<TypeTree {...TypeInfo.MintTsdocs.IMarkdownDocumenterOptions} />
+```
+
+### 2. Single Source of Truth
+
+Instead of manually maintaining type documentation, TypeInfo is automatically generated from your TypeScript source code. Your documentation stays in sync with your implementation.
+
+### 3. Nested Property Access
+
+TypeInfo includes fully recursive type information, so you can access nested properties:
+
+```jsx
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+// Access a specific nested property
+const templatesConfig = TypeInfo.MintTsdocs.ResolvedConfig.properties.find(
+  p => p.name === "templates"
+);
+```
+
+## How to Use TypeInfo
+
+### Basic Usage with TypeTree
+
+The most common use case is passing TypeInfo directly to the `<TypeTree>` component:
+
+```jsx
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+<TypeTree {...TypeInfo.PackageName.TypeName} />
+```
+
+This will render a fully documented type tree with:
+- Property names
+- Type information
+- Descriptions from TSDoc comments
+- Required/optional indicators
+- Default values
+- Deprecated warnings
+
+### Accessing Individual Properties
+
+You can also extract specific properties for custom documentation:
+
+```jsx
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+const apiModelProp = TypeInfo.MintTsdocs.IMarkdownDocumenterOptions.properties.find(
+  p => p.name === "apiModel"
+);
+
+// Use apiModelProp.description, apiModelProp.type, etc.
+```
+
+### Available Type Information
+
+Each type in TypeInfo includes:
+
+<ResponseField name="name" type="string" required>
+  The property or type name
+</ResponseField>
+
+<ResponseField name="type" type="string" required>
+  The TypeScript type (e.g., "string", "boolean", "object")
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Description extracted from TSDoc comments
+</ResponseField>
+
+<ResponseField name="required" type="boolean">
+  Whether the property is required (not optional)
+</ResponseField>
+
+<ResponseField name="deprecated" type="boolean">
+  Whether the property is marked as deprecated
+</ResponseField>
+
+<ResponseField name="defaultValue" type="string">
+  The default value from `@defaultValue` TSDoc tag
+</ResponseField>
+
+<ResponseField name="properties" type="TypeTreeProperty[]">
+  Nested properties for object types (fully recursive)
+</ResponseField>
+
+## Exploring Available Types
+
+To see what types are available in your TypeInfo:
+
+1. **Open the generated file**: Check `docs/snippets/tsdocs/TypeInfo.jsx` to browse all available types
+
+2. **Use IDE autocomplete**: Start typing `TypeInfo.` in your MDX file and your IDE will show all available packages
+
+3. **Check the structure**: TypeInfo is organized as:
+   ```
+   TypeInfo.PackageName.TypeName
+   ```
+
+   Where `PackageName` is your package name in PascalCase (e.g., "mint-tsdocs" becomes "MintTsdocs")
+
+## Import Path Considerations
+
+<Warning>
+  When importing TypeInfo in MDX files, you may need to use the absolute path `/snippets/tsdocs/TypeInfo.jsx` instead of a relative path, depending on your file location and Mintlify configuration.
+</Warning>
+
+If you encounter import errors, try both:
+
+```jsx
+// Absolute path (recommended)
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+// Relative path (may work depending on location)
+import { TypeInfo } from "../snippets/tsdocs/TypeInfo.jsx"
+```
+
+## Example: Complete Documentation Page
+
+Here's a complete example showing TypeInfo in action:
+
+```mdx
+---
+title: Configuration Options
+description: Complete reference for mint-tsdocs configuration
+---
+
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
+
+## Main Configuration
+
+The main configuration object for mint-tsdocs:
+
+<TypeTree {...TypeInfo.MintTsdocs.MintlifyTsDocsConfig} />
+
+## Template Configuration
+
+Detailed template configuration options:
+
+<TypeTree {...TypeInfo.MintTsdocs.ResolvedTemplateConfig} />
+```
+
+## Best Practices
+
+1. **Always regenerate after API changes**: Run `mint-tsdocs generate` whenever your TypeScript API changes to keep TypeInfo in sync
+
+2. **Use descriptive TSDoc comments**: Since TypeInfo extracts descriptions from TSDoc, write comprehensive comments in your source code
+
+3. **Leverage autocomplete**: Take advantage of IDE autocomplete by importing TypeInfo at the top of your MDX files
+
+4. **Check for nested properties**: Use the `properties` array to access and document nested object structures
+
+5. **Add to .gitignore**: Consider adding `docs/snippets/tsdocs/` to your `.gitignore` if you regenerate docs in CI/CD
+
+## Related
+
+- [TypeTree Component](/snippets/type-tree) - Learn about the TypeTree component that renders TypeInfo
+- [TypeInfo Generation Architecture](/architecture/typeinfo-generation) - Deep dive into how TypeInfo is generated

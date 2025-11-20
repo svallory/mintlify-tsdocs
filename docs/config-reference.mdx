@@ -307,72 +307,149 @@ Whether to enable strict mode in Liquid template engine.
 
 ---
 
-## TSDoc Options
+## Message Reporting Options
 
-### tsdoc
+### apiExtractor.messages
 
 **Type:** `object`
 
-Configuration for TSDoc parser.
+Configuration for controlling how different types of diagnostic messages are reported during API extraction.
 
 ```json
 {
-  "tsdoc": {
-    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"],
-    "tagDefinitions": [
-      {
-        "tagName": "@customTag",
-        "syntaxKind": "modifier"
+  "apiExtractor": {
+    "messages": {
+      "compilerMessageReporting": {
+        "TS2551": {
+          "logLevel": "warning"
+        }
+      },
+      "extractorMessageReporting": {
+        "ae-missing-release-tag": {
+          "logLevel": "none"
+        }
+      },
+      "tsdocMessageReporting": {
+        "tsdoc-param-tag-missing-hyphen": {
+          "logLevel": "warning"
+        }
       }
-    ]
+    }
   }
 }
 ```
 
-#### tsdoc.extends
+#### messages.compilerMessageReporting
 
-**Type:** `string[]`
+**Type:** `Record<string, MessageReportingItem>`
 
-Paths to TSDoc configuration files to extend.
+Configuration for TypeScript compiler diagnostic messages.
 
 ```json
 {
-  "tsdoc": {
-    "extends": [
-      "@microsoft/api-extractor/extends/tsdoc-base.json"
-    ]
+  "apiExtractor": {
+    "messages": {
+      "compilerMessageReporting": {
+        "TS2551": {
+          "logLevel": "warning",
+          "addToApiReportFile": false
+        }
+      }
+    }
   }
 }
 ```
 
-**Common extends:**
-- `@microsoft/api-extractor/extends/tsdoc-base.json` - Base TSDoc tags
-- Custom tsdoc.json files in your project
+**Message IDs:**
+- TypeScript error codes (e.g., `TS2551`, `TS2322`)
+- Use `default` to set default behavior for all messages
 
 ---
 
-#### tsdoc.tagDefinitions
+#### messages.extractorMessageReporting
 
-**Type:** `array`
+**Type:** `Record<string, MessageReportingItem>`
 
-Custom TSDoc tag definitions.
+Configuration for API Extractor diagnostic messages.
 
 ```json
 {
-  "tsdoc": {
-    "tagDefinitions": [
-      {
-        "tagName": "@experimental",
-        "syntaxKind": "modifier"
+  "apiExtractor": {
+    "messages": {
+      "extractorMessageReporting": {
+        "ae-missing-release-tag": {
+          "logLevel": "none"
+        }
       }
-    ]
+    }
   }
 }
 ```
 
-**Tag properties:**
-- `tagName` - Tag name (e.g., `@experimental`)
-- `syntaxKind` - Tag type: `modifier`, `block`, or `inline`
+**Common message IDs:**
+- `ae-missing-release-tag` - Missing `@public`, `@beta`, `@alpha`, or `@internal` tag
+- `ae-undocumented` - Missing documentation comment
+- `ae-forgotten-export` - Exported type references unexported declaration
+
+---
+
+#### messages.tsdocMessageReporting
+
+**Type:** `Record<string, MessageReportingItem>`
+
+Configuration for TSDoc parser diagnostic messages.
+
+```json
+{
+  "apiExtractor": {
+    "messages": {
+      "tsdocMessageReporting": {
+        "tsdoc-param-tag-missing-hyphen": {
+          "logLevel": "warning"
+        }
+      }
+    }
+  }
+}
+```
+
+**Common message IDs:**
+- `tsdoc-param-tag-missing-hyphen` - `@param` tag missing hyphen
+- `tsdoc-undefined-tag` - Unrecognized TSDoc tag
+- `tsdoc-param-tag-with-invalid-name` - Invalid parameter name in `@param`
+
+---
+
+### MessageReportingItem
+
+Configuration for how a specific message should be reported.
+
+**Properties:**
+
+#### logLevel
+
+**Type:** `'error' | 'warning' | 'none'`
+
+How to report this message type:
+- `error` - Report as an error (fails the build)
+- `warning` - Report as a warning (doesn't fail the build)
+- `none` - Suppress the message entirely
+
+#### addToApiReportFile
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Whether to include this message in the API report file (.api.md).
+
+**Example:**
+```json
+{
+  "logLevel": "warning",
+  "addToApiReportFile": true
+}
+```
 
 ---
 
@@ -556,24 +633,94 @@ https://github.com/username/repo/tree/main/src/MyClass.ts#L42
 
 **Type:** `object`
 
-Configuration for API report file generation (optional).
+Configuration for API report file generation (optional). API reports show a text summary of your public API surface and can be committed to track API changes over time.
+
+##### apiReport.enabled
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Whether to generate API report files (.api.md).
 
 ```json
 {
   "apiExtractor": {
     "apiReport": {
-      "enabled": false,
-      "reportFolder": "./temp",
-      "reportFileName": "<packageName>.api.md"
+      "enabled": true
     }
   }
 }
 ```
 
-**Properties:**
-- `enabled` - Whether to generate API report
-- `reportFolder` - Output directory
-- `reportFileName` - Report file name pattern
+---
+
+##### apiReport.reportFileName
+
+**Type:** `string`
+
+**Default:** `"<unscopedPackageName>.api.md"`
+
+Name pattern for the API report file.
+
+```json
+{
+  "apiExtractor": {
+    "apiReport": {
+      "reportFileName": "my-package.api.md"
+    }
+  }
+}
+```
+
+**Supported tokens:**
+- `<unscopedPackageName>` - Package name without `@scope/`
+- `<packageName>` - Full package name
+
+---
+
+##### apiReport.reportFolder
+
+**Type:** `string`
+
+**Default:** `"<projectFolder>/temp/"`
+
+Folder where the API report file will be written.
+
+```json
+{
+  "apiExtractor": {
+    "apiReport": {
+      "reportFolder": "./api-reports"
+    }
+  }
+}
+```
+
+**Supported tokens:**
+- `<projectFolder>` - Project root directory
+
+---
+
+##### apiReport.reportTempFolder
+
+**Type:** `string`
+
+**Default:** `"<projectFolder>/temp/"`
+
+Temporary folder used during API report generation.
+
+```json
+{
+  "apiExtractor": {
+    "apiReport": {
+      "reportTempFolder": "./temp/api-reports"
+    }
+  }
+}
+```
+
+**Note:** This folder is used for intermediate files during generation.
 
 ---
 
@@ -581,25 +728,110 @@ Configuration for API report file generation (optional).
 
 **Type:** `object`
 
-Configuration for .d.ts rollup generation (optional).
+Configuration for .d.ts rollup generation (optional). Rollups combine multiple .d.ts files into a single file, optionally trimmed by release level.
+
+##### dtsRollup.enabled
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Whether to generate rolled-up .d.ts declaration files.
 
 ```json
 {
   "apiExtractor": {
     "dtsRollup": {
-      "enabled": false,
-      "publicTrimmedFilePath": "./dist/<packageName>.d.ts"
+      "enabled": true
     }
   }
 }
 ```
 
-**Properties:**
-- `enabled` - Whether to generate rollup
-- `publicTrimmedFilePath` - Public API .d.ts output
-- `betaTrimmedFilePath` - Beta API .d.ts output
-- `alphaTrimmedFilePath` - Alpha API .d.ts output
-- `untrimmedFilePath` - Full API .d.ts output
+---
+
+##### dtsRollup.publicTrimmedFilePath
+
+**Type:** `string`
+
+Path for the public-trimmed .d.ts rollup file. Includes only declarations marked with `@public`.
+
+```json
+{
+  "apiExtractor": {
+    "dtsRollup": {
+      "publicTrimmedFilePath": "./dist/<unscopedPackageName>.d.ts"
+    }
+  }
+}
+```
+
+**Supported tokens:**
+- `<unscopedPackageName>` - Package name without `@scope/`
+- `<packageName>` - Full package name
+- `<projectFolder>` - Project root directory
+
+**Use case:** Ship this file as your package's main type definitions
+
+---
+
+##### dtsRollup.betaTrimmedFilePath
+
+**Type:** `string`
+
+Path for the beta-trimmed .d.ts rollup file. Includes declarations marked with `@public` and `@beta`.
+
+```json
+{
+  "apiExtractor": {
+    "dtsRollup": {
+      "betaTrimmedFilePath": "./dist/<unscopedPackageName>-beta.d.ts"
+    }
+  }
+}
+```
+
+**Use case:** Provide early access to beta APIs for testing
+
+---
+
+##### dtsRollup.alphaTrimmedFilePath
+
+**Type:** `string`
+
+Path for the alpha-trimmed .d.ts rollup file. Includes declarations marked with `@public`, `@beta`, and `@alpha`.
+
+```json
+{
+  "apiExtractor": {
+    "dtsRollup": {
+      "alphaTrimmedFilePath": "./dist/<unscopedPackageName>-alpha.d.ts"
+    }
+  }
+}
+```
+
+**Use case:** Provide experimental APIs for early adopters
+
+---
+
+##### dtsRollup.untrimmedFilePath
+
+**Type:** `string`
+
+Path for the untrimmed .d.ts rollup file. Includes all declarations regardless of release level (including `@internal`).
+
+```json
+{
+  "apiExtractor": {
+    "dtsRollup": {
+      "untrimmedFilePath": "./dist/<unscopedPackageName>-internal.d.ts"
+    }
+  }
+}
+```
+
+**Use case:** Internal testing or monorepo development
 
 ---
 
@@ -625,16 +857,6 @@ Configuration for .d.ts rollup generation (optional).
     "strict": true
   },
 
-  "tsdoc": {
-    "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"],
-    "tagDefinitions": [
-      {
-        "tagName": "@experimental",
-        "syntaxKind": "modifier"
-      }
-    ]
-  },
-
   "apiExtractor": {
     "bundledPackages": [],
     "compiler": {
@@ -650,6 +872,26 @@ Configuration for .d.ts rollup generation (optional).
     },
     "dtsRollup": {
       "enabled": false
+    },
+    "messages": {
+      "compilerMessageReporting": {
+        "default": {
+          "logLevel": "warning"
+        }
+      },
+      "extractorMessageReporting": {
+        "default": {
+          "logLevel": "warning"
+        },
+        "ae-missing-release-tag": {
+          "logLevel": "none"
+        }
+      },
+      "tsdocMessageReporting": {
+        "default": {
+          "logLevel": "warning"
+        }
+      }
     }
   }
 }
@@ -737,5 +979,6 @@ If migrating from `@microsoft/api-documenter`:
 
 - **[Cheat Sheet](/cheat-sheet)** - Quick command reference
 - **[CLI Reference](/cli-reference)** - Complete CLI documentation
+- **[tsdoc.json Reference](/tsdoc-reference)** - TSDoc configuration file reference
 - **[API Extractor Docs](https://api-extractor.com/)** - API Extractor configuration
 - **[TSDoc Specification](https://tsdoc.org/)** - TSDoc tag reference

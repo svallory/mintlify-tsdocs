@@ -1,6 +1,6 @@
 {
   "name": "mint-tsdocs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Generate Mintlify-compatible MDX code reference from TypeScript.",
   "author": "svallory",
   "license": "MIT",

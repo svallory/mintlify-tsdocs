@@ -1,0 +1,351 @@
+---
+title: tsdoc.json Reference
+description: Configuration reference for TSDoc tag definitions and settings
+---
+
+## Overview
+
+The `tsdoc.json` file configures TSDoc parser behavior and custom tag definitions. This file is separate from `mint-tsdocs.config.json` and is created automatically by `mint-tsdocs init` at your project root.
+
+**Location:** Project root (next to package.json)
+
+**Purpose:**
+- Define custom TSDoc tags for your documentation
+- Extend base TSDoc configuration
+- Control which tags are supported in your project
+
+---
+
+## Auto-Generated Configuration
+
+When you run `mint-tsdocs init`, a `tsdoc.json` file is created with the following default configuration:
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "extends": [
+    "@microsoft/api-extractor/extends/tsdoc-base.json"
+  ],
+  "tagDefinitions": [
+    {
+      "tagName": "@default",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    }
+  ],
+  "supportForTags": {
+    "@default": true
+  }
+}
+```
+
+---
+
+## Core Fields
+
+### $schema
+
+**Type:** `string`
+
+**Default:** `"https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json"`
+
+JSON Schema URL for IDE autocomplete and validation support.
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json"
+}
+```
+
+---
+
+### extends
+
+**Type:** `string[]`
+
+List of TSDoc configuration files to extend. Allows you to inherit tag definitions from other configurations.
+
+```json
+{
+  "extends": [
+    "@microsoft/api-extractor/extends/tsdoc-base.json"
+  ]
+}
+```
+
+**Common extends:**
+- `@microsoft/api-extractor/extends/tsdoc-base.json` - Base TSDoc tags (recommended)
+- Custom tsdoc.json files in your project or packages
+
+**Note:** Always include `@microsoft/api-extractor/extends/tsdoc-base.json` to get standard TSDoc tags like `@param`, `@returns`, `@remarks`, etc.
+
+---
+
+### tagDefinitions
+
+**Type:** `array`
+
+Custom TSDoc tag definitions for project-specific documentation tags.
+
+```json
+{
+  "tagDefinitions": [
+    {
+      "tagName": "@default",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@experimental",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    }
+  ]
+}
+```
+
+#### Tag Definition Properties
+
+**tagName** (required)
+- Type: `string`
+- The tag name including the `@` symbol
+- Example: `"@default"`, `"@experimental"`, `"@deprecated"`
+
+**syntaxKind** (required)
+- Type: `"block" | "modifier" | "inline"`
+- Tag type:
+  - `block` - Block-level tag with content (e.g., `@default`, `@example`)
+  - `modifier` - Simple flag tag (e.g., `@experimental`, `@sealed`)
+  - `inline` - Inline tag within text (e.g., `{@link}`, `{@inheritDoc}`)
+
+**allowMultiple** (optional)
+- Type: `boolean`
+- Default: `true`
+- Whether the tag can appear multiple times in the same comment
+
+---
+
+### supportForTags
+
+**Type:** `object`
+
+Explicitly enable or disable support for specific tags. Tags listed here will be recognized by the TSDoc parser.
+
+```json
+{
+  "supportForTags": {
+    "@default": true,
+    "@experimental": true
+  }
+}
+```
+
+**Note:** Tags defined in `tagDefinitions` should also be enabled in `supportForTags`.
+
+---
+
+## Standard TSDoc Tags
+
+When you extend `@microsoft/api-extractor/extends/tsdoc-base.json`, you get these standard tags:
+
+### Block Tags
+- `@deprecated` - Mark as deprecated
+- `@example` - Usage example
+- `@param` - Parameter description
+- `@returns` - Return value description
+- `@remarks` - Additional remarks
+- `@see` - Cross-reference
+- `@throws` - Exception description
+- `@typeParam` - Generic type parameter
+
+### Modifier Tags
+- `@public` - Public API
+- `@beta` - Beta API (may change)
+- `@alpha` - Alpha API (experimental)
+- `@internal` - Internal API (not published)
+- `@sealed` - Class cannot be extended
+- `@virtual` - Method can be overridden
+- `@override` - Method overrides parent
+
+### Inline Tags
+- `{@link}` - Link to another symbol
+- `{@inheritDoc}` - Inherit documentation from parent
+- `{@label}` - Define a label for linking
+
+---
+
+## Common Customizations
+
+### Adding a @default Tag
+
+The default configuration includes a `@default` tag for documenting default values:
+
+```typescript
+/**
+ * Server port configuration
+ * @default 3000
+ */
+export const PORT: number;
+```
+
+### Adding an @experimental Tag
+
+Add an experimental tag to mark unstable APIs:
+
+```json
+{
+  "tagDefinitions": [
+    {
+      "tagName": "@experimental",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    }
+  ],
+  "supportForTags": {
+    "@experimental": true
+  }
+}
+```
+
+Usage:
+```typescript
+/**
+ * New experimental feature
+ * @experimental
+ */
+export function experimentalFeature(): void;
+```
+
+### Adding a @category Tag
+
+Organize APIs by category:
+
+```json
+{
+  "tagDefinitions": [
+    {
+      "tagName": "@category",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    }
+  ],
+  "supportForTags": {
+    "@category": true
+  }
+}
+```
+
+Usage:
+```typescript
+/**
+ * User authentication function
+ * @category Authentication
+ */
+export function authenticate(): void;
+```
+
+---
+
+## Validation
+
+`mint-tsdocs init` validates your `tsdoc.json` and ensures:
+
+1. **Base extension:** Must extend `@microsoft/api-extractor/extends/tsdoc-base.json`
+2. **Schema reference:** Should include `$schema` for IDE support
+3. **Tag consistency:** Tags in `tagDefinitions` should be enabled in `supportForTags`
+
+If validation fails, the init command will update your file automatically.
+
+---
+
+## Advanced Configuration
+
+### Multiple Extends
+
+Extend multiple configurations to combine tag sets:
+
+```json
+{
+  "extends": [
+    "@microsoft/api-extractor/extends/tsdoc-base.json",
+    "./config/custom-tsdoc.json"
+  ]
+}
+```
+
+### Custom Inline Tags
+
+Create custom inline tags for special formatting:
+
+```json
+{
+  "tagDefinitions": [
+    {
+      "tagName": "@apiEndpoint",
+      "syntaxKind": "inline",
+      "allowMultiple": true
+    }
+  ],
+  "supportForTags": {
+    "@apiEndpoint": true
+  }
+}
+```
+
+Usage:
+```typescript
+/**
+ * Fetch user data via {@apiEndpoint GET /users/:id}
+ */
+export function getUser(id: string): Promise<User>;
+```
+
+---
+
+## Complete Example
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "extends": [
+    "@microsoft/api-extractor/extends/tsdoc-base.json"
+  ],
+  "tagDefinitions": [
+    {
+      "tagName": "@default",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@experimental",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@category",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@security",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    }
+  ],
+  "supportForTags": {
+    "@default": true,
+    "@experimental": true,
+    "@category": true,
+    "@security": true
+  }
+}
+```
+
+---
+
+## See Also
+
+- **[Configuration Reference](/config-reference)** - Main mint-tsdocs configuration
+- **[TSDoc Specification](https://tsdoc.org/)** - Official TSDoc documentation
+- **[API Extractor TSDoc Config](https://api-extractor.com/pages/configs/tsdoc_json/)** - TSDoc configuration guide
+- **[Cheat Sheet](/cheat-sheet)** - Quick reference for common tags

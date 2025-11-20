@@ -29,7 +29,7 @@ Without `declaration: true`, API Extractor has nothing to extract.
 
 ## API Extractor Configuration
 
-When you run `mint-tsdocs init`, it creates `.tsdocs/api-extractor.json` automatically. For manual setup:
+When you run `mint-tsdocs generate`, it creates `docs/.tsdocs/api-extractor.json` automatically. For manual setup:
 
 ```json .tsdocs/api-extractor.json
 {
@@ -58,11 +58,11 @@ When you run `mint-tsdocs init`, it creates `.tsdocs/api-extractor.json` automat
 If you don't have Mintlify set up:
 
 ```bash
-# Initialize Mintlify
-npx mintlify init
+# Let mint-tsdocs do it automatically
+mint-tsdocs init  # Will offer to run 'mint new' for you
 
-# Or let mint-tsdocs do it
-mint-tsdocs init  # Will offer to run 'mint new'
+# Or initialize Mintlify manually first
+npx mint new
 ```
 
 Your `docs/docs.json` should exist. mint-tsdocs will add navigation automatically.
@@ -73,7 +73,7 @@ Add to `.gitignore`:
 
 ```bash .gitignore
 # mint-tsdocs cache directory
-.tsdocs/
+docs/.tsdocs/
 
 # Build output (optional - depends on your setup)
 dist/
@@ -165,8 +165,8 @@ Check your setup is working:
 
   <Step title="Run API Extractor">
     ```bash
-    npx api-extractor run --local --config .tsdocs/api-extractor.json
-    ls .tsdocs/*.api.json  # Should show .api.json file
+    npx api-extractor run --local --config docs/.tsdocs/api-extractor.json
+    ls docs/.tsdocs/*.api.json  # Should show .api.json file
     ```
   </Step>
 
@@ -215,7 +215,7 @@ Check your setup is working:
 **Problem:** Command succeeds but docs folder is empty.
 
 **Solutions:**
-- Verify .api.json exists in `.tsdocs/`
+- Verify .api.json exists in `docs/.tsdocs/`
 - Check `outputFolder` path in config
 - Run with `--verbose` to see what's happening
 - Ensure your entry point exports something public

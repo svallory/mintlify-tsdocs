@@ -61,12 +61,18 @@ export class TsConfigValidator {
 
     try {
       const content = FileSystem.readFile(tsconfigPath);
-      // Remove comments (simple approach - handles // and /* */ comments)
-      const cleanContent = content
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\/\/.*/g, '');
+      // Try to parse directly first
+      let tsconfig: any;
+      try {
+        tsconfig = JSON.parse(content);
+      } catch (parseError) {
+        // If parsing fails, try removing comments
+        const cleanContent = content
+          .replace(/\/\*[\s\S]*?\*\//g, '')          // Remove /* */ comments
+          .replace(/^\s*\/\/.*$/gm, '');            // Remove // comments (only full-line)
+        tsconfig = JSON.parse(cleanContent);
+      }
 
-      const tsconfig = JSON.parse(cleanContent);
       const compilerOptions = tsconfig.compilerOptions || {};
       const hasDeclaration = compilerOptions.declaration === true;
 

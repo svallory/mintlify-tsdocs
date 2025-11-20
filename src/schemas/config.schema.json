@@ -96,8 +96,21 @@
           "type": "object",
           "properties": {
             "enabled": {
+              "description": "Whether to generate API report files.",
               "type": "boolean",
               "default": false
+            },
+            "reportFileName": {
+              "description": "Name of the API report file. Defaults to '<unscopedPackageName>.api.md'.",
+              "type": "string"
+            },
+            "reportFolder": {
+              "description": "Folder where the API report file will be written. Defaults to '<projectFolder>/temp/'.",
+              "type": "string"
+            },
+            "reportTempFolder": {
+              "description": "Temporary folder for API report generation. Defaults to '<projectFolder>/temp/'.",
+              "type": "string"
             }
           }
         },
@@ -120,23 +133,88 @@
           "type": "object",
           "properties": {
             "enabled": {
+              "description": "Whether to generate rolled-up .d.ts files.",
               "type": "boolean",
               "default": false
+            },
+            "untrimmedFilePath": {
+              "description": "Path for the untrimmed .d.ts rollup file (includes all declarations).",
+              "type": "string"
+            },
+            "alphaTrimmedFilePath": {
+              "description": "Path for the alpha-trimmed .d.ts rollup file (includes @public, @beta, and @alpha).",
+              "type": "string"
+            },
+            "betaTrimmedFilePath": {
+              "description": "Path for the beta-trimmed .d.ts rollup file (includes @public and @beta).",
+              "type": "string"
+            },
+            "publicTrimmedFilePath": {
+              "description": "Path for the public-trimmed .d.ts rollup file (includes only @public).",
+              "type": "string"
             }
           }
         },
         "messages": {
-          "description": "Message reporting configuration.",
+          "description": "Message reporting configuration. Controls how different types of diagnostic messages are handled.",
           "type": "object",
           "properties": {
             "compilerMessageReporting": {
-              "type": "object"
+              "description": "Configuration for TypeScript compiler messages (e.g., { \"TS2551\": { \"logLevel\": \"warning\" } }).",
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "logLevel": {
+                    "description": "How to report this message type: 'error' (fails build), 'warning' (doesn't fail), or 'none' (suppress).",
+                    "type": "string",
+                    "enum": ["error", "warning", "none"]
+                  },
+                  "addToApiReportFile": {
+                    "description": "Whether to include this message in the API report file.",
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
             },
             "extractorMessageReporting": {
-              "type": "object"
+              "description": "Configuration for API Extractor messages (e.g., { \"ae-missing-release-tag\": { \"logLevel\": \"none\" } }).",
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "logLevel": {
+                    "description": "How to report this message type: 'error' (fails build), 'warning' (doesn't fail), or 'none' (suppress).",
+                    "type": "string",
+                    "enum": ["error", "warning", "none"]
+                  },
+                  "addToApiReportFile": {
+                    "description": "Whether to include this message in the API report file.",
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
             },
             "tsdocMessageReporting": {
-              "type": "object"
+              "description": "Configuration for TSDoc parser messages (e.g., { \"tsdoc-param-tag-missing-hyphen\": { \"logLevel\": \"warning\" } }).",
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "logLevel": {
+                    "description": "How to report this message type: 'error' (fails build), 'warning' (doesn't fail), or 'none' (suppress).",
+                    "type": "string",
+                    "enum": ["error", "warning", "none"]
+                  },
+                  "addToApiReportFile": {
+                    "description": "Whether to include this message in the API report file.",
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
             }
           }
         }

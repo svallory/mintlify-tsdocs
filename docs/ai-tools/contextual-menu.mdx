@@ -1,0 +1,207 @@
+---
+title: "Contextual Menu"
+description: "Help users navigate your API reference with one-click AI integrations"
+icon: "bars"
+---
+
+<Note>
+The contextual menu adds AI tool options directly to your documentation pages. This guide focuses on recommended configurations for mint-tsdocs projects with large API references.
+
+For full contextual menu features and options, see [Mintlify's contextual menu documentation](https://www.mintlify.com/docs/ai/contextual-menu).
+</Note>
+
+## Why add a contextual menu?
+
+When you generate 400+ API reference pages with mint-tsdocs, the contextual menu helps users:
+
+- **Quick questions**: Copy a class definition to ask their AI tool about usage
+- **Deep exploration**: Open ChatGPT/Claude with an entire API page as context
+- **Editor setup**: Install your MCP server in Cursor/VS Code with one click
+- **Share context**: Export pages as markdown for team discussions
+
+Think of it as a "Share to AI" button on every page of your API reference.
+
+## Recommended configuration
+
+Add to your `docs.json`:
+
+```json
+{
+  "contextual": {
+    "options": ["copy", "claude", "mcp", "cursor"]
+  }
+}
+```
+
+This gives users:
+- `copy` - Copy page as markdown (works with any AI tool)
+- `claude` - Open in Claude.ai with page context
+- `mcp` - Copy your MCP server URL for manual setup
+- `cursor` - One-click MCP installation in Cursor
+
+### Why these options for mint-tsdocs?
+
+| Option | Benefit for API Reference |
+|--------|---------------------------|
+| `copy` | Universal - works with any AI tool, perfect for "explain this interface" questions |
+| `claude`/`chatgpt` | Pre-loads entire page context for deep exploration of complex types |
+| `mcp` | Quick copy for manual MCP setup across different tools |
+| `cursor`/`vscode` | One-click installation removes friction for editor-based workflows |
+
+<Tip>
+Start with 3-4 options. Too many choices can overwhelm users. You can always add more based on usage.
+</Tip>
+
+## Configuration examples
+
+### Minimal (open source projects)
+
+```json
+{
+  "contextual": {
+    "options": ["copy", "mcp"]
+  }
+}
+```
+
+Good for: Projects where users may have various AI tool preferences.
+
+### Developer-focused
+
+```json
+{
+  "contextual": {
+    "options": ["copy", "claude", "cursor", "vscode"]
+  }
+}
+```
+
+Good for: Projects targeting developers who use AI-enhanced editors.
+
+### Comprehensive
+
+```json
+{
+  "contextual": {
+    "options": ["copy", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  }
+}
+```
+
+Good for: Maximizing discoverability, especially for complex APIs.
+
+## Use cases with generated API reference
+
+### Exploring complex interfaces
+
+User visits `ITemplateData` reference page:
+1. Clicks contextual menu → "Open in Claude"
+2. Claude opens with full interface definition
+3. Asks: "Explain each property and when I'd use it"
+
+### Debugging type errors
+
+User encounters error with `MarkdownDocumenter`:
+1. Opens the class reference page
+2. Clicks "Copy" from contextual menu
+3. Pastes into their AI tool with error message
+4. Gets context-aware troubleshooting
+
+### Template customization
+
+User customizing Liquid templates:
+1. Opens `ITemplateData` reference
+2. Clicks "Install MCP in Cursor"
+3. Works in Cursor with AI that knows available template variables
+
+### Team knowledge sharing
+
+Developer discussing implementation:
+1. Opens `NavigationManager` reference
+2. Clicks "Copy"
+3. Pastes in Slack/Discord: "Should we use this for our custom navigation?"
+
+## Verifying the menu
+
+After adding to `docs.json` and deploying:
+
+1. Visit any API reference page (e.g., `/reference/mint-tsdocs.cachemanager`)
+2. Look for the AI menu icon (usually top-right)
+3. Click to see your configured options
+4. Test the "Copy" option - should copy page content as markdown
+
+<Check>
+The menu appears on all pages, including your entire generated API reference.
+</Check>
+
+## Promoting the feature
+
+Help users discover the contextual menu in your documentation:
+
+### In your README
+
+```markdown
+## AI-Assisted Documentation
+
+Each API reference page has an AI menu (⋮) with options to:
+- Copy as markdown for your AI tool
+- Open in Claude/ChatGPT with full context
+- Install our MCP server for real-time search
+
+Try it on any [API reference page](/reference/mint-tsdocs.cachemanager).
+```
+
+### In your quickstart guide
+
+```markdown
+<Tip>
+New to our API? Click the AI menu on any reference page to ask questions
+about that specific class or interface in your preferred AI tool.
+</Tip>
+```
+
+## Custom options (optional)
+
+For organization-specific integrations, you can add custom menu items. See [Mintlify's contextual menu docs](https://www.mintlify.com/docs/ai/contextual-menu#custom-options) for details.
+
+Example for internal tools:
+
+```json
+{
+  "contextual": {
+    "options": [
+      "copy",
+      "mcp",
+      {
+        "title": "Search Internal Examples",
+        "description": "Find usage in our codebase",
+        "icon": "github",
+        "href": {
+          "url": "https://github.com/yourorg/search",
+          "params": { "q": "$path" }
+        }
+      }
+    ]
+  }
+}
+```
+
+## Learn more
+
+<CardGroup cols={2}>
+<Card title="Mintlify Contextual Menu" icon="book" href="https://www.mintlify.com/docs/ai/contextual-menu">
+  Full features and custom options
+</Card>
+
+<Card title="MCP Integration" icon="plug" href="/ai-tools/mcp-integration">
+  About the MCP server behind these options
+</Card>
+
+<Card title="Claude Code Setup" icon="asterisk" href="/ai-tools/claude-code">
+  Help users set up Claude Code
+</Card>
+
+<Card title="Cursor Setup" icon="arrow-pointer" href="/ai-tools/cursor">
+  Guide for Cursor integration
+</Card>
+</CardGroup>

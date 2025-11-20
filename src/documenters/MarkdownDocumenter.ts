@@ -204,9 +204,6 @@ export class MarkdownDocumenter {
         // Generate TypeInfo.jsx with type information
         this._generateTypeInfo();
 
-        // Generate jsconfig.json for VSCode path mapping
-        this._generateJsConfig();
-
         // Use the new template-based approach
         await this._writeApiItemPageTemplate(this._apiModel);
 
@@ -2149,10 +2146,9 @@ export class MarkdownDocumenter {
         // Recursively search subdirectories
         files.push(...this._discoverComponentFiles(fullPath, baseDir));
       } else if (stats.isFile()) {
-        // Only include .jsx files and README.md
-        // TypeScript files (.ts, .d.ts) are for the npm package, not Mintlify snippets
-        // Mintlify can only import .jsx files
-        if (/\.jsx$/i.test(item) || item === 'README.md') {
+        // Include .jsx files, .d.ts files (for TypeScript support), and README.md
+        // Mintlify can only import .jsx files, but .d.ts files provide type checking for MDX
+        if (/\.jsx$/i.test(item) || /\.d\.ts$/i.test(item) || item === 'README.md') {
           const relativePath = path.relative(baseDir, fullPath);
           files.push(relativePath);
         }

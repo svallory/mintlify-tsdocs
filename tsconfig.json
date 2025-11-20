@@ -21,8 +21,14 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "checkJs": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "/snippets/*": ["./docs/snippets/*"]
+    }
+  },
+  "mdx": {
+    "checkMdx": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "**/*.test.ts", "docs/reference"]
+  "exclude": ["node_modules", "lib", "**/*.test.ts", "docs/reference", "docs/snippets/tsdocs"]
 }
