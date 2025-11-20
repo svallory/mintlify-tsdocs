@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 /**
  * mint-tsdocs generates Mintlify-compatible MDX documentation from .api.json files created by API Extractor.
  * The `mint-tsdocs` package provides the command-line tool for generating documentation with proper frontmatter
@@ -48,6 +45,11 @@ export * from './cache';
 // ===============================================
 export { IndentedWriter } from './utils/IndentedWriter';
 export * from './utils';
+
+// ===============================================
+// Component Types
+// ===============================================
+export type { TypeTreeProperty, TypeTreeProps, TypeTreeGroupProps } from './components';
 
 // ===============================================
 // Custom TSDoc Nodes

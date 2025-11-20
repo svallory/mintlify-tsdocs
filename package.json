@@ -1,7 +1,7 @@
 {
   "name": "mint-tsdocs",
   "version": "0.0.2",
-  "description": "Generate Mintlify-compatible MDX documentation from TypeScript. Also published as 'mint-tsdocs' for convenience.",
+  "description": "Generate Mintlify-compatible MDX code reference from TypeScript.",
   "author": "svallory",
   "license": "MIT",
   "repository": {
@@ -52,6 +52,7 @@
     "@rushstack/node-core-library": "^5.18.0",
     "@rushstack/terminal": "^0.19.3",
     "@rushstack/ts-command-line": "^5.1.3",
+    "cli-table3": "^0.6.5",
     "clsx": "^2.1.1",
     "cosmiconfig": "^9.0.0",
     "debug": "^4.4.3",
@@ -66,6 +67,9 @@
     "@types/node": "^18.19.130",
     "@types/react": "18",
     "@types/resolve": "1.20.2",
+    "@typescript-eslint/parser": "^8.47.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-tsdoc": "^0.5.0",
     "typescript": "^5.9.3"
   }
 }

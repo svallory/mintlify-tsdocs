@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import * as path from 'path';
 import * as child_process from 'child_process';
 import { FileSystem } from '@rushstack/node-core-library';
@@ -30,8 +27,6 @@ export class InitAction extends CommandLineAction {
   private readonly _projectDirParameter: CommandLineStringParameter;
   private readonly _skipMintlifyParameter: CommandLineFlagParameter;
   private readonly _yesParameter: CommandLineFlagParameter;
-  private readonly _verboseParameter: CommandLineFlagParameter;
-  private readonly _debugParameter: CommandLineFlagParameter;
 
   public constructor(cliInstance: DocumenterCli) {
     super({
@@ -60,17 +55,6 @@ export class InitAction extends CommandLineAction {
       parameterLongName: '--yes',
       parameterShortName: '-y',
       description: 'Use auto-detected defaults for all prompts'
-    });
-
-    this._verboseParameter = this.defineFlagParameter({
-      parameterLongName: '--verbose',
-      parameterShortName: '-v',
-      description: 'Show verbose output'
-    });
-
-    this._debugParameter = this.defineFlagParameter({
-      parameterLongName: '--debug',
-      description: 'Show debug output (implies --verbose)'
     });
   }
 
@@ -736,20 +720,6 @@ This directory contains auto-generated files used during documentation generatio
   }
 
   /**
-   * Get verbose flag value
-   */
-  private get _isVerbose(): boolean {
-    return this._verboseParameter.value || this._isDebug || this._cliInstance.isVerbose;
-  }
-
-  /**
-   * Get debug flag value
-   */
-  private get _isDebug(): boolean {
-    return this._debugParameter.value || this._cliInstance.isDebug;
-  }
-
-  /**
    * Run a shell command with spinner
    */
   private async _runCommand(
@@ -759,8 +729,8 @@ This directory contains auto-generated files used during documentation generatio
     message: string,
     options: { forceInteractive?: boolean } = {}
   ): Promise<void> {
-    const isVerbose = this._isVerbose;
-    const isDebug = this._isDebug;
+    const isVerbose = this._cliInstance.isVerbose;
+    const isDebug = this._cliInstance.isDebug;
     const forceInteractive = options.forceInteractive ?? false;
     const useInherit = isVerbose || forceInteractive;
     const spinner = clack.spinner();

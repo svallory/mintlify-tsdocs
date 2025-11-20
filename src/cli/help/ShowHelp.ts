@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import { showCommandHelp } from '../CliHelpers';
 
 /**
@@ -11,14 +8,11 @@ export function showHelp(): void {
     commandName: 'show',
     summary: 'Display configuration or statistics',
     description:
-      'Displays the current mint-tsdocs configuration or performance statistics from the last run. ' +
-      'Useful for debugging and verifying configuration settings.',
-    usage: 'mint-tsdocs show [OPTIONS]',
+      'Displays the current mint-tsdocs configuration or documentation statistics. ' +
+      'Use "config" to view configuration settings or "stats" to view API coverage and quality metrics. ' +
+      'Defaults to "config" if no target is specified.',
+    usage: 'mint-tsdocs show [TARGET]',
     options: [
-      {
-        long: '--target TYPE',
-        description: 'What to display: "config" or "stats" (default: config)'
-      },
       {
         short: '-h',
         long: '--help',
@@ -27,16 +21,16 @@ export function showHelp(): void {
     ],
     examples: [
       {
-        description: 'Show current configuration',
+        description: 'Show current configuration (default)',
         command: 'mint-tsdocs show'
       },
       {
         description: 'Show configuration explicitly',
-        command: 'mint-tsdocs show --target config'
+        command: 'mint-tsdocs show config'
       },
       {
-        description: 'Show performance statistics',
-        command: 'mint-tsdocs show --target stats'
+        description: 'Show documentation statistics',
+        command: 'mint-tsdocs show stats'
       }
     ]
   });

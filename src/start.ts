@@ -1,15 +1,7 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
-import * as os from 'os';
-
 import { PackageJsonLookup } from '@rushstack/node-core-library';
-import { Colorize } from '@rushstack/terminal';
-import * as clack from '@clack/prompts';
 
 import { DocumenterCli } from './cli/ApiDocumenterCommandLine';
 import { createDebugger, enableDebug, type Debugger } from './utils/debug';
-import { showCliHeader } from './cli/CliHelpers';
 import * as InitHelp from './cli/help/InitHelp';
 import * as GenerateHelp from './cli/help/GenerateHelp';
 import * as CustomizeHelp from './cli/help/CustomizeHelp';

@@ -43,13 +43,13 @@ Initialize mint-tsdocs configuration in your project.
 
 **Usage:**
 ```bash
-mint-tsdocs init [PROJECT_DIR] [OPTIONS]
+mint-tsdocs init [OPTIONS]
 ```
 
 **Options:**
 - `--yes`, `-y` - Skip prompts and use auto-detected defaults
 - `--skip-mintlify` - Skip Mintlify initialization
-- `--project-dir PATH` - Project directory (alternative to positional argument)
+- `--project-dir PATH` - Project directory (default: current directory)
 
 **Examples:**
 ```bash
@@ -60,7 +60,7 @@ mint-tsdocs init
 mint-tsdocs init --yes
 
 # Initialize specific package in monorepo
-mint-tsdocs init ./packages/my-library
+mint-tsdocs init --project-dir ./packages/my-library
 
 # Initialize without setting up Mintlify
 mint-tsdocs init --skip-mintlify
@@ -130,11 +130,11 @@ Copy default templates to a directory for customization.
 
 **Usage:**
 ```bash
-mint-tsdocs customize -t TEMPLATE_DIR [OPTIONS]
+mint-tsdocs customize [-t TEMPLATE_DIR] [OPTIONS]
 ```
 
 **Options:**
-- `-t`, `--template-dir PATH` - Template directory path (required)
+- `-t`, `--template-dir PATH` - Template directory path (if omitted, you will be prompted)
 - `--force` - Overwrite existing templates
 
 **Examples:**
@@ -163,28 +163,25 @@ mint-tsdocs customize -t ./templates --force
 
 ### show
 
-Display configuration or cache statistics.
+Display configuration or documentation statistics.
 
 **Usage:**
 ```bash
-mint-tsdocs show [TARGET] [OPTIONS]
-mint-tsdocs show --target TARGET
+mint-tsdocs show [TARGET]
 ```
 
 **Targets:**
 - `config` - Display current configuration (default)
-- `stats` - Display cache statistics
+- `stats` - Display documentation statistics
 
 **Examples:**
 ```bash
 # Show current configuration
 mint-tsdocs show
 mint-tsdocs show config
-mint-tsdocs show --target config
 
-# Show cache statistics
+# Show documentation statistics
 mint-tsdocs show stats
-mint-tsdocs show --target stats
 ```
 
 **Config Output:**
@@ -197,11 +194,13 @@ Shows all settings from `mint-tsdocs.config.json`:
 - TSDoc configuration
 
 **Stats Output:**
-Shows performance metrics:
-- Cache status (enabled/disabled)
-- Type analysis cache (size, hits, misses, hit rate)
-- API resolution cache (size, hits, misses, hit rate)
-- Overall hit rate and total lookups
+Shows comprehensive documentation metrics:
+- **Project**: Package name
+- **API Surface Area**: Counts of classes, interfaces, functions, type aliases, enums, namespaces, variables, methods, and properties
+- **Documentation Coverage**: Documented vs undocumented items, items with examples/remarks, and overall coverage percentage (color-coded)
+- **Generated Files**: Number of MDX files, total size, average size, and output location
+
+The stats command requires that documentation has been generated at least once.
 
 ---
 
@@ -234,7 +233,6 @@ Display version and package information.
 ```bash
 mint-tsdocs version
 mint-tsdocs --version
-mint-tsdocs -v
 ```
 
 Shows:
@@ -277,9 +275,9 @@ mint-tsdocs fully supports monorepos through positional directory arguments:
 
 ```bash
 # Initialize multiple packages
-mint-tsdocs init ./packages/core
-mint-tsdocs init ./packages/utils
-mint-tsdocs init ./packages/plugins
+mint-tsdocs init --project-dir ./packages/core
+mint-tsdocs init --project-dir ./packages/utils
+mint-tsdocs init --project-dir ./packages/plugins
 
 # Generate docs for specific packages
 mint-tsdocs ./packages/core
@@ -293,7 +291,7 @@ mint-tsdocs generate --project-dir ./packages/core
 ```bash
 # 1. Initialize each package
 for pkg in packages/*; do
-  mint-tsdocs init "$pkg" --yes
+  mint-tsdocs init --project-dir "$pkg" --yes
 done
 
 # 2. Generate docs for all packages
@@ -422,7 +420,7 @@ npx mintlify dev
 # Check current configuration
 mint-tsdocs show config
 
-# View cache statistics
+# View documentation statistics
 mint-tsdocs show stats
 
 # Generate with debug output
@@ -484,9 +482,9 @@ ls -la lib/*.d.ts
 mint-tsdocs show config
 ```
 
-### Cache Issues
+### Documentation Issues
 ```bash
-# View cache statistics
+# View documentation statistics and coverage
 mint-tsdocs show stats
 
 # Clear cache by deleting .tsdocs/ directory

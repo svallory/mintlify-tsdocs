@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "paths": {
+      "/snippets/*": [
+        "./docs/snippets/*"
+      ]
+    },
+    "jsx": "react",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true
+  },
+  "include": [
+    "**/*.jsx",
+    "**/*.mdx",
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    ".tsdocs"
+  ],
+  "mdx": {
+    // Enable strict type checking in MDX files.
+    "checkMdx": true
+  }
+}

@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import * as path from 'path';
 import { PackageName, FileSystem, NewlineKind } from '@rushstack/node-core-library';
 import * as clack from '@clack/prompts';
@@ -67,6 +64,7 @@ import { DocNoteBox } from '../nodes/DocNoteBox';
 import { Utilities } from '../utils/Utilities';
 import { CustomMarkdownEmitter } from '../markdown/CustomMarkdownEmitter';
 import { LiquidTemplateManager, TemplateDataConverter } from '../templates';
+import { TypeInfoGenerator } from '../utils/TypeInfoGenerator';
 
 const debug: Debugger = createDebugger('markdown-documenter');
 
@@ -202,6 +200,12 @@ export class MarkdownDocumenter {
 
         // Copy Mintlify components to snippets folder
         this._copyMintlifyComponents();
+
+        // Generate TypeInfo.jsx with type information
+        this._generateTypeInfo();
+
+        // Generate jsconfig.json for VSCode path mapping
+        this._generateJsConfig();
 
         // Use the new template-based approach
         await this._writeApiItemPageTemplate(this._apiModel);
@@ -1971,6 +1975,103 @@ export class MarkdownDocumenter {
   }
 
   /**
+   * Generate tsconfig.json for VSCode path mapping and MDX language server.
+   * This allows VSCode to resolve /snippets/* imports correctly and enables
+   * strict type checking in MDX files.
+   */
+  private _generateJsConfig(): void {
+    const docsRoot = path.dirname(this._outputFolder);
+    const tsconfigPath = path.join(docsRoot, 'tsconfig.json');
+
+    // Check if tsconfig.json already exists
+    if (FileSystem.exists(tsconfigPath)) {
+      // Don't overwrite existing tsconfig.json
+      clack.log.info('   ⚠ tsconfig.json already exists, skipping generation');
+      return;
+    }
+
+    try {
+      const tsconfigContent = {
+        compilerOptions: {
+          baseUrl: '.',
+          paths: {
+            '/snippets/*': ['./snippets/*']
+          },
+          jsx: 'react',
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          allowSyntheticDefaultImports: true,
+          checkJs: false,
+          // Allow JavaScript files to be compiled
+          allowJs: true,
+          // Don't emit output - this is just for IDE
+          noEmit: true
+        },
+        // MDX language server configuration
+        mdx: {
+          // Enable strict type checking in MDX files
+          checkMdx: true
+        },
+        include: [
+          '**/*.jsx',
+          '**/*.mdx',
+          '**/*.js',
+          '**/*.ts',
+          '**/*.tsx'
+        ],
+        exclude: [
+          'node_modules',
+          '.tsdocs'
+        ]
+      };
+
+      FileSystem.writeFile(
+        tsconfigPath,
+        JSON.stringify(tsconfigContent, null, 2) + '\n'
+      );
+
+      clack.log.success('   ✓ Generated tsconfig.json for VSCode path resolution and MDX support');
+    } catch (error) {
+      clack.log.warn(`   ⚠ Failed to generate tsconfig.json: ${error}`);
+      debug.warn('tsconfig.json generation failed:', error);
+    }
+  }
+
+  /**
+   * Generate TypeInfo.jsx file with type information for all API items.
+   * This allows documentation authors to reference types with IDE autocomplete.
+   */
+  private _generateTypeInfo(): void {
+    const docsRoot = path.dirname(this._outputFolder);
+    const snippetsFolder = path.join(docsRoot, 'snippets', 'tsdocs');
+    const typeInfoJsPath = path.join(snippetsFolder, 'TypeInfo.jsx');
+    const typeInfoDtsPath = path.join(snippetsFolder, 'TypeInfo.d.ts');
+
+    try {
+      // Ensure snippets folder exists
+      FileSystem.ensureFolder(snippetsFolder);
+
+      // Generate TypeInfo content
+      const generator = new TypeInfoGenerator(this._apiModel);
+
+      // Generate JavaScript module
+      const jsContent = generator.generateTypeInfoModule();
+      FileSystem.writeFile(typeInfoJsPath, jsContent);
+
+      // Generate TypeScript declarations for VSCode autocomplete
+      const dtsContent = generator.generateTypeInfoDeclaration();
+      FileSystem.writeFile(typeInfoDtsPath, dtsContent);
+
+      clack.log.success('   ✓ Generated TypeInfo.jsx with type information');
+      clack.log.success('   ✓ Generated TypeInfo.d.ts for VSCode autocomplete');
+    } catch (error) {
+      // Log warning but don't fail the build
+      clack.log.warn(`   ⚠ Failed to generate TypeInfo: ${error}`);
+      debug.warn('TypeInfo generation failed:', error);
+    }
+  }
+
+  /**
    * Copy Mintlify components (like TypeTree) to the user's docs/snippets/tsdocs folder.
    * This allows generated MDX files to use these components.
    *
@@ -2048,8 +2149,10 @@ export class MarkdownDocumenter {
         // Recursively search subdirectories
         files.push(...this._discoverComponentFiles(fullPath, baseDir));
       } else if (stats.isFile()) {
-        // Include .jsx, .tsx, .js, .ts, and .md files
-        if (/\.(jsx|tsx|js|ts|md)$/i.test(item)) {
+        // Only include .jsx files and README.md
+        // TypeScript files (.ts, .d.ts) are for the npm package, not Mintlify snippets
+        // Mintlify can only import .jsx files
+        if (/\.jsx$/i.test(item) || item === 'README.md') {
           const relativePath = path.relative(baseDir, fullPath);
           files.push(relativePath);
         }

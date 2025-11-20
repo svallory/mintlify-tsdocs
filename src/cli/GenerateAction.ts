@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import * as path from 'path';
 import { FileSystem } from '@rushstack/node-core-library';
 import { Colorize } from '@rushstack/terminal';
@@ -406,19 +403,63 @@ export class GenerateAction extends CommandLineAction {
       // Load the config
       const extractorConfig: ExtractorConfig = ExtractorConfig.loadFileAndPrepare(configPath);
 
-      // Run api-extractor
-      const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
-        localBuild: true,
-        showVerboseMessages: false
-      });
+      // Capture and format api-extractor messages
+      const messages: string[] = [];
 
-      if (extractorResult.succeeded) {
-        clack.log.success('api-extractor completed successfully');
-      } else {
-        throw new DocumentationError(
-          `api-extractor completed with ${extractorResult.errorCount} errors and ${extractorResult.warningCount} warnings`,
-          ErrorCode.COMMAND_FAILED
-        );
+      // Intercept console.log/error to prevent duplicate output
+      // while allowing clack output (which goes through a different path)
+      const originalConsoleLog = console.log;
+      const originalConsoleError = console.error;
+      const originalConsoleWarn = console.warn;
+
+      // Suppress direct console output during api-extractor
+      console.log = () => {};
+      console.error = () => {};
+      console.warn = () => {};
+
+      try {
+        // Run api-extractor with message callback to intercept output
+        const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
+          localBuild: true,
+          showVerboseMessages: false,
+          messageCallback: (message) => {
+            // Format message based on log level
+            const text = message.text;
+
+            // Wrap each message line with clack formatting
+            const lines = text.split('\n');
+            for (const line of lines) {
+              if (!line.trim()) continue;
+
+              // Color code based on log level
+              if (message.logLevel === 'error') {
+                clack.log.error(line);
+              } else if (message.logLevel === 'warning') {
+                clack.log.warn(line);
+              } else if (message.logLevel === 'info') {
+                clack.log.info(line);
+              } else {
+                clack.log.message(Colorize.dim(line));
+              }
+            }
+
+            messages.push(text);
+          }
+        });
+
+        if (extractorResult.succeeded) {
+          clack.log.success('api-extractor completed successfully');
+        } else {
+          throw new DocumentationError(
+            `api-extractor completed with ${extractorResult.errorCount} errors and ${extractorResult.warningCount} warnings`,
+            ErrorCode.COMMAND_FAILED
+          );
+        }
+      } finally {
+        // Restore console methods
+        console.log = originalConsoleLog;
+        console.error = originalConsoleError;
+        console.warn = originalConsoleWarn;
       }
     } catch (error) {
       if (error instanceof DocumentationError) {

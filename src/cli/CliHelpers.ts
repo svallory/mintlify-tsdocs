@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import { PackageJsonLookup } from '@rushstack/node-core-library';
 import { Colorize } from '@rushstack/terminal';
 import * as clack from '@clack/prompts';
+
+export const BORDER = Colorize.gray('│  ');
 
 /**
  * Get the package version
@@ -13,15 +12,43 @@ export function getPackageVersion(): string {
 }
 
 /**
- * Show consistent CLI header with version
+ * Show consistent CLI header with version (plain text, no Clack borders)
+ */
+export function showPlainHeader(): void {
+  const version = getPackageVersion();
+
+  // ANSI escape codes for custom background color rgb(22, 110, 63)
+  const bgGreen = '\x1b[48;2;22;110;63m';  // RGB background
+  const fgWhite = '\x1b[97m';               // Bright white text
+  const bold = '\x1b[1m';                   // Bold
+  const reset = '\x1b[0m';                  // Reset all styles
+
+  console.log(
+    [
+      '',
+      `${bold}${fgWhite}${bgGreen} mint-tsdocs ${reset} ${Colorize.dim(`v${version}`)}`,
+      Colorize.cyan('https://mint-tsdocs.saulo.engineer/')
+    ].join('\n')
+  );
+} 
+
+/**
+ * Show consistent CLI header with version (with Clack intro border)
  */
 export function showCliHeader(): void {
   const version = getPackageVersion();
-  clack.intro(
-    Colorize.bold(
-      `mint-tsdocs ${version} ` + Colorize.cyan(' - https://mint-tsdocs.saulo.engineer/')
-    )
-  );
+
+  // ANSI escape codes for custom background color rgb(22, 110, 63)
+  const bgGreen = '\x1b[48;2;22;110;63m';  // RGB background
+  const fgWhite = '\x1b[97m';               // Bright white text
+  const bold = '\x1b[1m';                   // Bold
+  const reset = '\x1b[0m';                  // Reset all styles
+
+  // Build the header with two lines
+  const line1 = `${bold}${fgWhite}${bgGreen} mint-tsdocs ${reset} ${Colorize.dim(`v${version}`)}`;
+  const line2 = Colorize.cyan('https://mint-tsdocs.saulo.engineer/');
+
+  clack.intro(`${line1}\n${BORDER}${line2}`);
 }
 
 /**
@@ -54,10 +81,10 @@ export interface ICommandHelpConfig {
 }
 
 /**
- * Display formatted help for a command
+ * Display formatted help for a command (plain text, no Clack borders)
  */
 export function showCommandHelp(config: ICommandHelpConfig): void {
-  showCliHeader();
+  showPlainHeader();
 
   console.log('\n' + Colorize.bold(config.summary));
 
@@ -94,5 +121,5 @@ export function showCommandHelp(config: ICommandHelpConfig): void {
     }
   }
 
-  clack.outro('For more help, visit ' + Colorize.cyan('https://mint-tsdocs.saulo.engineer/'));
+  console.log('\nFor more help, visit ' + Colorize.cyan('https://mint-tsdocs.saulo.engineer/'));
 }

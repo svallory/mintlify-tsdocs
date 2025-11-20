@@ -1,15 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import { CommandLineAction, CommandLineRemainder } from '@rushstack/ts-command-line';
 import * as clack from '@clack/prompts';
 import { Colorize } from '@rushstack/terminal';
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
-import { showCliHeader, showCommandHelp } from './CliHelpers';
+import { showPlainHeader, showCommandHelp } from './CliHelpers';
 import * as CustomizeHelp from './help/CustomizeHelp';
 import * as InitHelp from './help/InitHelp';
 import * as GenerateHelp from './help/GenerateHelp';
 import * as ShowHelp from './help/ShowHelp';
+import * as LintHelp from './help/LintHelp';
 
 /**
  * CLI action for displaying help information.
@@ -55,23 +53,26 @@ export class HelpAction extends CommandLineAction {
         case 'show':
           ShowHelp.showHelp();
           return;
+        case 'lint':
+          LintHelp.showHelp();
+          return;
         case 'version':
           // Version just shows version, no special help
-          showCliHeader();
+          showPlainHeader();
           console.log('\nDisplays version information for mint-tsdocs.\n');
-          clack.outro('Run ' + Colorize.cyan('mint-tsdocs version') + ' to see version details');
+          console.log('Run ' + Colorize.cyan('mint-tsdocs version') + ' to see version details');
           return;
         default:
-          showCliHeader();
+          showPlainHeader();
           clack.log.warn(`Unknown command: ${Colorize.yellow(commandName)}`);
-          console.log(`\nValid commands: init, generate, customize, show, version\n`);
-          clack.outro('Run ' + Colorize.cyan('mint-tsdocs help') + ' to see all commands');
+          console.log(`\nValid commands: init, generate, customize, show, lint, version\n`);
+          console.log('Run ' + Colorize.cyan('mint-tsdocs help') + ' to see all commands');
           return;
       }
     }
 
     // Show general help if no command specified
-    showCliHeader();
+    showPlainHeader();
 
     console.log('\n' + Colorize.bold('DESCRIPTION'));
     console.log('  Generates Mintlify-compatible MDX documentation from TypeScript source code.');
@@ -102,6 +103,10 @@ export class HelpAction extends CommandLineAction {
     console.log('  ' + Colorize.cyan('show') + '         Display configuration or statistics');
     console.log('               Options: --target config|stats (default: config)');
     console.log('               Usage: mint-tsdocs show --target config\n');
+
+    console.log('  ' + Colorize.cyan('lint') + '         Check documentation quality and find issues');
+    console.log('               Reports undocumented APIs and missing descriptions');
+    console.log('               Usage: mint-tsdocs lint\n');
 
     console.log('  ' + Colorize.cyan('help') + '         Display this help message\n');
 
@@ -135,6 +140,6 @@ export class HelpAction extends CommandLineAction {
     console.log(Colorize.bold('REPORT ISSUES'));
     console.log('  https://github.com/mintlify/tsdocs/issues\n');
 
-    clack.outro('Run ' + Colorize.cyan('mint-tsdocs <command> --help') + ' for command-specific help');
+    console.log('Run ' + Colorize.cyan('mint-tsdocs <command> --help') + ' for command-specific help');
   }
 }

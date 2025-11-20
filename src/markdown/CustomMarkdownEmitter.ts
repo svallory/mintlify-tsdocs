@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import type { DocNode, DocLinkTag, DocPlainText, DocSection, DocParagraph } from '@microsoft/tsdoc';
 import { StringBuilder } from '@microsoft/tsdoc';
 import type { ApiModel, IResolveDeclarationReferenceResult, ApiItem } from '@microsoft/api-extractor-model';

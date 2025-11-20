@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See LICENSE in the project root for license information.
-
 import { ApiItem, ApiItemKind, ApiClass, ApiInterface, ApiEnum, ApiFunction, ApiMethod, ApiProperty, ApiPackage, ApiNamespace, ApiTypeAlias, ApiVariable, ApiEnumMember, ReleaseTag, ApiReleaseTagMixin, ApiDeclaredItem, ApiOptionalMixin, ApiStaticMixin, ApiAbstractMixin, ApiProtectedMixin, ApiReadonlyMixin, ApiInitializerMixin, ApiDocumentedItem } from '@microsoft/api-extractor-model';
 import { DocSection, DocPlainText, DocParagraph } from '@microsoft/tsdoc';
 

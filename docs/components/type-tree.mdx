@@ -5,28 +5,76 @@ icon: "diagram-project"
 ---
 
 import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
+import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+export const info = TypeInfo;
 
 The `TypeTree` component provides an elegant way to document complex type structures with nested properties. It automatically handles recursive rendering and provides an intuitive expandable interface for exploring deeply nested types.
 
 ## Basic Usage
 
-Import the component in your MDX file and pass the type information:
+Import the component and pass it the type information.
+
+```jsx TypeTree usage
+import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
+
+const databaseField: TypeTreeProperty = {
+  name: "database",
+  type: "object",
+  description: "Database configuration",
+  required: true,
+  properties: [
+    { name: "host", type: "string", description: "Database host address", required: true },
+    { name: "port", type: "number", description: "Database port number", defaultValue: "5432" },
+    {
+      name: "credentials",
+      type: "object",
+      description: "Database authentication credentials",
+      properties: [
+        { name: "username", type: "string", required: true },
+        { name: "password", type: "string", required: true }
+      ]
+    }
+  ]
+};
+
+<TypeTree {...databaseField} />
+```
+
+The `TypeTree` component will recurse through the properties using the 
+[`ResponseField`](https://www.mintlify.com/docs/components/responses) 
+and [`Expandable`](https://www.mintlify.com/docs/components/expandables) 
+Mintlify components to display the type information.
+
+export const databaseField = {
+  name: "database",
+  type: "object",
+  description: "Database configuration",
+  required: true,
+  properties: [
+    TypeInfo.MintTsdocs,
+    { name: "host", type: "string", description: "Database host address", required: true },
+    { name: "port", type: "number", description: "Database port number", defaultValue: "5432" },
+    {
+      name: "credentials",
+      type: "object",
+      description: "Database authentication credentials",
+      properties: [
+        { name: "username", type: "string", required: true },
+        { name: "password", type: "string", required: true }
+      ]
+    }
+  ]
+};
 
 <Preview title="TypeTree Preview">
-  <TypeTree
-    name="config"
-    type="object"
-    description="Configuration settings for the application"
-    required={true}
-    properties={[
-      { name: "host", type: "string", description: "Database host address", required: true },
-      { name: "port", type: "number", description: "Database port number", defaultValue: "5432" }
-    ]}
-  />
+  <TypeTree {...databaseField} />
 </Preview>
 
-HAHAHA
+<Preview title="TypeTree Preview">
+  <TypeTree {...TypeInfo} />
+</Preview>
 
 ## Properties
 
@@ -64,83 +112,178 @@ HAHAHA
 
 ## Nested Objects
 
-TypeTree automatically renders nested properties with expandable sections:
+TypeTree automatically renders nested properties with expandable sections. This example demonstrates 3 levels of nesting, showcasing the auto-expansion behavior:
 
 <Preview
   code={`<TypeTree
-  name="database"
+  name="apiConfig"
   type="object"
-  description="Database configuration"
+  description="API configuration settings"
   required={true}
   properties={[
     {
-      name: "connection",
+      name: "endpoint",
+      type: "string",
+      description: "API endpoint URL",
+      required: true,
+      defaultValue: "https://api.example.com"
+    },
+    {
+      name: "authentication",
       type: "object",
-      description: "Connection settings",
+      description: "Authentication configuration",
       required: true,
       properties: [
-        { name: "host", type: "string", required: true },
-        { name: "port", type: "number", defaultValue: "5432" },
         {
-          name: "ssl",
+          name: "method",
+          type: "'oauth' | 'apiKey' | 'jwt'",
+          description: "Authentication method to use",
+          required: true,
+          defaultValue: "oauth"
+        },
+        {
+          name: "credentials",
           type: "object",
-          description: "SSL configuration",
+          description: "Authentication credentials",
+          required: true,
           properties: [
-            { name: "enabled", type: "boolean", defaultValue: "false" },
-            { name: "cert", type: "string" }
+            {
+              name: "clientId",
+              type: "string",
+              description: "OAuth client ID",
+              required: true
+            },
+            {
+              name: "clientSecret",
+              type: "string",
+              description: "OAuth client secret",
+              required: true
+            },
+            {
+              name: "scopes",
+              type: "Array<string>",
+              description: "Required OAuth scopes",
+              defaultValue: "['read', 'write']"
+            }
           ]
+        },
+        {
+          name: "refreshToken",
+          type: "boolean",
+          description: "Enable automatic token refresh",
+          defaultValue: "true"
         }
       ]
     },
     {
-      name: "pool",
+      name: "retry",
       type: "object",
-      description: "Connection pool settings",
+      description: "Retry configuration for failed requests",
       properties: [
-        { name: "min", type: "number", defaultValue: "2" },
-        { name: "max", type: "number", defaultValue: "10" }
+        { name: "maxAttempts", type: "number", defaultValue: "3" },
+        { name: "backoffMs", type: "number", defaultValue: "1000" },
+        {
+          name: "retryableErrors",
+          type: "object",
+          description: "Error codes that trigger retry",
+          properties: [
+            { name: "network", type: "boolean", defaultValue: "true" },
+            { name: "timeout", type: "boolean", defaultValue: "true" },
+            { name: "serverError", type: "boolean", defaultValue: "false" }
+          ]
+        }
       ]
     }
   ]}
 />`}
 >
   <TypeTree
-    name="database"
+    name="apiConfig"
     type="object"
-    description="Database configuration"
+    description="API configuration settings"
     required={true}
     properties={[
       {
-        name: "connection",
+        name: "endpoint",
+        type: "string",
+        description: "API endpoint URL",
+        required: true,
+        defaultValue: "https://api.example.com"
+      },
+      {
+        name: "authentication",
         type: "object",
-        description: "Connection settings",
+        description: "Authentication configuration",
         required: true,
         properties: [
-          { name: "host", type: "string", required: true },
-          { name: "port", type: "number", defaultValue: "5432" },
           {
-            name: "ssl",
+            name: "method",
+            type: "'oauth' | 'apiKey' | 'jwt'",
+            description: "Authentication method to use",
+            required: true,
+            defaultValue: "oauth"
+          },
+          {
+            name: "credentials",
             type: "object",
-            description: "SSL configuration",
+            description: "Authentication credentials",
+            required: true,
             properties: [
-              { name: "enabled", type: "boolean", defaultValue: "false" },
-              { name: "cert", type: "string" }
+              {
+                name: "clientId",
+                type: "string",
+                description: "OAuth client ID",
+                required: true
+              },
+              {
+                name: "clientSecret",
+                type: "string",
+                description: "OAuth client secret",
+                required: true
+              },
+              {
+                name: "scopes",
+                type: "Array<string>",
+                description: "Required OAuth scopes",
+                defaultValue: "['read', 'write']"
+              }
             ]
+          },
+          {
+            name: "refreshToken",
+            type: "boolean",
+            description: "Enable automatic token refresh",
+            defaultValue: "true"
           }
         ]
       },
       {
-        name: "pool",
+        name: "retry",
         type: "object",
-        description: "Connection pool settings",
+        description: "Retry configuration for failed requests",
         properties: [
-          { name: "min", type: "number", defaultValue: "2" },
-          { name: "max", type: "number", defaultValue: "10" }
+          { name: "maxAttempts", type: "number", defaultValue: "3" },
+          { name: "backoffMs", type: "number", defaultValue: "1000" },
+          {
+            name: "retryableErrors",
+            type: "object",
+            description: "Error codes that trigger retry",
+            properties: [
+              { name: "network", type: "boolean", defaultValue: "true" },
+              { name: "timeout", type: "boolean", defaultValue: "true" },
+              { name: "serverError", type: "boolean", defaultValue: "false" }
+            ]
+          }
         ]
       }
     ]}
   />
 </Preview>
+
+This example demonstrates the three-level nesting structure:
+- **Level 1**: `endpoint`, `authentication`, `retry` (all expanded by default)
+- **Level 2**: Under `authentication`: `method`, `credentials`, `refreshToken`; Under `retry`: `maxAttempts`, `backoffMs`, `retryableErrors` (all expanded by default)
+- **Level 3**: Under `credentials`: `clientId`, `clientSecret`, `scopes`; Under `retryableErrors`: `network`, `timeout`, `serverError` (expanded by default per auto-expansion rules)
 
 ## Auto-Expansion Behavior
 

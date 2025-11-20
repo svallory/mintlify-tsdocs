@@ -6,6 +6,15 @@ export { SecurityUtils } from './SecurityUtils';
 export { Utilities } from './Utilities';
 export { DocumentationHelper } from './DocumentationHelper';
 export { ObjectTypeAnalyzer } from './ObjectTypeAnalyzer';
+export { TypeInfoGenerator } from './TypeInfoGenerator';
+export {
+  DocumentationStats,
+  type TypeCoverageStats,
+  type ApiSurfaceStats,
+  type DocumentationCoverageStats,
+  type GeneratedFilesStats,
+  type DocumentationStatistics
+} from './DocumentationStats';
 
 /**
  * Debug utility exports

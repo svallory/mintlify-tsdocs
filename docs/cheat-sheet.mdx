@@ -24,7 +24,7 @@ mint-tsdocs ./packages/core   # Generate for specific package
 
 # View configuration
 mint-tsdocs show config       # Show current settings
-mint-tsdocs show stats        # Show cache statistics
+mint-tsdocs show stats        # Show documentation statistics
 
 # Get help
 mint-tsdocs help              # Full help
@@ -60,8 +60,8 @@ npx mintlify dev
 
 ```bash
 # Initialize each package
-mint-tsdocs init ./packages/core --yes
-mint-tsdocs init ./packages/utils --yes
+mint-tsdocs init --project-dir ./packages/core --yes
+mint-tsdocs init --project-dir ./packages/utils --yes
 
 # Generate docs for specific packages
 mint-tsdocs ./packages/core
