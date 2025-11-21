@@ -1,0 +1,65 @@
+---
+title: "LiquidTemplateEngine class"
+icon: "box"
+description: "LiquidJS-based template engine implementation"
+---
+
+# LiquidTemplateEngine
+
+## Summary
+
+LiquidJS-based template engine implementation
+
+## Signature
+
+```typescript
+export declare class LiquidTemplateEngine 
+```
+
+## Constructors
+
+### constructor
+
+Constructs a new instance of the  class
+
+## Properties
+
+### liquid
+**Modifiers**: readonly
+**Type**:`get liquid(): Liquid;`
+**Default**: ``
+
+Get the Liquid engine for direct access
+
+### templateDir
+**Modifiers**: readonly
+**Type**:`get templateDir(): string;`
+**Default**: ``
+
+Get the template directory (public for template manager)
+
+## Methods
+
+### clearCache
+
+Clear the template cache
+
+### getAvailableTemplates
+
+Get available template names from the template directory
+
+### hasTemplate
+
+Check if a template exists
+
+### postProcessOutput
+
+Post-process template output (public for template manager)
+
+### render
+
+Render a template with the provided data
+
+## Events
+
+*No events defined.*

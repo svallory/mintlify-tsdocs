@@ -1,0 +1,72 @@
+---
+title: "CacheManager class"
+icon: "box"
+description: "Centralized cache manager for coordinating all caching operations"
+---
+
+# CacheManager
+
+## Summary
+
+Centralized cache manager for coordinating all caching operations
+
+## Signature
+
+```typescript
+export declare class CacheManager 
+```
+
+## Constructors
+
+### constructor
+
+Constructs a new instance of the  class
+
+## Properties
+
+### apiResolution
+**Modifiers**: readonly
+**Type**:`get apiResolution(): ApiResolutionCache;`
+**Default**: ``
+
+Get the API resolution cache
+
+### typeAnalysis
+**Modifiers**: readonly
+**Type**:`get typeAnalysis(): TypeAnalysisCache;`
+**Default**: ``
+
+Get the type analysis cache
+
+## Methods
+
+### clearAll
+
+Clear all caches
+
+### createDefault
+**Modifiers**: static
+
+Create a cache manager with default settings
+
+### createDevelopment
+**Modifiers**: static
+
+Create a cache manager optimized for development
+
+### createProduction
+**Modifiers**: static
+
+Create a cache manager optimized for production
+
+### getStats
+
+Get statistics for all caches
+
+### printStats
+
+Print cache statistics if enabled
+
+## Events
+
+*No events defined.*

@@ -1,0 +1,42 @@
+---
+title: "writeTentative"
+icon: "function"
+description: "Writes `before` and `after` messages if and only if `mayWrite` writes anything.
+
+If `mayWrite` writes &quot;CONTENT&quot;, this method will write &quot;&lt;before&gt;CONTENT&lt;after&gt;&quot;. If `mayWrite` writes nothing, this method will write nothing."
+---
+
+# writeTentative
+
+## Summary
+
+Writes  and  messages if and only if  writes anything.If  writes &quot;CONTENT&quot;, this method will write &quot;CONTENT&quot;. If  writes nothing, this method will write nothing.
+
+## Signature
+
+```typescript
+writeTentative(before: string, after: string, mayWrite: () => void): void;
+```
+
+## Parameters
+
+### before
+**Type**: `string`
+
+
+
+### after
+**Type**: `string`
+
+
+
+### mayWrite
+**Type**: `() => void`
+
+
+
+## Returns
+
+**Type**: `void`
+
+Writes  and  messages if and only if  writes anything.If  writes &quot;CONTENT&quot;, this method will write &quot;CONTENT&quot;. If  writes nothing, this method will write nothing.
