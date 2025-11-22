@@ -3,3 +3,4 @@ node_modules
 
 # API Extractor generated files
 docs/.tsdocs
+.playwright-mcp
