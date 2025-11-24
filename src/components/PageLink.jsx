@@ -25,6 +25,12 @@ import { VALID_PAGES } from './ValidPages';
  * <PageLink target="components/type-tree">TypeTree Component</PageLink>
  */
 export const PageLink = ({ target, children }) => {
+  // Validate target prop
+  if (!target || typeof target !== 'string') {
+    console.error('PageLink: Invalid target prop. Expected non-empty string.');
+    return <span className="tsdocs-pagelink broken-link" title="Invalid PageLink target">Invalid Link</span>;
+  }
+
   const linkText = children || target;
 
   // Generate path - prefix with / if not already there
@@ -36,8 +42,8 @@ export const PageLink = ({ target, children }) => {
   // Runtime validation - only runs client-side
   // Gracefully handles SSR where VALID_PAGES might not be available
   const isValid = typeof VALID_PAGES !== 'undefined' && VALID_PAGES.has(target);
-  const className = isValid === false ? 'tsdocs-pagelink broken-link' : 'tsdocs-pagelink';
-  const title = isValid === false ? `Broken page link: ${target}` : undefined;
+  const className = !isValid ? 'tsdocs-pagelink broken-link' : 'tsdocs-pagelink';
+  const title = !isValid ? `Broken page link: ${target}` : undefined;
 
   return (
     <a href={path} className={className} title={title}>

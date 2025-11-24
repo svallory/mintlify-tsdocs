@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * TypeTree Component
  *
@@ -22,6 +23,7 @@
  * @param {Array<Object>} [props.properties=[]] - Nested properties for objects/arrays
  * @param {string} [props.defaultValue] - Default value if any
  * @param {number} [props.level=0] - Current nesting level (used internally)
+ * @param {number} [props.maxDepth=10] - Maximum recursion depth to prevent stack overflow
  *
  * @example
  * <TypeTree
@@ -52,8 +54,28 @@ export const TypeTree = ({
   deprecated = false,
   properties = [],
   defaultValue,
-  level = 0
+  level = 0,
+  maxDepth = 10
 }) => {
+  // Prevent infinite recursion from circular references
+  if (level >= maxDepth) {
+    console.warn(`TypeTree: Maximum depth (${maxDepth}) exceeded for ${name}. Preventing infinite recursion.`);
+    return (
+      <ResponseField
+        name={name}
+        type={type}
+        required={required}
+        deprecated={deprecated}
+        default={defaultValue}
+      >
+        {description}
+        <div style={{ fontStyle: 'italic', opacity: 0.7 }}>
+          (Maximum nesting depth reached)
+        </div>
+      </ResponseField>
+    );
+  }
+
   const hasNested = properties && properties.length > 0;
 
   return (
@@ -67,12 +89,27 @@ export const TypeTree = ({
       {description}
       {hasNested && (
         // NOTE: There's currently a bug in the Expandable component
-        //       it will NOT update the title on open/close if defaultOpen is true 
+        //       it will NOT update the title on open/close if defaultOpen is true
         <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
-          {properties.map((prop, idx) => (
-            // @ts-expect-error - TypeScript doesn't understand the spread with additional props
-            <TypeTree key={idx} {...prop} level={level + 1} />
-          ))}
+          {properties.map((prop, idx) => {
+            // Use stable key: combine name with index for uniqueness
+            // Better than pure index, though ideally each prop would have a unique ID
+            const key = prop.name ? `${prop.name}-${idx}` : `prop-${idx}`;
+            return (
+              <TypeTree
+                key={key}
+                name={prop.name}
+                type={prop.type}
+                description={prop.description}
+                required={prop.required}
+                deprecated={prop.deprecated}
+                properties={prop.properties}
+                defaultValue={prop.defaultValue}
+                level={level + 1}
+                maxDepth={maxDepth}
+              />
+            );
+          })}
         </Expandable>
       )}
     </ResponseField>

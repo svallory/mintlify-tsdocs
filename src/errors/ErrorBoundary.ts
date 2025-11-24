@@ -69,11 +69,30 @@ export class ErrorBoundary {
   private readonly options: Required<ErrorBoundaryOptions>;
 
   constructor(options: ErrorBoundaryOptions = {}) {
+    // Validate and normalize errorLogPath if provided
+    let validatedLogPath = options.errorLogPath || '';
+    if (validatedLogPath) {
+      // Resolve to absolute path
+      validatedLogPath = path.resolve(validatedLogPath);
+
+      // Basic validation: check for path traversal sequences
+      if (options.errorLogPath && (options.errorLogPath.includes('..') || options.errorLogPath.includes('~'))) {
+        throw new Error(`Invalid errorLogPath: "${options.errorLogPath}" contains path traversal sequences`);
+      }
+
+      // Validate directory path is not a reserved/system directory
+      const dirname = path.dirname(validatedLogPath);
+      const systemDirs = ['/etc', '/sys', '/proc', '/dev', '/boot', 'C:\\Windows', 'C:\\System32'];
+      if (systemDirs.some(sysDir => dirname.startsWith(sysDir))) {
+        throw new Error(`Invalid errorLogPath: "${validatedLogPath}" points to a system directory`);
+      }
+    }
+
     this.options = {
       continueOnError: options.continueOnError ?? true,
       maxErrors: options.maxErrors ?? 10,
       logErrors: options.logErrors ?? true,
-      errorLogPath: options.errorLogPath || '',
+      errorLogPath: validatedLogPath,
       includeStackTraces: options.includeStackTraces ?? false
     };
   }

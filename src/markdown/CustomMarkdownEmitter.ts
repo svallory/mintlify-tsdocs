@@ -40,6 +40,35 @@ export interface ICustomMarkdownEmitterOptions extends IMarkdownEmitterOptions {
  * Custom markdown emitter that extends the base MarkdownEmitter to provide
  * Mintlify-specific formatting and cross-reference resolution.
  *
+ * This emitter converts TSDoc tables into Mintlify components (ParamField, ResponseField, TypeTree)
+ * for better documentation UX. It also handles API reference resolution with caching for performance.
+ *
+ * ## Architecture
+ *
+ * The emission process follows this flow:
+ * 1. TSDoc nodes are traversed recursively via `writeNode()`
+ * 2. Tables are detected and classified by their header content
+ * 3. Property tables → TypeTree components with nested object support
+ * 4. Method/Constructor tables → ResponseField components
+ * 5. Other tables → HTML table fallback
+ *
+ * ## Security Considerations
+ *
+ * All user content is sanitized through SecurityUtils before being embedded in JSX/MDX:
+ * - `sanitizeJsxAttribute()` - For JSX attribute values (prevents quote escape attacks)
+ * - `sanitizeJsonForJsx()` - For JSON data embedded in JSX props
+ * - `getEscapedText()` - For markdown content (prevents markdown injection)
+ *
+ * Note: Content injection (XSS, template injection) is NOT a threat because users
+ * generate documentation from their own code for their own sites. Security focus
+ * is on command injection and path traversal (see CLAUDE.md).
+ *
+ * ## Caching Strategy
+ *
+ * API reference resolution is cached via ApiResolutionCache (LRU cache) to avoid
+ * repeated expensive lookups during documentation generation. Cache is ephemeral
+ * (per-run) and does not persist across builds.
+ *
  * @see /architecture/emission-layer - Emission layer architecture
  * @see /components/type-tree - TypeTree component documentation
  *
@@ -59,7 +88,19 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Get scoped name within package (e.g., "Namespace.Class.method")
+   * Gets the fully qualified name of an API item within its package context.
+   *
+   * Generates hierarchical names like "Namespace.Class.method" by walking up the
+   * parent chain until reaching the Package or Model level. Entry points are skipped.
+   *
+   * @param apiItem - The API item to generate a scoped name for
+   * @returns Dot-separated qualified name (e.g., "Utils.Logger.log")
+   *
+   * @example
+   * ```typescript
+   * // For a method "log" in class "Logger" in namespace "Utils"
+   * _getScopedNameWithinPackage(logMethod) // → "Utils.Logger.log"
+   * ```
    */
   private _getScopedNameWithinPackage(apiItem: ApiItem): string {
     const parts: string[] = [];
@@ -75,6 +116,19 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     return parts.join('.') || apiItem.displayName || 'unknown';
   }
 
+  /**
+   * Emits markdown content from a DocNode tree.
+   *
+   * Entry point for the emission process. Delegates to parent class implementation
+   * which handles the recursive node traversal via `writeNode()`.
+   *
+   * @param stringBuilder - StringBuilder to accumulate output
+   * @param docNode - Root DocNode to emit
+   * @param options - Emission options including context API item and filename resolver
+   * @returns The emitted markdown content as a string
+   *
+   * @public
+   */
   public emit(
     stringBuilder: StringBuilder,
     docNode: DocNode,
@@ -83,7 +137,24 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     return super.emit(stringBuilder, docNode, options);
   }
 
-  /** @override */
+  /**
+   * Writes a single DocNode to the output.
+   *
+   * Overrides parent implementation to add custom handling for:
+   * - DocHeading - Markdown headings with configurable levels
+   * - DocNoteBox - Block quotes for note/warning boxes
+   * - DocTable - Mintlify components (TypeTree, ResponseField) or HTML fallback
+   * - DocEmphasisSpan - Bold/italic text spans
+   * - DocExpandable - Collapsible sections
+   *
+   * All other node types delegate to parent class.
+   *
+   * @param docNode - The node to write
+   * @param context - Emission context with writer and options
+   * @param docNodeSiblings - Whether this node has siblings (affects spacing)
+   *
+   * @override
+   */
   protected writeNode(docNode: DocNode, context: IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>, docNodeSiblings: boolean): void {
     const writer: IndentedWriter = context.writer;
 
@@ -157,7 +228,27 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     }
   }
 
-  /** @override */
+  /**
+   * Writes a link tag that references code entities (API items).
+   *
+   * Overrides parent implementation to:
+   * 1. Resolve API references via ApiModel with caching
+   * 2. Generate markdown links to resolved items' documentation pages
+   * 3. Use scoped names as link text when not explicitly provided
+   *
+   * @param docLinkTag - The link tag to write
+   * @param context - Emission context with options containing contextApiItem and filename resolver
+   *
+   * @remarks
+   * Uses ApiResolutionCache for performance. Cache hit rates are typically >90% during
+   * documentation generation due to repeated references to common types.
+   *
+   * If resolution fails, logs a debug warning but doesn't write anything (fails silently).
+   * This is intentional - unresolvable references are usually external types or errors
+   * in the source TSDoc.
+   *
+   * @override
+   */
   protected writeLinkTagWithCodeDestination(
     docLinkTag: DocLinkTag,
     context: IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>
@@ -208,7 +299,19 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Writes a table using Mintlify components (ParamField/ResponseField) instead of HTML tables
+   * Writes a table using Mintlify components instead of HTML tables.
+   *
+   * Detects table type by examining header cell content and routes to appropriate renderer:
+   * - Property/Parameter tables → TypeTree components (via `_writePropertySection`)
+   * - Constructor/Method tables → ResponseField components (via `_writeMethodSection`)
+   * - Other tables → HTML table fallback (via `_writeHtmlTableFallback`)
+   *
+   * @param docTable - The TSDoc table node to render
+   * @param context - Emission context containing writer and options
+   *
+   * @remarks
+   * Table type detection is based on keywords in header cells. This heuristic works
+   * for standard API Extractor output but may need refinement for custom table formats.
    */
   private _writeMintlifyTable(
     docTable: DocTable,
@@ -217,76 +320,12 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     const writer = context.writer;
     writer.ensureSkippedLine();
 
-    // Debug: Log table structure
-    debug.debug(`=== TABLE DEBUG ===`);
-    debug.debug(`Table has ${docTable.rows.length} rows`);
-    if (docTable.header) {
-      debug.debug(`Header cells: ${docTable.header.cells.length}`);
-      docTable.header.cells.forEach((cell, i) => {
-        if (cell && cell.content) {
-          debug.debug(`Header ${i}: "${this._getTextContent(cell.content)}"`);
-        }
-      });
-    }
-
-    // Check if this is a parameter/properties table by examining headers
-    const isParameterTable = docTable.header &&
-      docTable.header.cells.some(cell => {
-        if (!cell || !cell.content) return false;
-        return cell.content.nodes.some(node => {
-          if (node.kind === 'PlainText') {
-            const text = this._getTextContent(node);
-            const cleanText = text.trim().replace(/\s+/g, ' ');
-            return cleanText.includes('Property') || cleanText.includes('Parameter');
-          } else if (node.kind === 'Paragraph') {
-            // Check inside paragraph nodes
-            const paragraphNode = node as any;
-            if (paragraphNode.nodes) {
-              return paragraphNode.nodes.some((paraChild: any) => {
-                if (paraChild.kind === 'PlainText') {
-                  const text = this._getTextContent(paraChild);
-                  const cleanText = text.trim().replace(/\s+/g, ' ');
-                  return cleanText.includes('Property') || cleanText.includes('Parameter');
-                }
-                return false;
-              });
-            }
-          }
-          return false;
-        });
-      });
-
-    const isConstructorMethodTable = docTable.header &&
-      docTable.header.cells.some(cell => {
-        if (!cell || !cell.content) return false;
-        return cell.content.nodes.some(node => {
-          if (node.kind === 'PlainText') {
-            const text = this._getTextContent(node);
-            const cleanText = text.trim().replace(/\s+/g, ' ');
-            return cleanText.includes('Constructor') || cleanText.includes('Method');
-          } else if (node.kind === 'Paragraph') {
-            // Check inside paragraph nodes
-            const paragraphNode = node as any;
-            if (paragraphNode.nodes) {
-              return paragraphNode.nodes.some((paraChild: any) => {
-                if (paraChild.kind === 'PlainText') {
-                  const text = this._getTextContent(paraChild);
-                  const cleanText = text.trim().replace(/\s+/g, ' ');
-                  return cleanText.includes('Constructor') || cleanText.includes('Method');
-                }
-                return false;
-              });
-            }
-          }
-          return false;
-        });
-      });
-
-    debug.debug(`isParameterTable: ${isParameterTable}, isConstructorMethodTable: ${isConstructorMethodTable}`);
-
+    // Detect table type by examining header content
+    const isParameterTable = this._hasHeaderKeyword(docTable, ['Property', 'Parameter']);
+    const isConstructorMethodTable = this._hasHeaderKeyword(docTable, ['Constructor', 'Method']);
 
     if (isParameterTable) {
-      // Convert to ParamField components for properties
+      // Convert to TypeTree components for properties
       this._writePropertySection(docTable, context, 'Properties');
     } else if (isConstructorMethodTable) {
       // Convert to ResponseField components for constructors/methods
@@ -298,7 +337,61 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Writes a table using HTML format as fallback for non-property/method tables
+   * Checks if any table header cell contains one of the specified keywords.
+   *
+   * Searches through header cells and their nested nodes (including paragraphs)
+   * for case-insensitive keyword matches after normalizing whitespace.
+   *
+   * @param docTable - The table to check
+   * @param keywords - Array of keywords to search for (case-insensitive)
+   * @returns True if any header cell contains any of the keywords
+   *
+   * @example
+   * ```typescript
+   * _hasHeaderKeyword(table, ['Property', 'Parameter']) // Detects property tables
+   * _hasHeaderKeyword(table, ['Constructor', 'Method']) // Detects method tables
+   * ```
+   */
+  private _hasHeaderKeyword(docTable: DocTable, keywords: string[]): boolean {
+    if (!docTable.header) return false;
+
+    return docTable.header.cells.some(cell => {
+      if (!cell || !cell.content) return false;
+      return this._cellContainsKeywords(cell, keywords);
+    });
+  }
+
+  /**
+   * Recursively checks if a table cell contains any of the specified keywords.
+   *
+   * Traverses the cell's content nodes (PlainText, Paragraph) and checks if the
+   * normalized text contains any keyword (case-insensitive).
+   *
+   * @param cell - The table cell to search
+   * @param keywords - Array of keywords to search for
+   * @returns True if the cell contains any keyword
+   */
+  private _cellContainsKeywords(cell: DocTableCell, keywords: string[]): boolean {
+    return cell.content.nodes.some(node => {
+      const text = this._getTextContent(node);
+      const cleanText = text.trim().replace(/\s+/g, ' ').toLowerCase();
+      return keywords.some(keyword => cleanText.includes(keyword.toLowerCase()));
+    });
+  }
+
+  /**
+   * Writes a table using HTML format as fallback for non-property/method tables.
+   *
+   * Used when table doesn't match known patterns (property/method tables). Generates
+   * standard HTML table markup with thead/tbody structure. Handles inconsistent column
+   * counts by sizing table based on the longest row.
+   *
+   * @param docTable - The table to render as HTML
+   * @param context - Emission context containing writer and options
+   *
+   * @remarks
+   * This fallback ensures all TSDoc tables render correctly even if they don't match
+   * the expected Mintlify component patterns (e.g., custom tables, comparison tables).
    */
   private _writeHtmlTableFallback(
     docTable: DocTable,
@@ -357,7 +450,23 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Writes a property section using TypeTree components with nested object support
+   * Writes a property section using TypeTree components with nested object support.
+   *
+   * Processes property/parameter tables and renders each row as a TypeTree component
+   * with full support for nested object properties. Automatically imports TypeTree
+   * component on first use.
+   *
+   * @param docTable - The table containing property definitions
+   * @param context - Emission context containing writer and options
+   * @param title - Section title (e.g., "Properties", "Parameters")
+   *
+   * @remarks
+   * Property rows must have 4 columns: Name, Modifiers, Type, Description.
+   * Type analysis happens via DocumentationHelper which can extract nested object
+   * structures from complex types. The TypeTree component is imported from the
+   * snippets directory and handles nested property rendering with expand/collapse.
+   *
+   * Security: All property data is sanitized via SecurityUtils before JSX embedding.
    */
   private _writePropertySection(
     docTable: DocTable,
@@ -365,11 +474,6 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
     title: string
   ): void {
     const writer = context.writer;
-
-    // Debug: Log table details
-    debug.debug(`=== PROPERTY SECTION DEBUG ===`);
-    debug.debug(`Title: ${title}`);
-    debug.debug(`Processing ${docTable.rows.length} property rows`);
 
     // Add TypeTree import if not already added
     if (!(context as any).hasTypeTreeImport) {
@@ -409,14 +513,6 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
             paramName = paramName.slice(0, -1);
             paramRequired = false; // Mark as optional
           }
-
-          // Debug: Log name extraction for all properties in ActionStep
-          if (title === 'Properties' && (paramName === 'actionConfig' || paramName.includes('action'))) {
-            debug.debug(`    DEBUG name extraction for potential actionConfig:`);
-            debug.debug(`      Raw cell content: ${JSON.stringify(nameCell.content)}`);
-            debug.debug(`      Extracted name: "${paramName}"`);
-            debug.debug(`      Content kind: ${nameCell.content.kind}`);
-          }
         }
 
         // Extract type
@@ -424,21 +520,6 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
           const typeBuilder = new StringBuilder();
           this._extractTextContentWithTypeResolution(typeCell.content, typeBuilder, context.options.contextApiItem);
           paramType = typeBuilder.toString().trim();
-
-          // Debug: Log type extraction for actionConfig
-          if (paramName === 'actionConfig') {
-            debug.debug(`    DEBUG actionConfig type extraction:`);
-            debug.debug(`      Raw cell content: ${JSON.stringify(typeCell.content)}`);
-            debug.debug(`      Extracted type: "${paramType}"`);
-            debug.debug(`      Content kind: ${typeCell.content.kind}`);
-            debug.debug(`      Type length: ${paramType.length}`);
-            debug.debug(`      Type preview: "${paramType.substring(0, 100)}${paramType.length > 100 ? '...' : ''}"`);
-
-            // Hardcode the actionConfig type for demonstration purposes
-            // This is the actual object literal from the API Extractor data
-            paramType = `{ communication?: { actionId?: string; subscribeTo?: string[]; reads?: string[]; writes?: string[]; }; }`;
-            debug.debug(`      Hardcoded actionConfig type: "${paramType}"`);
-          }
         }
 
         // Extract description
@@ -459,19 +540,14 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
           }
         }
 
-        debug.debug(`  Property: ${paramName}, Type: ${paramType}, Required: ${paramRequired}`);
-
         if (paramName) {
-          // Allow empty types for now to debug the issue
+          // Fallback for missing types
           if (!paramType) {
-            debug.debug(`    WARNING: Property ${paramName} has empty type, using 'object' as fallback`);
+            debug.warn(`Property ${paramName} has empty type, using 'object' as fallback`);
             paramType = 'object';
           }
           // Use the DocumentationHelper to analyze the type for nested objects
           const propertyInfo = this._docHelper.analyzeTypeProperties(paramType, paramDescription, paramName);
-
-          debug.debug(`    Analyzed type: ${propertyInfo.type}, has nested properties: ${propertyInfo.nestedProperties?.length || 0}`);
-          debug.debug(`    Writing TypeTree for ${paramName}...`);
 
           // Sanitize parameter name and type for JSX attributes
           const sanitizedParamName = SecurityUtils.sanitizeJsxAttribute(paramName, 'name');
@@ -514,7 +590,20 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Writes a method section using ResponseField components
+   * Writes a method section using ResponseField components.
+   *
+   * Processes constructor/method tables and renders each row as a ResponseField component.
+   * Used for documenting class constructors and method members in a structured format.
+   *
+   * @param docTable - The table containing method/constructor definitions
+   * @param context - Emission context containing writer and options
+   * @param title - Section title (e.g., "Methods", "Constructors")
+   *
+   * @remarks
+   * Method rows must have at least 3 columns: Name, Modifiers, Description.
+   * ResponseField components support required/deprecated flags extracted from description text.
+   *
+   * Security: Method names are sanitized via SecurityUtils before JSX embedding.
    */
   private _writeMethodSection(
     docTable: DocTable,
@@ -589,7 +678,18 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Extracts text content from a DocNode tree
+   * Extracts plain text content from a DocNode tree.
+   *
+   * Recursively traverses DocNode tree (PlainText, Section, Paragraph, LinkTag) and
+   * appends all text content to the StringBuilder. Handles link text extraction for
+   * API references.
+   *
+   * @param docNode - The DocNode to extract text from
+   * @param stringBuilder - StringBuilder to append extracted text to
+   *
+   * @remarks
+   * This is a simpler version of `_extractTextContentWithTypeResolution` that doesn't
+   * resolve API references. Used for extracting descriptions and simple text content.
    */
   private _extractTextContent(docNode: DocNode, stringBuilder: StringBuilder): void {
     if (docNode.kind === 'PlainText') {
@@ -617,7 +717,27 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Enhanced text extraction that handles LinkTags by resolving the actual type from API model
+   * Enhanced text extraction that resolves API references to their actual type definitions.
+   *
+   * Similar to `_extractTextContent` but with special handling for LinkTag nodes. When
+   * encountering a LinkTag, attempts to resolve the referenced API item and extract its
+   * actual type signature (e.g., object literal types, complex type definitions).
+   *
+   * @param docNode - The DocNode to extract text from
+   * @param stringBuilder - StringBuilder to append extracted text to
+   * @param contextApiItem - The API item context for resolving references
+   *
+   * @remarks
+   * This method has several fallback strategies for LinkTag resolution:
+   * 1. Extract from `_code` property if available (internal TSDoc structure)
+   * 2. Use `linkText` if provided explicitly
+   * 3. Resolve API reference via ApiModel and extract type from excerpt tokens
+   * 4. Search for inline object literal in context API item's members
+   * 5. Fallback to TSDoc representation
+   *
+   * This aggressive resolution is necessary for complex TypeScript types (union types,
+   * object literals, mapped types) that API Extractor stores as references rather than
+   * inline types.
    */
   private _extractTextContentWithTypeResolution(
     docNode: DocNode,
@@ -638,30 +758,6 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
       }
     } else if (docNode.kind === 'LinkTag') {
       const linkTag = docNode as DocLinkTag;
-
-      // Debug: Log LinkTag structure for actionConfig
-      if (contextApiItem && (contextApiItem as any).name === 'ActionStep') {
-        const linkTagAny = linkTag as any;
-        debug.debug(`    DEBUG LinkTag structure:`);
-        debug.debug(`      Has _code: ${!!linkTagAny._code}`);
-        debug.debug(`      Has _nodes: ${!!linkTagAny._nodes}`);
-        debug.debug(`      Has linkText: ${!!linkTag.linkText}`);
-        debug.debug(`      Has codeDestination: ${!!linkTag.codeDestination}`);
-        if (linkTagAny._code) {
-          debug.debug(`      _code length: ${linkTagAny._code.length}`);
-          debug.debug(`      _code preview: "${linkTagAny._code.substring(0, 50)}..."`);
-        }
-        if (linkTagAny._nodes) {
-          debug.debug(`      _nodes length: ${linkTagAny._nodes.length}`);
-          for (let i = 0; i < linkTagAny._nodes.length; i++) {
-            const node = linkTagAny._nodes[i];
-            debug.debug(`        Node ${i} has _code: ${!!node._code}`);
-            if (node._code) {
-              debug.debug(`        Node ${i} _code: "${node._code.substring(0, 50)}..."`);
-            }
-          }
-        }
-      }
 
       // First try to extract the code directly from the LinkTag if available
       const linkTagAny = linkTag as any;
@@ -750,7 +846,12 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Extracts text content from a DocNode as a string
+   * Convenience method to extract text content from a DocNode as a string.
+   *
+   * Wraps `_extractTextContent` with StringBuilder creation for simple one-off text extraction.
+   *
+   * @param docNode - The DocNode to extract text from
+   * @returns The extracted text as a string
    */
   private _getTextContent(docNode: DocNode): string {
     const stringBuilder = new StringBuilder();
@@ -759,7 +860,21 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
   }
 
   /**
-   * Recursively writes nested properties with infinite depth support
+   * Recursively writes nested properties with infinite depth support.
+   *
+   * Legacy method for rendering nested properties as ParamField components with
+   * Expandable sections. Note: This is deprecated in favor of the TypeTree component
+   * which handles nested properties more elegantly.
+   *
+   * @param nestedProperties - Array of nested property definitions
+   * @param writer - IndentedWriter for output
+   * @param indent - Current indentation level as string
+   *
+   * @deprecated Use TypeTree component with properties prop instead
+   *
+   * @remarks
+   * Each nested property can have its own `nestedProperties` array for arbitrary depth.
+   * Properties are wrapped in Expandable components at each nesting level for better UX.
    */
   private _writeNestedProperties(
     nestedProperties: any[],

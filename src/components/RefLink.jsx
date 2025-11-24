@@ -25,11 +25,19 @@ import { VALID_REFS } from './ValidRefs';
  * <RefLink target="mint-tsdocs.MarkdownDocumenter.generateFiles">Generate Files</RefLink>
  */
 export const RefLink = ({ target, children }) => {
+  // Validate target prop
+  if (!target || typeof target !== 'string') {
+    console.error('RefLink: Invalid target prop. Expected non-empty string.');
+    return <span className="tsdocs-reflink broken-link" title="Invalid RefLink target">Invalid Link</span>;
+  }
+
   const linkText = children || target;
 
-  // Generate path from RefId
+  // Generate path from RefId with proper handling of empty segments
   // Format: mint-tsdocs.MarkdownDocumenter.generateFiles -> ./mint-tsdocs/MarkdownDocumenter/generateFiles
-  const path = `./${target.split('.').join('/')}`;
+  // Filter out empty segments to avoid double slashes from patterns like "api..item"
+  const segments = target.split('.').filter(segment => segment.length > 0);
+  const path = segments.length > 0 ? `./${segments.join('/')}` : './invalid';
 
   // Runtime validation - only runs client-side
   // Gracefully handles SSR where VALID_REFS might not be available

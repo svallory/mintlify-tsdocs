@@ -5,7 +5,7 @@
  */
 
 // TypeTree component types
-export type { TypeTreeProperty, TypeTreeProps, TypeTreeGroupProps } from './TypeTree.types';
+export type { TypeProperty, TypeTreeProps, TypeTreeGroupProps } from './TypeTree.d';
 
 // Link component and types
 export { Link } from './Link';
