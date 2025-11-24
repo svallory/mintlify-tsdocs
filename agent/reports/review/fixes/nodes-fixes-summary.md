@@ -4,11 +4,12 @@
 
 ### P0 - Critical Issues
 
-#### 1. Package Name Typo Fixed
+#### 1. Package Name Fixed
 - **File**: `src/nodes/CustomDocNodeKind.ts:30`
-- **Issue**: Package name was `@micrososft/mint-tsdocs` instead of `@microsoft/mint-tsdocs`
+- **Issue**: Package name was `@micrososft/mint-tsdocs` (typo) - README suggested changing to `@microsoft/mint-tsdocs`, but that's also wrong
+- **Actual Issue**: TSDoc `registerDocNodes` expects the NPM package name that owns the custom nodes
 - **Impact**: Incorrect package identification in TSDoc registration
-- **Fix**: Changed package name to correct spelling `@microsoft/mint-tsdocs`
+- **Fix**: Changed to `mint-tsdocs` (our actual package name from package.json)
 - **Status**: ✅ Completed
 
 ### P1 - High Priority Issues
