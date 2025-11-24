@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PageLink Component
  *
@@ -8,23 +7,39 @@
  * Type safety is provided at compile-time via TypeScript.
  * Runtime validation highlights broken links with "broken-link" CSS class.
  *
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 import { VALID_PAGES } from './ValidPages';
 
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
 /**
- * PageLink - Link component specifically for documentation pages
- *
- * @param {Object} props - Component properties
- * @param {string} props.target - Documentation page identifier (PageId)
- * @param {*} [props.children] - Link text content (defaults to target if not provided)
+ * Props for the PageLink component.
  *
  * @example
+ * ```tsx
  * <PageLink target="introduction">Introduction</PageLink>
  * <PageLink target="components/type-tree">TypeTree Component</PageLink>
+ * ```
  */
-export const PageLink = ({ target, children }) => {
+export interface PageLinkProps {
+  /** Documentation page identifier (PageId) - path relative to docs root */
+  target: string;
+  /** Link text content (defaults to target if not provided) */
+  children?: React.ReactNode;
+}
+
+// ============================================================================
+// PageLink Component
+// ============================================================================
+
+/**
+ * PageLink - Link component specifically for documentation pages
+ */
+export const PageLink = ({ target, children }: PageLinkProps) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('PageLink: Invalid target prop. Expected non-empty string.');
@@ -51,3 +66,5 @@ export const PageLink = ({ target, children }) => {
     </a>
   );
 };
+
+export default PageLink;

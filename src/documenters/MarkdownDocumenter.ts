@@ -177,6 +177,18 @@ export class MarkdownDocumenter {
     [ApiItemKind.Model]: 'book'
   };
 
+  // Security and resource limits
+  private static readonly MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB per file
+  private static readonly MAX_TOTAL_OUTPUT_SIZE_BYTES = 500 * 1024 * 1024; // 500MB total
+  private static readonly MAX_RECURSION_DEPTH = 25; // Prevent stack overflow
+  private static readonly MAX_PROCESSING_TIME_MS = 10 * 60 * 1000; // 10 minutes
+  private static readonly MAX_FILENAME_LENGTH = 200; // Reasonable filename limit
+
+  // Track processing state for resource management
+  private _currentRecursionDepth = 0;
+  private _startTime = Date.now();
+  private _totalOutputSize = 0;
+
   public constructor(options: IMarkdownDocumenterOptions) {
     this._apiModel = options.apiModel;
     this._outputFolder = options.outputFolder;
@@ -184,6 +196,11 @@ export class MarkdownDocumenter {
     this._convertReadme = options.convertReadme || false;
     this._readmeTitle = options.readmeTitle || 'README';
     this._tsdocConfiguration = CustomDocNodes.configuration;
+
+    // Initialize resource tracking
+    this._startTime = Date.now();
+    this._totalOutputSize = 0;
+    this._currentRecursionDepth = 0;
 
     // Initialize rendering config with defaults
     this._renderingConfig = {
@@ -293,12 +310,25 @@ export class MarkdownDocumenter {
    * Generate documentation page using templates (new approach)
    */
   private async _writeApiItemPageTemplate(apiItem: ApiItem, parentApiItem?: ApiItem): Promise<void> {
+    // Check recursion depth to prevent stack overflow
+    if (this._currentRecursionDepth > MarkdownDocumenter.MAX_RECURSION_DEPTH) {
+      throw new ValidationError(
+        `Maximum recursion depth exceeded (${MarkdownDocumenter.MAX_RECURSION_DEPTH})`,
+        { resource: 'apiItem', operation: 'writeApiItemPageTemplate', data: { displayName: apiItem.displayName } }
+      );
+    }
+
     // Skip generating pages for EntryPoints - they're just containers
     // Process their members directly instead
     if (apiItem.kind === ApiItemKind.EntryPoint) {
       if ('members' in apiItem) {
-        for (const member of (apiItem as any).members) {
-          await this._writeApiItemPageTemplate(member);
+        this._currentRecursionDepth++;
+        try {
+          for (const member of (apiItem as any).members) {
+            await this._writeApiItemPageTemplate(member);
+          }
+        } finally {
+          this._currentRecursionDepth--;
         }
       }
       return;
@@ -337,11 +367,24 @@ export class MarkdownDocumenter {
     try {
       SecurityUtils.validateFilePath(this._outputFolder, filename);
 
-      const maxFileSize = 50 * 1024 * 1024; // 50MB limit
-      if (renderedContent.length > maxFileSize) {
+      // Check total output size limit
+      const contentLength = Buffer.byteLength(renderedContent, 'utf8');
+      if (this._totalOutputSize + contentLength > MarkdownDocumenter.MAX_TOTAL_OUTPUT_SIZE_BYTES) {
         throw new ValidationError(
-          `Generated content exceeds maximum file size of 50MB for ${filename}`,
-          { resource: filename, operation: 'validateFileContent', data: { size: renderedContent.length } }
+          `Total output size would exceed maximum of ${MarkdownDocumenter.MAX_TOTAL_OUTPUT_SIZE_BYTES / (1024 * 1024)}MB`,
+          { resource: filename, operation: 'validateTotalSize', data: {
+            currentSize: this._totalOutputSize,
+            newSize: contentLength,
+            maxSize: MarkdownDocumenter.MAX_TOTAL_OUTPUT_SIZE_BYTES
+          }}
+        );
+      }
+
+      // Check individual file size limit
+      if (contentLength > MarkdownDocumenter.MAX_FILE_SIZE_BYTES) {
+        throw new ValidationError(
+          `Generated content exceeds maximum file size of ${MarkdownDocumenter.MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB for ${filename}`,
+          { resource: filename, operation: 'validateFileContent', data: { size: contentLength } }
         );
       }
 
@@ -352,6 +395,9 @@ export class MarkdownDocumenter {
       FileSystem.writeFile(filename, renderedContent, {
         convertLineEndings: NewlineKind.CrLf
       });
+
+      // Update total output size tracking
+      this._totalOutputSize += contentLength;
     } catch (error) {
       if (error instanceof DocumentationError) {
         throw error;
@@ -1806,6 +1852,10 @@ export class MarkdownDocumenter {
     }
 
     const pathParts: string[] = [];
+
+    // Validate API item before processing
+    this._validateApiItem(apiItem);
+
     for (const hierarchyItem of this._getHierarchy(apiItem)) {
       // Skip items that should not be included in filename or have empty names
       switch (hierarchyItem.kind) {
@@ -1815,7 +1865,17 @@ export class MarkdownDocumenter {
           continue;
         case ApiItemKind.Package:
           const packageName = hierarchyItem.displayName || 'package';
-          pathParts.push(PackageName.getUnscopedName(packageName));
+          const unscopedName = PackageName.getUnscopedName(packageName);
+
+          // Validate package name
+          if (this._isDangerousName(unscopedName)) {
+            throw new ValidationError(
+              `Dangerous package name detected: "${unscopedName}"`,
+              { resource: 'apiItem', operation: 'validateFilename', data: { packageName } }
+            );
+          }
+
+          pathParts.push(unscopedName);
           continue;
       }
 
@@ -1836,16 +1896,127 @@ export class MarkdownDocumenter {
         }
       }
 
+      // Validate item name for dangerous patterns
+      if (this._isDangerousName(itemName)) {
+        throw new ValidationError(
+          `Dangerous API item name detected: "${itemName}"`,
+          { resource: 'apiItem', operation: 'validateFilename', data: { itemName } }
+        );
+      }
+
       // Sanitize while preserving case for nested folder structure
-      pathParts.push(Utilities.getSafeFilenamePreservingCase(itemName));
+      const safeName = Utilities.getSafeFilenamePreservingCase(itemName);
+
+      // Additional validation for the sanitized name
+      if (safeName.length > MarkdownDocumenter.MAX_FILENAME_LENGTH) {
+        throw new ValidationError(
+          `API item name too long: "${safeName}" exceeds ${MarkdownDocumenter.MAX_FILENAME_LENGTH} characters`,
+          { resource: 'apiItem', operation: 'validateFilename', data: { itemName, length: safeName.length } }
+        );
+      }
+
+      pathParts.push(safeName);
+    }
+
+    if (pathParts.length === 0) {
+      throw new ValidationError(
+        'Unable to generate filename: no valid path parts',
+        { resource: 'apiItem', operation: 'validateFilename', data: { apiItem: apiItem.displayName } }
+      );
     }
 
     // Join with platform-specific path separator and add .mdx extension
-    return path.join(...pathParts) + '.mdx';
+    const filename = path.join(...pathParts) + '.mdx';
+
+    // Final validation to ensure no path traversal
+    if (filename.includes('..') || path.isAbsolute(filename)) {
+      throw new ValidationError(
+        `Generated filename contains dangerous path: "${filename}"`,
+        { resource: 'apiItem', operation: 'validateFilename', data: { filename } }
+      );
+    }
+
+    return filename;
   }
 
   private _getLinkFilenameForApiItem(apiItem: ApiItem): string {
     return './' + this._getFilenameForApiItem(apiItem);
+  }
+
+  /**
+   * Validates an API item for dangerous content or malformed data
+   */
+  private _validateApiItem(apiItem: ApiItem): void {
+    if (!apiItem) {
+      throw new ValidationError(
+        'Invalid API item: null or undefined',
+        { resource: 'apiItem', operation: 'validateApiItem' }
+      );
+    }
+
+    // Check for processing time limit
+    const elapsedTime = Date.now() - this._startTime;
+    if (elapsedTime > MarkdownDocumenter.MAX_PROCESSING_TIME_MS) {
+      throw new ValidationError(
+        `Processing time limit exceeded: ${elapsedTime}ms > ${MarkdownDocumenter.MAX_PROCESSING_TIME_MS}ms`,
+        { resource: 'apiItem', operation: 'validateApiItem', data: { elapsedTime } }
+      );
+    }
+
+    // Basic validation of display name
+    if (apiItem.displayName) {
+      if (apiItem.displayName.length > 1000) {
+        throw new ValidationError(
+          `API item display name too long: ${apiItem.displayName.length} characters`,
+          { resource: 'apiItem', operation: 'validateApiItem', data: { displayName: apiItem.displayName } }
+        );
+      }
+
+      if (this._isDangerousName(apiItem.displayName)) {
+        throw new ValidationError(
+          `Dangerous API item display name: "${apiItem.displayName}"`,
+          { resource: 'apiItem', operation: 'validateApiItem', data: { displayName: apiItem.displayName } }
+        );
+      }
+    }
+  }
+
+  /**
+   * Checks if a name contains dangerous patterns that could lead to path traversal or other security issues
+   */
+  private _isDangerousName(name: string): boolean {
+    if (!name || typeof name !== 'string') {
+      return true;
+    }
+
+    // Check for path traversal patterns
+    if (name.includes('..') || name.includes('~') || name.includes('//')) {
+      return true;
+    }
+
+    // Check for absolute path patterns
+    if (name.startsWith('/') || name.startsWith('\\')) {
+      return true;
+    }
+
+    // Check for null bytes or other dangerous characters
+    if (name.includes('\0') || name.includes('<') || name.includes('>')) {
+      return true;
+    }
+
+    // Check for Windows device names or reserved patterns
+    const dangerousPatterns = [
+      'CON', 'PRN', 'AUX', 'NUL',
+      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+    ];
+
+    const upperName = name.toUpperCase();
+    if (dangerousPatterns.includes(upperName)) {
+      return true;
+    }
+
+    return false;
   }
 
   private _generateFrontmatter(apiItem: ApiItem): string {
@@ -2520,8 +2691,9 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
         // Recursively search subdirectories
         files.push(...this._discoverComponentFiles(fullPath, baseDir));
       } else if (stats.isFile()) {
-        // Include .jsx files, .d.ts files (for TypeScript support), and README.md
-        // Mintlify can only import .jsx files, but .d.ts files provide type checking for MDX
+        // Include .jsx files (compiled from .jsx or .tsx), .d.ts files (for TypeScript support), and README.md
+        // Mintlify can import .jsx files with raw JSX syntax
+        // .d.ts files provide type checking in MDX files
         if (/\.jsx$/i.test(item) || /\.d\.ts$/i.test(item) || item === 'README.md') {
           const relativePath = path.relative(baseDir, fullPath);
           files.push(relativePath);

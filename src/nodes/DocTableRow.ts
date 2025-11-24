@@ -9,6 +9,28 @@ export interface IDocTableRowParameters extends IDocNodeParameters {}
 
 /**
  * Represents table row, similar to an HTML `<tr>` element.
+ *
+ * @remarks
+ * Table rows contain cells ({@link DocTableCell}). Rows can be created with an initial
+ * set of cells or cells can be added dynamically using {@link addCell}, {@link createAndAddCell},
+ * or the convenience method {@link addPlainTextCell}.
+ *
+ * @example
+ * ```typescript
+ * // Create row with cells
+ * const row = new DocTableRow({ configuration }, [
+ *   new DocTableCell({ configuration }),
+ *   new DocTableCell({ configuration })
+ * ]);
+ *
+ * // Add cells dynamically
+ * const row2 = new DocTableRow({ configuration });
+ * row2.addPlainTextCell('Name');
+ * row2.addPlainTextCell('Type');
+ * row2.addPlainTextCell('Description');
+ * ```
+ *
+ * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
  */
 export class DocTableRow extends DocNode {
   private readonly _cells: DocTableCell[];

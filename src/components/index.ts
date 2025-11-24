@@ -4,9 +4,17 @@
  * @packageDocumentation
  */
 
-// TypeTree component types
-export type { TypeProperty, TypeTreeProps, TypeTreeGroupProps } from './TypeTree.d';
+// TypeTree component and types
+export { TypeTree, TypeTreeGroup } from './TypeTree';
+export type { TypeTreeProperty, TypeTreeProps, TypeTreeGroupProps, TypeAnnotation } from './TypeTree';
 
-// Link component and types
-export { Link } from './Link';
-export type { LinkProps, RefId, PageId, LinkKind, LinkValidation } from './Link.d';
+// Link components and types
+export { PageLink } from './PageLink';
+export type { PageLinkProps } from './PageLink';
+
+export { RefLink } from './RefLink';
+export type { RefLinkProps } from './RefLink';
+
+// Preview component and types
+export { Preview } from './Preview';
+export type { PreviewProps } from './Preview';

@@ -49,7 +49,7 @@ export * from './utils';
 // ===============================================
 // Component Types
 // ===============================================
-export type { TypeProperty, TypeTreeProps, TypeTreeGroupProps } from './components';
+export type { TypeTreeProperty, TypeTreeProps, TypeTreeGroupProps, TypeAnnotation } from './components';
 
 // ===============================================
 // Custom TSDoc Nodes

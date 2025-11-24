@@ -1,17 +1,43 @@
 /**
- * Preview component that wraps content with a title and border
+ * Preview Component
  *
- * @param {Object} props
- * @param {React.ReactNode} props.children - The content to display
- * @param {string} [props.title="Preview"] - Title for the preview section
- * @param {string} [props.className] - Additional CSS classes
+ * A wrapper component that displays content with a title and styled border.
+ * Useful for showing examples and demos in documentation.
+ *
+ * @version 1.1.0
+ */
+
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+/**
+ * Props for the Preview component.
  *
  * @example
+ * ```tsx
  * <Preview title="Component Demo">
  *   <TypeTree name="config" type="object" />
  * </Preview>
+ * ```
  */
-export const Preview = ({ children, title = "Preview", className }) => {
+export interface PreviewProps {
+  /** The content to display inside the preview box */
+  children: React.ReactNode;
+  /** Title for the preview section */
+  title?: string;
+  /** Additional CSS classes to apply to the outer container */
+  className?: string;
+}
+
+// ============================================================================
+// Preview Component
+// ============================================================================
+
+/**
+ * Preview - Wrapper component for displaying examples and demos
+ */
+export const Preview = ({ children, title = "Preview", className }: PreviewProps) => {
   const outerClasses = [
     "code-block mt-5 mb-8 not-prose rounded-2xl relative group",
     "text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50",
@@ -35,6 +61,6 @@ export const Preview = ({ children, title = "Preview", className }) => {
       </div>
     </div>
   );
-}
+};
 
 export default Preview;

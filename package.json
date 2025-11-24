@@ -31,7 +31,7 @@
     "bin/"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/schemas lib/ && cp -r src/components lib/ && cp src/components/*.d.ts lib/components/ && cp -r src/templates/defaults lib/templates/ && cp src/templates/README.md lib/templates/",
+    "build": "tsc && cp -r src/schemas lib/ && cp -r src/templates/defaults lib/templates/ && cp src/templates/README.md lib/templates/",
     "clean": "rm -rf lib",
     "rebuild": "bun run clean && bun run build",
     "docs": "node ./bin/mint-tsdocs",

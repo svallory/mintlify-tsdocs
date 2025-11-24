@@ -27,6 +27,19 @@ export interface NavigationItem {
 }
 
 /**
+ * Mintlify docs.json structure interface
+ */
+export interface DocsJsonStructure {
+  navigation?: NavigationItem[] | {
+    tabs: Array<{
+      tab: string;
+      groups: NavigationItem[];
+    }>;
+  };
+  [key: string]: any; // Allow other Mintlify properties
+}
+
+/**
  * Configuration options for navigation manager
  */
 export interface NavigationManagerOptions {
@@ -54,6 +67,16 @@ export interface NavigationManagerOptions {
    * Output folder path for path calculations
    */
   outputFolder?: string;
+
+  /**
+   * Maximum size for docs.json file in bytes (default: 10MB)
+   */
+  maxDocsJsonSize?: number;
+
+  /**
+   * Custom icon mappings for API item types
+   */
+  customIcons?: Record<ApiItemKind, { displayName: string; icon: string }>;
 }
 
 /**
@@ -67,7 +90,10 @@ export class NavigationManager {
   private readonly _groupName: string;
   private readonly _enableMenu: boolean;
   private readonly _outputFolder: string;
+  private readonly _maxDocsJsonSize: number;
+  private readonly _customIcons?: Record<ApiItemKind, { displayName: string; icon: string }>;
   private readonly _navigationItems: NavigationItem[] = [];
+  private readonly _navigationItemKeys = new Set<string>(); // For O(1) duplicate detection
 
   /**
    * Category display names and icon mapping for different API item types
@@ -88,19 +114,19 @@ export class NavigationManager {
     this._groupName = options.groupName || '';
     this._enableMenu = options.enableMenu || false;
     this._outputFolder = options.outputFolder || '';
+    this._maxDocsJsonSize = options.maxDocsJsonSize || 10 * 1024 * 1024; // 10MB default
+    this._customIcons = options.customIcons;
   }
 
   /**
    * Add a navigation item to the manager
    */
   public addNavigationItem(item: NavigationItem): void {
-    // Prevent duplicate entries
-    const exists = this._navigationItems.some(existing =>
-      existing.page === item.page && existing.group === item.group
-    );
-
-    if (!exists) {
+    // Prevent duplicate entries using O(1) Set lookup
+    const key = `${item.page}:${item.group || ''}`;
+    if (!this._navigationItemKeys.has(key)) {
       this._navigationItems.push(item);
+      this._navigationItemKeys.add(key);
     }
   }
 
@@ -163,7 +189,7 @@ export class NavigationManager {
       const validatedDocsJsonPath = path.resolve(process.cwd(), this._docsJsonPath);
 
       // Read existing docs.json if it exists
-      let docsJson: any = {};
+      let docsJson: DocsJsonStructure = {};
       try {
         if (FileSystem.exists(validatedDocsJsonPath)) {
           const existingContent = FileSystem.readFile(validatedDocsJsonPath);
@@ -172,20 +198,27 @@ export class NavigationManager {
         }
       } catch (error) {
         // File doesn't exist or is invalid, start with empty object
-        debug.info('   Creating new docs.json file...');
+        if (FileSystem.exists(validatedDocsJsonPath)) {
+          debug.warn(`⚠️  Could not read existing docs.json: ${error instanceof Error ? error.message : String(error)}`);
+          debug.info('   Starting with empty docs.json structure...');
+        } else {
+          debug.info('   Creating new docs.json file...');
+        }
       }
 
       // Generate navigation structure
       this._updateDocsJsonNavigation(docsJson);
 
+      // Validate docs.json structure
+      this._validateDocsJsonStructure(docsJson);
+
       // Validate and write the updated docs.json
       const jsonString = JSON.stringify(docsJson, null, 2);
-      const maxJsonSize = 10 * 1024 * 1024; // 10MB limit
 
-      if (jsonString.length > maxJsonSize) {
+      if (jsonString.length > this._maxDocsJsonSize) {
         throw new ValidationError(
-          `Generated docs.json exceeds maximum size of 10MB`,
-          { resource: this._docsJsonPath, operation: 'validateDocsJsonSize', data: { size: jsonString.length } }
+          `Generated docs.json exceeds maximum size of ${this._maxDocsJsonSize} bytes`,
+          { resource: this._docsJsonPath, operation: 'validateDocsJsonSize', data: { size: jsonString.length, maxSize: this._maxDocsJsonSize } }
         );
       }
 
@@ -194,6 +227,16 @@ export class NavigationManager {
       // Ensure output directory exists
       const docsJsonDir = path.dirname(validatedDocsJsonPath);
       FileSystem.ensureFolder(docsJsonDir);
+
+      // Create backup before overwriting
+      if (FileSystem.exists(validatedDocsJsonPath)) {
+        const backupPath = `${validatedDocsJsonPath}.backup`;
+        FileSystem.copyFile({
+          sourcePath: validatedDocsJsonPath,
+          destinationPath: backupPath
+        });
+        debug.info(`   Created backup: ${backupPath}`);
+      }
 
       // Write updated docs.json
       FileSystem.writeFile(validatedDocsJsonPath, jsonString);
@@ -253,14 +296,65 @@ export class NavigationManager {
    */
   public clear(): void {
     this._navigationItems.length = 0;
+    this._navigationItemKeys.clear();
+  }
+
+  /**
+   * Validate docs.json structure against Mintlify schema
+   */
+  private _validateDocsJsonStructure(docsJson: DocsJsonStructure): void {
+    // Basic validation for navigation structure
+    if (docsJson.navigation !== undefined) {
+      if (Array.isArray(docsJson.navigation)) {
+        // Simple navigation array
+        for (const item of docsJson.navigation) {
+          if (typeof item === 'object' && item !== null) {
+            if (item.group && typeof item.group !== 'string') {
+              throw new ValidationError(
+                'Invalid docs.json structure: group must be a string',
+                { resource: this._docsJsonPath, operation: 'validateDocsJsonStructure' }
+              );
+            }
+            if (item.pages && !Array.isArray(item.pages)) {
+              throw new ValidationError(
+                'Invalid docs.json structure: pages must be an array',
+                { resource: this._docsJsonPath, operation: 'validateDocsJsonStructure' }
+              );
+            }
+          }
+        }
+      } else if (typeof docsJson.navigation === 'object' && docsJson.navigation.tabs) {
+        // Tabbed navigation structure
+        if (!Array.isArray(docsJson.navigation.tabs)) {
+          throw new ValidationError(
+            'Invalid docs.json structure: navigation.tabs must be an array',
+            { resource: this._docsJsonPath, operation: 'validateDocsJsonStructure' }
+          );
+        }
+        for (const tab of docsJson.navigation.tabs) {
+          if (typeof tab.tab !== 'string') {
+            throw new ValidationError(
+              'Invalid docs.json structure: tab.tab must be a string',
+              { resource: this._docsJsonPath, operation: 'validateDocsJsonStructure' }
+            );
+          }
+          if (tab.groups && !Array.isArray(tab.groups)) {
+            throw new ValidationError(
+              'Invalid docs.json structure: tab.groups must be an array',
+              { resource: this._docsJsonPath, operation: 'validateDocsJsonStructure' }
+            );
+          }
+        }
+      }
+    }
   }
 
   /**
    * Update docs.json navigation structure
    */
-  private _updateDocsJsonNavigation(docsJson: any): void {
+  private _updateDocsJsonNavigation(docsJson: DocsJsonStructure): void {
     // Handle different docs.json structures
-    if (docsJson.navigation && docsJson.navigation.tabs) {
+    if (docsJson.navigation && typeof docsJson.navigation === 'object' && 'tabs' in docsJson.navigation) {
       // Mintlify v4 structure with tabs
       this._updateTabStructure(docsJson);
     } else {
@@ -272,13 +366,19 @@ export class NavigationManager {
   /**
    * Update Mintlify v4 tab structure
    */
-  private _updateTabStructure(docsJson: any): void {
-    if (!Array.isArray(docsJson.navigation.tabs)) {
-      docsJson.navigation.tabs = [];
+  private _updateTabStructure(docsJson: DocsJsonStructure): void {
+    if (!docsJson.navigation) {
+      docsJson.navigation = { tabs: [] };
+    }
+
+    const navigation = docsJson.navigation as { tabs: Array<{ tab: string; groups: NavigationItem[] }> };
+
+    if (!Array.isArray(navigation.tabs)) {
+      navigation.tabs = [];
     }
 
     // Find existing tab or create new one
-    let existingTab = docsJson.navigation.tabs.find((tab: any) =>
+    let existingTab = navigation.tabs.find((tab: any) =>
       tab.tab === this._tabName
     );
 
@@ -287,7 +387,7 @@ export class NavigationManager {
         tab: this._tabName,
         groups: []
       };
-      docsJson.navigation.tabs.push(existingTab);
+      navigation.tabs.push(existingTab);
     }
 
     // Merge hierarchical navigation with existing groups
@@ -295,15 +395,15 @@ export class NavigationManager {
 
     // Update or add groups
     for (const newGroup of newGroups) {
-      const groupIndex = existingTab.groups.findIndex((group: any) =>
+      const groupIndex = existingTab!.groups.findIndex((group: any) =>
         group.group === newGroup.group
       );
 
       if (groupIndex >= 0) {
-        existingTab.groups[groupIndex] = newGroup;
+        existingTab!.groups[groupIndex] = newGroup;
         debug.info(`   ✓ Updated existing "${newGroup.group}" group`);
       } else {
-        existingTab.groups.push(newGroup);
+        existingTab!.groups.push(newGroup);
         debug.info(`   ✓ Added new "${newGroup.group}" group`);
       }
     }
@@ -312,7 +412,7 @@ export class NavigationManager {
   /**
    * Update simple navigation array structure
    */
-  private _updateSimpleStructure(docsJson: any): void {
+  private _updateSimpleStructure(docsJson: DocsJsonStructure): void {
     if (!docsJson.navigation) {
       docsJson.navigation = [];
     }
@@ -365,7 +465,8 @@ export class NavigationManager {
 
     for (const item of topLevelItems) {
       if (item.apiKind) {
-        const categoryInfo = NavigationManager.CATEGORY_INFO[item.apiKind] ||
+        const categoryInfo = (this._customIcons ? this._customIcons[item.apiKind] : undefined) ||
+          NavigationManager.CATEGORY_INFO[item.apiKind] ||
           { displayName: 'Miscellaneous', icon: 'file-text' };
 
         if (!groups.has(categoryInfo.displayName)) {

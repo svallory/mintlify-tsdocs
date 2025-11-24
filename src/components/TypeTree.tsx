@@ -1,5 +1,5 @@
 /**
- * TypeTree Component (TypeScript Version)
+ * TypeTree Component
  *
  * A recursive, expandable component for documenting complex type structures.
  * Works for TypeScript types, JSON schemas, API parameters, return types, or any structured data.
@@ -7,10 +7,8 @@
  * Distributed with mint-tsdocs and automatically installed to docs/snippets/.
  * Uses Mintlify's native ResponseField and Expandable components for consistent styling.
  *
- * @version 2.0.0
+ * @version 2.1.0
  */
-
-import React from 'react';
 
 // ============================================================================
 // Type Definitions
@@ -83,7 +81,16 @@ export interface TypeTreeProperty {
  *   required={true}
  *   properties={[
  *     { name: "host", type: "string", description: "Database host", required: true },
- *     { name: "port", type: "number", description: "Port number", defaultValue: "5432" }
+ *     { name: "port", type: "number", description: "Port number", defaultValue: "5432" },
+ *     {
+ *       name: "ssl",
+ *       type: "object",
+ *       description: "SSL configuration",
+ *       properties: [
+ *         { name: "enabled", type: "boolean", required: true },
+ *         { name: "cert", type: "string" }
+ *       ]
+ *     }
  *   ]}
  * />
  * ```
@@ -110,7 +117,7 @@ export interface TypeTreeGroupProps {
   /** Optional group title */
   title?: string;
   /** TypeTree components */
-  children: React.ReactNode;
+  children: JSX.Element | JSX.Element[];
 }
 
 // ============================================================================
@@ -120,7 +127,7 @@ export interface TypeTreeGroupProps {
 /**
  * TypeTree - Recursive expandable type documentation component
  */
-export const TypeTree: React.FC<TypeTreeProps> = ({
+export const TypeTree = ({
   name,
   type,
   description,
@@ -130,7 +137,7 @@ export const TypeTree: React.FC<TypeTreeProps> = ({
   defaultValue,
   level = 0,
   maxDepth = 10
-}) => {
+}: TypeTreeProps) => {
   // Prevent infinite recursion from circular references
   if (level >= maxDepth) {
     console.warn(`TypeTree: Maximum depth (${maxDepth}) exceeded for ${name}. Preventing infinite recursion.`);
@@ -165,6 +172,7 @@ export const TypeTree: React.FC<TypeTreeProps> = ({
         <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
           {properties.map((prop, idx) => {
             // Use stable key: combine name with index for uniqueness
+            // Better than pure index, though ideally each prop would have a unique ID
             const key = prop.name ? `${prop.name}-${idx}` : `prop-${idx}`;
             return (
               <TypeTree
@@ -194,7 +202,7 @@ export const TypeTree: React.FC<TypeTreeProps> = ({
 /**
  * TypeTreeGroup - Simple wrapper for grouping multiple TypeTree components
  */
-export const TypeTreeGroup: React.FC<TypeTreeGroupProps> = ({ title, children }) => {
+export const TypeTreeGroup = ({ title, children }: TypeTreeGroupProps) => {
   return (
     <div>
       {title && <h3>{title}</h3>}

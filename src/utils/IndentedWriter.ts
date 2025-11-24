@@ -108,7 +108,7 @@ export class IndentedWriter {
    */
   public ensureNewLine(): void {
     const lastCharacter: string = this.peekLastCharacter();
-    if (lastCharacter !== '\n' && lastCharacter !== '') {
+    if (lastCharacter !== '\n') {
       this._writeNewLine();
     }
   }

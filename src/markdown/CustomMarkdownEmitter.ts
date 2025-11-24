@@ -785,60 +785,66 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
 
       // If no link text, try to resolve the code destination
       if (linkTag.codeDestination) {
-        const result: IResolveDeclarationReferenceResult = this._apiModel.resolveDeclarationReference(
-          linkTag.codeDestination,
-          contextApiItem
-        );
+        try {
+          const result: IResolveDeclarationReferenceResult = this._apiModel.resolveDeclarationReference(
+            linkTag.codeDestination,
+            contextApiItem
+          );
 
-        if (result.resolvedApiItem) {
-          // Try to get the actual type information from the resolved API item
-          const apiItem = result.resolvedApiItem;
+          if (result.resolvedApiItem) {
+            // Try to get the actual type information from the resolved API item
+            const apiItem = result.resolvedApiItem;
 
-          // For property signatures, try to extract the type from the excerpt
-          if (apiItem.kind === 'PropertySignature' || apiItem.kind === 'Variable') {
-            const excerpt = (apiItem as any).excerptTokens;
-            if (excerpt && excerpt.length > 1) {
-              // Look for the type token (usually the second token after the name)
-              for (let i = 1; i < excerpt.length; i++) {
-                if (excerpt[i].kind === 'Content') {
-                  stringBuilder.append(excerpt[i].text.trim());
-                  break;
+            // For property signatures, try to extract the type from the excerpt
+            if (apiItem.kind === 'PropertySignature' || apiItem.kind === 'Variable') {
+              const excerpt = (apiItem as any).excerptTokens;
+              if (excerpt && excerpt.length > 1) {
+                // Look for the type token (usually the second token after the name)
+                for (let i = 1; i < excerpt.length; i++) {
+                  if (excerpt[i].kind === 'Content') {
+                    stringBuilder.append(excerpt[i].text.trim());
+                    break;
+                  }
                 }
+                return;
               }
-              return;
             }
-          }
 
-          // Fallback to the scoped name
-          stringBuilder.append(this._getScopedNameWithinPackage(apiItem));
-        } else {
-          // Enhanced fallback: try to extract inline object literal from the current context
-          if (contextApiItem) {
-            // Look for the property in the current context's members
-            const propertyName = linkTag.codeDestination?.memberReferences?.[0]?.memberIdentifier?.identifier;
-            if (propertyName) {
-              // Search for this property in the current API item
-              if ('members' in contextApiItem) {
-                const members = (contextApiItem as any).members;
-                const property = members?.find((m: any) => m.name === propertyName);
-                if (property && 'excerptTokens' in property) {
-                  const excerpt = (property as any).excerptTokens;
-                  if (excerpt && excerpt.length > 1) {
-                    // Extract the complete type definition (all tokens after the name)
-                    const typeTokens = excerpt.slice(1).filter((token: any) => token.kind === 'Content');
-                    if (typeTokens.length > 0) {
-                      // Join all type tokens to get the complete type definition
-                      const completeType = typeTokens.map((token: any) => token.text).join('').trim();
-                      stringBuilder.append(completeType);
-                      return;
+            // Fallback to the scoped name
+            stringBuilder.append(this._getScopedNameWithinPackage(apiItem));
+          } else {
+            // Enhanced fallback: try to extract inline object literal from the current context
+            if (contextApiItem) {
+              // Look for the property in the current context's members
+              const propertyName = linkTag.codeDestination?.memberReferences?.[0]?.memberIdentifier?.identifier;
+              if (propertyName) {
+                // Search for this property in the current API item
+                if ('members' in contextApiItem) {
+                  const members = (contextApiItem as any).members;
+                  const property = members?.find((m: any) => m.name === propertyName);
+                  if (property && 'excerptTokens' in property) {
+                    const excerpt = (property as any).excerptTokens;
+                    if (excerpt && excerpt.length > 1) {
+                      // Extract the complete type definition (all tokens after the name)
+                      const typeTokens = excerpt.slice(1).filter((token: any) => token.kind === 'Content');
+                      if (typeTokens.length > 0) {
+                        // Join all type tokens to get the complete type definition
+                        const completeType = typeTokens.map((token: any) => token.text).join('').trim();
+                        stringBuilder.append(completeType);
+                        return;
+                      }
                     }
                   }
                 }
               }
             }
-          }
 
-          // Final fallback to the original code destination
+            // Final fallback to the original code destination
+            stringBuilder.append(linkTag.codeDestination.emitAsTsdoc());
+          }
+        } catch (error) {
+          // If resolution fails, fallback to the original code destination
+          debug.debug(`Failed to resolve declaration reference: ${error}`);
           stringBuilder.append(linkTag.codeDestination.emitAsTsdoc());
         }
       }

@@ -3,15 +3,9 @@
  * @packageDocumentation
  */
 
-import {
-  ApiItem,
-  ApiItemKind,
-  ApiModel,
-  ApiPackage
-} from '@microsoft/api-extractor-model';
-import { LinkValidation } from '../components/Link';
-import { Utilities } from './Utilities';
+import { ApiItem, ApiModel, ApiItemKind } from '@microsoft/api-extractor-model';
 import { PackageName } from '@rushstack/node-core-library';
+import { LinkValidation } from '../components/Link';
 
 /**
  * Validates and resolves link targets for the Link component
@@ -21,10 +15,7 @@ export class LinkValidator {
   private readonly _itemCache: Map<string, ApiItem | null>;
   private readonly _getFilenameForApiItem: (apiItem: ApiItem) => string;
 
-  constructor(
-    apiModel: ApiModel,
-    getFilenameForApiItem: (apiItem: ApiItem) => string
-  ) {
+  constructor(apiModel: ApiModel, getFilenameForApiItem: (apiItem: ApiItem) => string) {
     this._apiModel = apiModel;
     this._getFilenameForApiItem = getFilenameForApiItem;
     this._itemCache = new Map();
@@ -45,12 +36,10 @@ export class LinkValidator {
         parts.unshift(PackageName.getUnscopedName(packageName));
         break;
       }
-
       // Skip EntryPoint and items without display names
       if (current.kind !== ApiItemKind.EntryPoint && current.displayName) {
         parts.unshift(current.displayName);
       }
-
       current = current.parent;
     }
 
@@ -128,7 +117,6 @@ export class LinkValidator {
    */
   private _findApiItemByRefId(refId: string): ApiItem | null {
     const parts = refId.split('.');
-
     if (parts.length === 0) {
       return null;
     }
@@ -152,11 +140,9 @@ export class LinkValidator {
     for (let i = 1; i < parts.length; i++) {
       const memberName = parts[i];
       const member = this._findMemberByName(current, memberName);
-
       if (!member) {
         return null;
       }
-
       current = member;
     }
 
@@ -166,7 +152,7 @@ export class LinkValidator {
   /**
    * Find a package by its unscoped name
    */
-  private _findPackageByUnscopedName(unscopedName: string): ApiPackage | null {
+  private _findPackageByUnscopedName(unscopedName: string): ApiItem | null {
     for (const pkg of this._apiModel.packages) {
       const pkgUnscopedName = PackageName.getUnscopedName(pkg.displayName);
       if (pkgUnscopedName === unscopedName) {

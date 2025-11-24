@@ -21,7 +21,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "checkJs": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "paths": {
       "/snippets/*": ["./docs/snippets/*"]
     }

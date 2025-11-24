@@ -12,6 +12,27 @@ export interface IDocHeadingParameters extends IDocNodeParameters {
 /**
  * Represents a section header similar to an HTML `<h1>` or `<h2>` element.
  *
+ * @remarks
+ * Headings support levels 1-5, corresponding to markdown heading levels (# through #####).
+ * Level 1 is the largest heading, level 5 is the smallest. If no level is specified,
+ * defaults to level 1.
+ *
+ * @example
+ * ```typescript
+ * // H1 heading (default)
+ * const h1 = new DocHeading({
+ *   configuration,
+ *   title: 'API Reference'
+ * });
+ *
+ * // H2 heading
+ * const h2 = new DocHeading({
+ *   configuration,
+ *   title: 'Methods',
+ *   level: 2
+ * });
+ * ```
+ *
  * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
  */
 export class DocHeading extends DocNode {
@@ -19,8 +40,10 @@ export class DocHeading extends DocNode {
   public readonly level: number;
 
   /**
-   * Don't call this directly.  Instead use {@link TSDocParser}
-   * @internal
+   * Constructs a new DocHeading.
+   *
+   * @param parameters - Configuration including title and optional level (1-5)
+   * @throws Error if level is not between 1 and 5
    */
   public constructor(parameters: IDocHeadingParameters) {
     super(parameters);

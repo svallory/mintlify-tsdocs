@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * RefLink Component
  *
@@ -8,23 +7,39 @@
  * Type safety is provided at compile-time via TypeScript.
  * Runtime validation highlights broken links with "broken-link" CSS class.
  *
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 import { VALID_REFS } from './ValidRefs';
 
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
 /**
- * RefLink - Link component specifically for API references
- *
- * @param {Object} props - Component properties
- * @param {string} props.target - API reference identifier (RefId)
- * @param {*} [props.children] - Link text content (defaults to target if not provided)
+ * Props for the RefLink component.
  *
  * @example
+ * ```tsx
  * <RefLink target="mint-tsdocs.MarkdownDocumenter">MarkdownDocumenter</RefLink>
  * <RefLink target="mint-tsdocs.MarkdownDocumenter.generateFiles">Generate Files</RefLink>
+ * ```
  */
-export const RefLink = ({ target, children }) => {
+export interface RefLinkProps {
+  /** API reference identifier (RefId) - dot-separated path to API item */
+  target: string;
+  /** Link text content (defaults to target if not provided) */
+  children?: React.ReactNode;
+}
+
+// ============================================================================
+// RefLink Component
+// ============================================================================
+
+/**
+ * RefLink - Link component specifically for API references
+ */
+export const RefLink = ({ target, children }: RefLinkProps) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('RefLink: Invalid target prop. Expected non-empty string.');
@@ -42,8 +57,8 @@ export const RefLink = ({ target, children }) => {
   // Runtime validation - only runs client-side
   // Gracefully handles SSR where VALID_REFS might not be available
   const isValid = typeof VALID_REFS !== 'undefined' && VALID_REFS.has(target);
-  const className = isValid === false ? 'tsdocs-reflink broken-link' : 'tsdocs-reflink';
-  const title = isValid === false ? `Broken API reference: ${target}` : undefined;
+  const className = !isValid ? 'tsdocs-reflink broken-link' : 'tsdocs-reflink';
+  const title = !isValid ? `Broken API reference: ${target}` : undefined;
 
   return (
     <a href={path} className={className} title={title}>
@@ -51,3 +66,5 @@ export const RefLink = ({ target, children }) => {
     </a>
   );
 };
+
+export default RefLink;

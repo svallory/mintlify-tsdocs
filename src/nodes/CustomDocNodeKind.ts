@@ -27,7 +27,7 @@ export class CustomDocNodes {
     if (CustomDocNodes._configuration === undefined) {
       const configuration: TSDocConfiguration = new TSDocConfiguration();
 
-      configuration.docNodeManager.registerDocNodes('@micrososft/mint-tsdocs', [
+      configuration.docNodeManager.registerDocNodes('@microsoft/mint-tsdocs', [
         { docNodeKind: CustomDocNodeKind.EmphasisSpan, constructor: DocEmphasisSpan },
         { docNodeKind: CustomDocNodeKind.Heading, constructor: DocHeading },
         { docNodeKind: CustomDocNodeKind.NoteBox, constructor: DocNoteBox },
