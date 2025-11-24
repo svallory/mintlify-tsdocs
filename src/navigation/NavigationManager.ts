@@ -58,6 +58,8 @@ export interface NavigationManagerOptions {
 
 /**
  * Manages Mintlify navigation structure including docs.json updates and hierarchical organization
+ *
+ * @see /architecture/navigation-layer - Navigation architecture details
  */
 export class NavigationManager {
   private readonly _docsJsonPath: string;

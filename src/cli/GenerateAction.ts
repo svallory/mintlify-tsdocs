@@ -26,6 +26,9 @@ import * as GenerateHelp from './help/GenerateHelp';
  * 3. Runs api-extractor to generate .api.json files
  * 4. Converts .api.json files to MDX documentation with Mintlify integration
  *
+ * @see /cli-reference - CLI command documentation
+ * @see /architecture/generation-layer - Generation workflow architecture
+ *
  * @public
  */
 export class GenerateAction extends CommandLineAction {
@@ -105,10 +108,14 @@ export class GenerateAction extends CommandLineAction {
 
     if (this.remainder && this.remainder.values.length > 0 && !this.remainder.values[0].startsWith('-')) {
       // Use first positional argument as project directory (if not a flag)
-      projectDir = path.resolve(process.cwd(), this.remainder.values[0]);
+      const rawPath = this.remainder.values[0];
+      SecurityUtils.validateCliInput(rawPath, 'Project directory');
+      projectDir = path.resolve(process.cwd(), rawPath);
     } else if (this._projectDirParameter.value) {
       // Use --project-dir flag
-      projectDir = path.resolve(process.cwd(), this._projectDirParameter.value);
+      const rawPath = this._projectDirParameter.value;
+      SecurityUtils.validateCliInput(rawPath, 'Project directory');
+      projectDir = path.resolve(process.cwd(), rawPath);
     } else {
       // Default to current directory
       projectDir = process.cwd();
@@ -160,73 +167,73 @@ export class GenerateAction extends CommandLineAction {
         }
       }
 
-    // Determine .tsdocs directory location
-    const tsdocsDir = config.docsJson
-      ? path.join(path.dirname(config.docsJson), '.tsdocs')
-      : path.join(projectDir, 'docs', '.tsdocs');
+      // Determine .tsdocs directory location
+      const tsdocsDir = config.docsJson
+        ? path.join(path.dirname(config.docsJson), '.tsdocs')
+        : path.join(projectDir, 'docs', '.tsdocs');
 
-    // Step 2: Ensure .tsdocs directory exists
-    FileSystem.ensureFolder(tsdocsDir);
+      // Step 2: Ensure .tsdocs directory exists
+      FileSystem.ensureFolder(tsdocsDir);
 
-    // Step 3: Generate api-extractor.json in .tsdocs/
-    const apiExtractorConfigPath = path.join(tsdocsDir, 'api-extractor.json');
-    let inputFolder: string;
+      // Step 3: Generate api-extractor.json in .tsdocs/
+      const apiExtractorConfigPath = path.join(tsdocsDir, 'api-extractor.json');
+      let inputFolder: string;
 
-    if (config.apiExtractor.configPath) {
-      // Use custom api-extractor.json
-      const customConfigPath = path.resolve(projectDir, config.apiExtractor.configPath);
-      if (!FileSystem.exists(customConfigPath)) {
-        throw new DocumentationError(
-          `Custom api-extractor config not found: ${customConfigPath}`,
-          ErrorCode.FILE_NOT_FOUND
-        );
+      if (config.apiExtractor.configPath) {
+        // Use custom api-extractor.json
+        const customConfigPath = path.resolve(projectDir, config.apiExtractor.configPath);
+        if (!FileSystem.exists(customConfigPath)) {
+          throw new DocumentationError(
+            `Custom api-extractor config not found: ${customConfigPath}`,
+            ErrorCode.FILE_NOT_FOUND
+          );
+        }
+        clack.log.info(`Using custom api-extractor config: ${config.apiExtractor.configPath}`);
+
+        // Read input folder from custom config
+        const extractorConfig = ExtractorConfig.loadFileAndPrepare(customConfigPath);
+        inputFolder = path.dirname(extractorConfig.apiJsonFilePath);
+      } else {
+        // Generate api-extractor.json
+        const apiExtractorConfig = generateApiExtractorConfig(config, projectDir, tsdocsDir);
+        FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
+        clack.log.info('Generated .tsdocs/api-extractor.json');
+
+        inputFolder = tsdocsDir;
       }
-      clack.log.info(`Using custom api-extractor config: ${config.apiExtractor.configPath}`);
 
-      // Read input folder from custom config
-      const extractorConfig = ExtractorConfig.loadFileAndPrepare(customConfigPath);
-      inputFolder = path.dirname(extractorConfig.apiJsonFilePath);
-    } else {
-      // Generate api-extractor.json
-      const apiExtractorConfig = generateApiExtractorConfig(config, projectDir, tsdocsDir);
-      FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
-      clack.log.info('Generated .tsdocs/api-extractor.json');
+      // Step 4: Validate tsdoc.json exists and is correctly configured
+      this._validateTsDocConfig(projectDir);
 
-      inputFolder = tsdocsDir;
-    }
+      // Step 5: Validate and compile TypeScript
+      await this._validateAndCompileTypeScript(projectDir, config.apiExtractor.compiler?.tsconfigFilePath);
 
-    // Step 4: Validate tsdoc.json exists and is correctly configured
-    this._validateTsDocConfig(projectDir);
+      // Step 6: Run api-extractor if not skipped
+      if (!this._skipExtractorParameter.value) {
+        await this._runApiExtractor(
+          config.apiExtractor.configPath
+            ? path.resolve(projectDir, config.apiExtractor.configPath)
+            : apiExtractorConfigPath
+        );
+      } else {
+        clack.log.warn('Skipping api-extractor (--skip-extractor flag set)');
+      }
 
-    // Step 5: Validate and compile TypeScript
-    await this._validateAndCompileTypeScript(projectDir, config.apiExtractor.compiler?.tsconfigFilePath);
+      // Step 7: Build API model from .api.json files
+      const apiModel = this._buildApiModel(inputFolder);
 
-    // Step 6: Run api-extractor if not skipped
-    if (!this._skipExtractorParameter.value) {
-      await this._runApiExtractor(
-        config.apiExtractor.configPath
-          ? path.resolve(projectDir, config.apiExtractor.configPath)
-          : apiExtractorConfigPath
-      );
-    } else {
-      clack.log.warn('Skipping api-extractor (--skip-extractor flag set)');
-    }
-
-    // Step 7: Build API model from .api.json files
-    const apiModel = this._buildApiModel(inputFolder);
-
-    // Step 8: Generate documentation
-    const markdownDocumenter: MarkdownDocumenter = new MarkdownDocumenter({
-      apiModel,
-      outputFolder: config.outputFolder,
-      docsJsonPath: config.docsJson,
-      tabName: config.tabName,
-      groupName: config.groupName,
-      enableMenu: false,
-      convertReadme: config.convertReadme,
-      readmeTitle: config.readmeTitle,
-      templates: config.templates
-    });
+      // Step 8: Generate documentation
+      const markdownDocumenter: MarkdownDocumenter = new MarkdownDocumenter({
+        apiModel,
+        outputFolder: config.outputFolder,
+        docsJsonPath: config.docsJson,
+        tabName: config.tabName,
+        groupName: config.groupName,
+        enableMenu: false,
+        convertReadme: config.convertReadme,
+        readmeTitle: config.readmeTitle,
+        templates: config.templates
+      });
 
       markdownDocumenter.generateFiles();
 
@@ -258,7 +265,7 @@ export class GenerateAction extends CommandLineAction {
 
     try {
       const content = FileSystem.readFile(tsdocPath);
-      const config = JSON.parse(content);
+      const config = SecurityUtils.parseJsonSafe(content);
 
       // Check for required base extension
       if (!config.extends || !config.extends.includes('@microsoft/api-extractor/extends/tsdoc-base.json')) {
@@ -373,13 +380,32 @@ export class GenerateAction extends CommandLineAction {
     // Compile TypeScript
     clack.log.info('Compiling TypeScript...');
     try {
-      const { execSync } = await import('child_process');
-      const tscCommand = `npx tsc --project ${resolvedTsconfigPath}`;
+      const { execFileSync } = await import('child_process');
 
-      execSync(tscCommand, {
+      // Use execFileSync with array arguments to prevent command injection
+      execFileSync('npx', ['tsc', '--project', resolvedTsconfigPath], {
         cwd: projectDir,
         stdio: 'inherit'
       });
+
+      // Copy custom .d.ts files to preserve type definitions that shouldn't be auto-generated
+      // This is necessary because TypeScript auto-generates .d.ts for .jsx files,
+      // but we have custom type definitions in src/components/*.d.ts
+      const componentsSrc = path.join(projectDir, 'src', 'components');
+      const componentsDest = path.join(projectDir, 'lib', 'components');
+      if (FileSystem.exists(componentsSrc)) {
+        const customDtsFiles = FileSystem.readFolderItemNames(componentsSrc)
+          .filter(f => f.endsWith('.d.ts'));
+
+        for (const dtsFile of customDtsFiles) {
+          const srcPath = path.join(componentsSrc, dtsFile);
+          const destPath = path.join(componentsDest, dtsFile);
+          FileSystem.copyFile({
+            sourcePath: srcPath,
+            destinationPath: destPath
+          });
+        }
+      }
 
       clack.log.success('TypeScript compilation completed');
     } catch (error) {
@@ -413,9 +439,9 @@ export class GenerateAction extends CommandLineAction {
       const originalConsoleWarn = console.warn;
 
       // Suppress direct console output during api-extractor
-      console.log = () => {};
-      console.error = () => {};
-      console.warn = () => {};
+      console.log = () => { };
+      console.error = () => { };
+      console.warn = () => { };
 
       try {
         // Run api-extractor with message callback to intercept output

@@ -1,0 +1,69 @@
+---
+title: "DocumentationError class"
+icon: "box"
+description: "Base class for all custom errors in the documentation generation process. It extends the native Error class with additional structured context."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# DocumentationError
+
+## Summary
+
+Base class for all custom errors in the documentation generation process. It extends the native <code>Error</code> class with additional structured context.   Error 
+## Signature
+
+```typescript
+export declare class DocumentationError extends Error 
+```
+
+## Constructors
+
+### constructor
+
+Creates an instance of DocumentationError.
+
+## Properties
+
+### code
+**Modifiers**: readonly
+**Type**:<Link kind="ref" target="mint-tsdocs.ErrorCode">`readonly code: ErrorCode;`</Link>
+**Default**: ``
+
+A standardized, machine-readable error code from the enum. This allows for programmatic handling of different error types.
+
+### context
+**Modifiers**: readonly
+**Type**:<Link kind="ref" target="mint-tsdocs.ErrorContext">`readonly context: ErrorContext;`</Link>
+**Default**: ``
+
+An object containing additional, structured information about the error.
+
+### isUserError
+**Modifiers**: readonly
+**Type**:`readonly isUserError: boolean;`
+**Default**: ``
+
+A boolean flag indicating whether the error is likely caused by user input () or by a system/internal failure (). This helps in tailoring the error message to the appropriate audience.
+
+### timestamp
+**Modifiers**: readonly
+**Type**:`readonly timestamp: Date;`
+**Default**: ``
+
+The exact time when the error instance was created.
+
+## Methods
+
+### getDetailedMessage
+
+Generates a detailed, multi-line string representation of the error, including all available context.
+
+### toJSON
+
+Converts the error object into a JSON-serializable format, suitable for logging or transmission.
+
+## Events
+
+*No events defined.*

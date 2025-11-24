@@ -5,9 +5,13 @@ import { Liquid } from 'liquidjs';
 
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import type { ITemplateData, ITemplateEngineOptions } from './TemplateEngine';
+import type { DocSegment } from '../utils/DocSectionConverter';
+import { DocNodeKind } from '@microsoft/tsdoc';
 
 /**
  * LiquidJS-based template engine implementation
+ *
+ * @see /architecture/generation-layer - Template engine architecture
  */
 export class LiquidTemplateEngine {
   private readonly _templateDir: string;
@@ -171,15 +175,37 @@ export class LiquidTemplateEngine {
    * Sanitize template data to prevent XSS and ensure valid output
    */
   private _sanitizeTemplateData(data: ITemplateData): ITemplateData {
-    // Keys that should NOT be sanitized (code/type content)
-    const skipSanitizationKeys = new Set(['type', 'signature', 'code', 'typePath', 'defaultValue']);
+    // Keys that should NOT be sanitized (code/type content and YAML frontmatter)
+    const skipSanitizationKeys = new Set(['type', 'signature', 'code', 'typePath', 'defaultValue', 'title', 'description', 'icon']);
+
+    // Track objects we've already processed to prevent infinite recursion
+    const processedObjects = new WeakSet();
 
     // Deep clone and sanitize strings
-    const sanitize = (value: any, key?: string): any => {
+    const sanitize = (value: any, key?: string, parentKey?: string): any => {
+      // Prevent infinite recursion
+      if (typeof value === 'object' && value !== null) {
+        if (processedObjects.has(value)) {
+          return value; // Return as-is to prevent infinite recursion
+        }
+        processedObjects.add(value);
+      }
+
+      // Skip sanitization for segment arrays - they contain structured data for template rendering
+      if (Array.isArray(value) && value.length > 0 && value[0] && typeof value[0] === 'object' && value[0].kind) {
+        // This is a DocSegment array, preserve it as-is
+        return value;
+      }
+
       if (typeof value === 'string') {
-        // Skip sanitization for code/type fields - they're from API Extractor (trusted)
-        // and need to preserve <, >, & for TypeScript syntax
+        // Skip sanitization for:
+        // 1. Code/type fields - they're from API Extractor (trusted) and need to preserve <, >, & for TypeScript syntax
+        // 2. Page metadata fields - they're used in YAML frontmatter where HTML entities are invalid
         if (key && skipSanitizationKeys.has(key)) {
+          return value;
+        }
+        // Also skip if parent key is 'page' (all page metadata)
+        if (parentKey === 'page') {
           return value;
         }
 
@@ -192,12 +218,12 @@ export class LiquidTemplateEngine {
           .replace(/'/g, '&#39;');
       }
       if (Array.isArray(value)) {
-        return value.map((item) => sanitize(item, key));
+        return value.map((item) => sanitize(item, key, parentKey));
       }
       if (typeof value === 'object' && value !== null) {
         const sanitized: any = {};
         for (const objKey in value) {
-          sanitized[objKey] = sanitize(value[objKey], objKey);
+          sanitized[objKey] = sanitize(value[objKey], objKey, key);
         }
         return sanitized;
       }
@@ -280,6 +306,105 @@ export class LiquidTemplateEngine {
       // For simple types, return inline code (without backticks - template will add them)
       return input;
     });
+
+    // Add 'render_segments' filter for rendering DocSegment arrays
+    this._liquid.registerFilter('render_segments', (segments: DocSegment[] | undefined) => {
+      // Handle cases where segments might be a string (fallback)
+      if (typeof segments === 'string') {
+        return this._escapeHtml(segments);
+      }
+
+      if (!segments || !Array.isArray(segments)) {
+        return '';
+      }
+
+      return segments.map(segment => {
+        if (!segment || !segment.kind) {
+          return '';
+        }
+
+        switch (segment.kind) {
+          case DocNodeKind.PlainText:
+            return this._escapeHtml(segment.props?.text || '');
+
+          case DocNodeKind.LinkTag:
+            const destination = segment.props?.urlDestination || segment.props?.codeDestination;
+            const linkText = segment.props?.linkText || destination || 'link';
+
+            // Ensure destination is a string
+            if (typeof destination === 'string') {
+              if (destination.startsWith('/')) {
+                return `<PageLink target="${destination}">${this._escapeHtml(linkText)}</PageLink>`;
+              } else if (!destination.startsWith('http')) {
+                return `<Link kind="ref" target="${destination}">${this._escapeHtml(linkText)}</Link>`;
+              } else {
+                return `<Link target="${destination}">${this._escapeHtml(linkText)}</Link>`;
+              }
+            }
+            return this._escapeHtml(linkText);
+
+          case DocNodeKind.CodeSpan:
+            return `<code>${this._escapeHtml(segment.props?.code || '')}</code>`;
+
+          case DocNodeKind.SoftBreak:
+            return ' ';
+
+          default:
+            return segment.props?.text ? this._escapeHtml(segment.props.text) : '';
+        }
+      }).join('');
+    });
+
+    // Add 'render_segment' filter for rendering single DocSegment
+    this._liquid.registerFilter('render_segment', (segment: DocSegment | undefined) => {
+      if (!segment) return '';
+
+      switch (segment.kind) {
+        case DocNodeKind.PlainText:
+          return this._escapeHtml(segment.props.text || '');
+
+        case DocNodeKind.LinkTag:
+          const destination = segment.props.urlDestination || segment.props.codeDestination;
+          const linkText = segment.props.linkText || destination || 'link';
+
+          if (destination && destination.startsWith('/')) {
+            return `<PageLink target="${destination}">${this._escapeHtml(linkText)}</PageLink>`;
+          } else if (destination && !destination.startsWith('http')) {
+            return `<Link kind="ref" target="${destination}">${this._escapeHtml(linkText)}</Link>`;
+          } else if (destination) {
+            return `<Link target="${destination}">${this._escapeHtml(linkText)}</Link>`;
+          }
+          return this._escapeHtml(linkText);
+
+        case DocNodeKind.CodeSpan:
+          return `<code>${this._escapeHtml(segment.props.code || '')}</code>`;
+
+        default:
+          return segment.props.text ? this._escapeHtml(segment.props.text) : '';
+      }
+    });
+
+    // Add 'type_of' filter for debugging
+    this._liquid.registerFilter('type_of', (value: any) => {
+      return Array.isArray(value) ? 'array' : typeof value;
+    });
+  }
+
+  /**
+   * Escape HTML characters for safe rendering
+   */
+  private _escapeHtml(text: any): string {
+    // Convert to string if not already a string
+    if (typeof text !== 'string') {
+      return String(text);
+    }
+
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   /**

@@ -2,6 +2,14 @@
 
 {%- block content %}
 
+{%- if apiItem.signature %}
+## Signature
+
+```typescript
+{{ apiItem.signature }}
+```
+{%- endif %}
+
 ## Properties
 
 {%- if properties and properties.size > 0 %}
@@ -17,7 +25,7 @@
 {%- if formatted_prop_type contains "```" %}
 **Type**:{{ formatted_prop_type }}
 {%- else %}
-**Type**: {%- if property.typePath %}[`{{ formatted_prop_type }}`]({{ property.typePath }}){% else %}`{{ formatted_prop_type }}`{% endif %}
+**Type**: {%- if property.typeRef and autolink != false %}<Link kind="ref" target="{{ property.typeRef }}">`{{ formatted_prop_type }}`</Link>{%- elsif property.typePath %}[`{{ formatted_prop_type }}`]({{ property.typePath }}){%- else %}`{{ formatted_prop_type }}`{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- if property.isOptional %}
@@ -71,7 +79,7 @@
 {%- if formatted_event_type contains "```" %}
 **Type**:{{ formatted_event_type }}
 {%- else %}
-**Type**: {%- if event.typePath %}[`{{ formatted_event_type }}`]({{ event.typePath }}){% else %}`{{ formatted_event_type }}`{% endif %}
+**Type**: {%- if event.typeRef and autolink != false %}<Link kind="ref" target="{{ event.typeRef }}">`{{ formatted_event_type }}`</Link>{%- elsif event.typePath %}[`{{ formatted_event_type }}`]({{ event.typePath }}){%- else %}`{{ formatted_event_type }}`{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- if event.description %}

@@ -65,6 +65,7 @@ import { Utilities } from '../utils/Utilities';
 import { CustomMarkdownEmitter } from '../markdown/CustomMarkdownEmitter';
 import { LiquidTemplateManager, TemplateDataConverter } from '../templates';
 import { TypeInfoGenerator } from '../utils/TypeInfoGenerator';
+import { LinkValidator } from '../utils/LinkValidator';
 
 const debug: Debugger = createDebugger('markdown-documenter');
 
@@ -106,16 +107,41 @@ export interface IMarkdownDocumenterOptions {
      * Whether to use strict mode for templates (default: true)
      */
     strict?: boolean;
+
+    /**
+     * Configuration for controlling how API items are rendered
+     */
+    rendering?: {
+      /**
+       * Whether to hide the value column in string enum member tables (default: true)
+       */
+      hideStringEnumValues?: boolean;
+    };
   };
 }
 
 
 /**
  * Core class for rendering API documentation in Mintlify-compatible MDX format.
- * 
+ *
  * This class takes TypeScript API model data and converts it into MDX files with proper
  * Mintlify frontmatter, navigation integration, and formatting suitable for documentation sites.
- * 
+ * The process involves multiple stages including {@link TemplateDataConverter | data conversion}
+ * and {@link LiquidTemplateManager | template rendering}.
+ *
+ * @remarks
+ * The main workflow involves:
+ * 1. Loading the API model from `.api.json` files
+ * 2. Converting API items to template data using {@link TemplateDataConverter}
+ * 3. Rendering templates via {@link LiquidTemplateManager}
+ * 4. Updating the Mintlify navigation structure
+ *
+ * For detailed architecture information, see the {@link /architecture/generation-layer | Generation Layer}
+ * documentation and the {@link /architecture/overview | Architecture Overview}.
+ *
+ * @see /architecture/generation-layer - Generation workflow details
+ * @see /architecture/overview - System architecture overview
+ *
  * @public
  */
 export class MarkdownDocumenter {
@@ -123,11 +149,15 @@ export class MarkdownDocumenter {
   private readonly _tsdocConfiguration: TSDocConfiguration;
   private readonly _markdownEmitter: CustomMarkdownEmitter;
   private readonly _outputFolder: string;
+  private readonly _docsJsonPath?: string;
   private readonly _navigationManager: NavigationManager;
   private readonly _templateManager: LiquidTemplateManager;
   private readonly _templateDataConverter: TemplateDataConverter;
   private _convertReadme: boolean = false;
   private _readmeTitle: string = 'README';
+  private readonly _renderingConfig: {
+    hideStringEnumValues: boolean;
+  };
 
   /**
    * Icon mapping for different API item types
@@ -150,17 +180,31 @@ export class MarkdownDocumenter {
   public constructor(options: IMarkdownDocumenterOptions) {
     this._apiModel = options.apiModel;
     this._outputFolder = options.outputFolder;
+    this._docsJsonPath = options.docsJsonPath;
     this._convertReadme = options.convertReadme || false;
     this._readmeTitle = options.readmeTitle || 'README';
     this._tsdocConfiguration = CustomDocNodes.configuration;
 
+    // Initialize rendering config with defaults
+    this._renderingConfig = {
+      hideStringEnumValues: options.templates?.rendering?.hideStringEnumValues ?? true
+    };
+
+    // Initialize link validator for type references
+    const linkValidator = new LinkValidator(
+      this._apiModel,
+      (apiItem) => this._getFilenameForApiItem(apiItem)
+    );
+
     // Initialize template system
-    this._templateDataConverter = new TemplateDataConverter();
+    this._templateDataConverter = new TemplateDataConverter(this._apiModel, linkValidator);
     this._templateManager = new LiquidTemplateManager({
       userTemplateDir: options.templates?.userTemplateDir,
       overrides: options.templates?.overrides,
       cache: options.templates?.cache !== false,
-      strict: options.templates?.strict !== false
+      strict: options.templates?.strict !== false,
+      apiModel: this._apiModel,
+      linkValidator
     });
 
     // Initialize cache manager for performance
@@ -203,6 +247,12 @@ export class MarkdownDocumenter {
 
         // Generate TypeInfo.jsx with type information
         this._generateTypeInfo();
+
+        // Generate ValidRefs.jsx for link validation
+        this._generateValidRefs();
+
+        // Generate ValidPages.jsx for page link validation
+        this._generateValidPages();
 
         // Use the new template-based approach
         await this._writeApiItemPageTemplate(this._apiModel);
@@ -273,6 +323,9 @@ export class MarkdownDocumenter {
       getLinkFilenameForApiItem: (item: ApiItem) => this._getLinkFilenameForApiItem(item)
     });
 
+    // Add rendering config to template data
+    templateData.rendering = this._renderingConfig;
+
     // Render template
     const renderedContent = await this._templateManager.renderApiItem(apiItem, templateData);
 
@@ -291,6 +344,10 @@ export class MarkdownDocumenter {
           { resource: filename, operation: 'validateFileContent', data: { size: renderedContent.length } }
         );
       }
+
+      // Ensure parent directory exists for nested folder structure
+      const directory = path.dirname(filename);
+      FileSystem.ensureFolder(directory);
 
       FileSystem.writeFile(filename, renderedContent, {
         convertLineEndings: NewlineKind.CrLf
@@ -318,7 +375,8 @@ export class MarkdownDocumenter {
     }
 
     // Process child items recursively, passing current item as parent
-    if ('members' in apiItem) {
+    // Skip enum members - they are rendered within the parent enum file
+    if ('members' in apiItem && apiItem.kind !== ApiItemKind.Enum) {
       for (const member of (apiItem as any).members) {
         await this._writeApiItemPageTemplate(member, apiItem);
       }
@@ -763,6 +821,10 @@ export class MarkdownDocumenter {
           { resource: filename, operation: 'validateFileContent', data: { size: pageContent.length } }
         );
       }
+
+      // Ensure parent directory exists for nested folder structure
+      const directory = path.dirname(validatedFilename);
+      FileSystem.ensureFolder(directory);
 
       // Write file with error handling
       FileSystem.writeFile(validatedFilename, pageContent, {
@@ -1743,7 +1805,7 @@ export class MarkdownDocumenter {
       return 'index.mdx';
     }
 
-    let baseName: string = '';
+    const pathParts: string[] = [];
     for (const hierarchyItem of this._getHierarchy(apiItem)) {
       // Skip items that should not be included in filename or have empty names
       switch (hierarchyItem.kind) {
@@ -1753,7 +1815,7 @@ export class MarkdownDocumenter {
           continue;
         case ApiItemKind.Package:
           const packageName = hierarchyItem.displayName || 'package';
-          baseName = Utilities.getSafeFilenameForName(PackageName.getUnscopedName(packageName));
+          pathParts.push(PackageName.getUnscopedName(packageName));
           continue;
       }
 
@@ -1762,19 +1824,24 @@ export class MarkdownDocumenter {
         continue;
       }
 
-      // For overloaded methods, add a suffix such as "MyClass.myMethod_2".
-      let qualifiedName: string = Utilities.getSafeFilenameForName(hierarchyItem.displayName);
+      // Normalize the display name (removes parentheses from constructors)
+      let itemName: string = Utilities.normalizeDisplayName(hierarchyItem.displayName);
+
+      // For overloaded methods, add a suffix such as "MyClass/myMethod_2".
       if (ApiParameterListMixin.isBaseClassOf(hierarchyItem)) {
         if (hierarchyItem.overloadIndex > 1) {
           // Subtract one for compatibility with earlier releases of API Documenter.
           // (This will get revamped when we fix GitHub issue #1308)
-          qualifiedName += `_${hierarchyItem.overloadIndex - 1}`;
+          itemName += `_${hierarchyItem.overloadIndex - 1}`;
         }
       }
 
-      baseName += '.' + qualifiedName;
+      // Sanitize while preserving case for nested folder structure
+      pathParts.push(Utilities.getSafeFilenamePreservingCase(itemName));
     }
-    return baseName + '.mdx';
+
+    // Join with platform-specific path separator and add .mdx extension
+    return path.join(...pathParts) + '.mdx';
   }
 
   private _getLinkFilenameForApiItem(apiItem: ApiItem): string {
@@ -1896,7 +1963,57 @@ export class MarkdownDocumenter {
       return null;
     }
 
-    return this._renderDocSection(apiItem.tsdocComment.summarySection);
+    let description = this._renderDocSection(apiItem.tsdocComment.summarySection);
+
+    // Remove TSDoc block tags that shouldn't appear in descriptions
+    // These tags like @param, @returns, @enum, etc. should not be in the summary
+    // Match both @tag and @tag {type} patterns
+    description = description.replace(/@(param|returns?|throws?|example|remarks?|see|alpha|beta|deprecated|internal|public|private|protected|readonly|virtual|override|sealed|event|eventProperty|typeParam|enum|namespace|package|module|class|interface|function|method|property|constructor|variable|typedef|callback|extends|implements)(\s+\{[^}]*\})?(\s+[^\n@]*)?/gi, '');
+
+    // Clean up any extra whitespace that may have been left
+    description = description.replace(/\s+/g, ' ').trim();
+
+    // Sanitize for use in YAML frontmatter
+    return this._sanitizeForFrontmatter(description);
+  }
+
+  /**
+   * Sanitize text for safe use in YAML frontmatter
+   * Removes newlines, strips markdown formatting, and ensures proper escaping
+   */
+  private _sanitizeForFrontmatter(text: string): string {
+    if (!text) return '';
+
+    // Remove markdown formatting
+    let sanitized = text
+      // Remove inline code with JSX comments
+      .replace(/\{\s*\/\*\s*\*\/\s*\}/g, '')
+      // Remove leftover curly braces from TSDoc type parameters
+      .replace(/\{[^}]*\}/g, '')
+      // Remove inline code backticks
+      .replace(/`([^`]+)`/g, '$1')
+      // Remove bold/italic markers
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')
+      .replace(/(\*|_)(.*?)\1/g, '$2')
+      // Remove markdown links
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      // Remove HTML tags (they break MDX compilation in descriptions)
+      .replace(/<([^>]+)>/g, '&lt;$1&gt;')
+      // Remove common standalone type/class names at the end (leftovers from @extends, @enum, etc.)
+      // Only remove if preceded by period and space/punctuation
+      .replace(/[.!?]\s+(Error|string|number|boolean|object|any|void|null|undefined|never|unknown)\s*$/gi, '.')
+      // Collapse multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Escape special characters for YAML
+    // Note: We don't use SecurityUtils.sanitizeYamlText here because it's too aggressive
+    // and escapes newlines to literal \n which doesn't work in quoted strings
+    sanitized = sanitized
+      .replace(/\\/g, '\\\\')  // Escape backslashes
+      .replace(/"/g, '\\"');    // Escape double quotes
+
+    return sanitized;
   }
 
   private _renderDocSection(section: DocSection): string {
@@ -2065,6 +2182,263 @@ export class MarkdownDocumenter {
       // Log warning but don't fail the build
       clack.log.warn(`   ⚠ Failed to generate TypeInfo: ${error}`);
       debug.warn('TypeInfo generation failed:', error);
+    }
+  }
+
+  /**
+   * Generate ValidRefs.jsx with all valid API reference IDs for link validation
+   */
+  private _generateValidRefs(): void {
+    const docsRoot = path.dirname(this._outputFolder);
+    const snippetsFolder = path.join(docsRoot, 'snippets', 'tsdocs');
+    const validRefsPath = path.join(snippetsFolder, 'ValidRefs.jsx');
+
+    try {
+      // Ensure snippets folder exists
+      FileSystem.ensureFolder(snippetsFolder);
+
+      // Collect all valid RefIds from the API model using the same format as LinkValidator
+      const validRefs = new Set<string>();
+
+      const collectRefs = (apiItem: ApiItem): void => {
+        // Skip certain kinds that don't generate pages
+        if (
+          apiItem.kind === ApiItemKind.EntryPoint ||
+          apiItem.kind === ApiItemKind.Model ||
+          apiItem.kind === ApiItemKind.EnumMember
+        ) {
+          // Still recurse into members (except for EnumMember which has none)
+          if (apiItem.members) {
+            for (const member of apiItem.members) {
+              collectRefs(member);
+            }
+          }
+          return;
+        }
+
+        // Build RefId using dash-case to match actual file paths
+        const parts: string[] = [];
+        let current: ApiItem | undefined = apiItem;
+
+        while (current) {
+          if (current.kind === ApiItemKind.Package) {
+            const packageName = current.displayName || 'package';
+            const unscopedName = PackageName.getUnscopedName(packageName);
+            // Keep original dash-case for package names to match file paths
+            parts.unshift(unscopedName);
+            break;
+          }
+
+          if (current.kind !== ApiItemKind.EntryPoint && current.displayName) {
+            // Normalize display name to remove parentheses from constructors
+            parts.unshift(Utilities.normalizeDisplayName(current.displayName));
+          }
+
+          current = current.parent;
+        }
+
+        if (parts.length > 0) {
+          const refId = parts.join('.');
+          validRefs.add(refId);
+        }
+
+        // Recursively collect from members
+        if (apiItem.members) {
+          for (const member of apiItem.members) {
+            collectRefs(member);
+          }
+        }
+      };
+
+      // Collect from all packages
+      for (const apiMember of this._apiModel.members) {
+        collectRefs(apiMember);
+      }
+
+      // Generate JavaScript module with the set
+      const refsArray = Array.from(validRefs).sort();
+      const jsContent = `// @ts-nocheck
+/**
+ * Valid API Reference IDs
+ * Auto-generated by mint-tsdocs during documentation build.
+ * Used by Link component for runtime validation.
+ *
+ * @generated
+ */
+
+/**
+ * Set of all valid RefIds in the documentation
+ */
+export const VALID_REFS = new Set(${JSON.stringify(refsArray, null, 2)});
+
+/**
+ * Check if a RefId is valid
+ * @param {string} refId - The RefId to validate
+ * @returns {boolean} True if the RefId exists
+ */
+export function isValidRef(refId) {
+  return VALID_REFS.has(refId);
+}
+`;
+
+      FileSystem.writeFile(validRefsPath, jsContent);
+
+      // Also generate TypeScript declaration file with union type
+      const validRefsDtsPath = path.join(snippetsFolder, 'ValidRefs.d.ts');
+      const refUnion = refsArray.map(ref => `  | ${JSON.stringify(ref)}`).join('\n');
+      const refsDtsContent = `/**
+ * Type declarations for ValidRefs
+ * Auto-generated from API model structure.
+ *
+ * @generated
+ */
+
+/**
+ * Union type of all valid API reference IDs
+ */
+export type ValidRefId =
+${refUnion};
+
+/**
+ * Set of all valid RefIds in the documentation
+ */
+export const VALID_REFS: Set<ValidRefId>;
+
+/**
+ * Check if a RefId is valid
+ */
+export function isValidRef(refId: string): refId is ValidRefId;
+`;
+
+      FileSystem.writeFile(validRefsDtsPath, refsDtsContent);
+      clack.log.success(`   ✓ Generated ValidRefs.jsx with ${validRefs.size} reference IDs`);
+    } catch (error) {
+      // Log warning but don't fail the build
+      clack.log.warn(`   ⚠ Failed to generate ValidRefs: ${error}`);
+      debug.warn('ValidRefs generation failed:', error);
+    }
+  }
+
+  /**
+   * Generate ValidPages.jsx with all valid page IDs from docs.json for link validation
+   */
+  private _generateValidPages(): void {
+    const docsRoot = path.dirname(this._outputFolder);
+    const snippetsFolder = path.join(docsRoot, 'snippets', 'tsdocs');
+    const validPagesPath = path.join(snippetsFolder, 'ValidPages.jsx');
+
+    try {
+      // Ensure snippets folder exists
+      FileSystem.ensureFolder(snippetsFolder);
+
+      // Read docs.json if it exists
+      const docsJsonPath = this._docsJsonPath || path.join(docsRoot, 'docs.json');
+      if (!FileSystem.exists(docsJsonPath)) {
+        debug.warn('docs.json not found, skipping ValidPages generation');
+        return;
+      }
+
+      const docsJsonContent = FileSystem.readFile(docsJsonPath);
+      const docsJson = JSON.parse(docsJsonContent);
+
+      // Collect all valid page IDs from docs.json navigation
+      const validPages = new Set<string>();
+
+      const collectPages = (item: any): void => {
+        if (typeof item === 'string') {
+          // Simple page reference
+          validPages.add(item);
+        } else if (item && typeof item === 'object') {
+          // Group or nested structure
+          if (item.page) {
+            validPages.add(item.page);
+          }
+          if (item.pages && Array.isArray(item.pages)) {
+            for (const page of item.pages) {
+              collectPages(page);
+            }
+          }
+          if (item.groups && Array.isArray(item.groups)) {
+            for (const group of item.groups) {
+              collectPages(group);
+            }
+          }
+        }
+      };
+
+      // Start from navigation.tabs or navigation directly
+      if (docsJson.navigation) {
+        if (docsJson.navigation.tabs && Array.isArray(docsJson.navigation.tabs)) {
+          for (const tab of docsJson.navigation.tabs) {
+            collectPages(tab);
+          }
+        } else {
+          collectPages(docsJson.navigation);
+        }
+      }
+
+      // Generate JavaScript module with the set
+      const pagesArray = Array.from(validPages).sort();
+      const jsContent = `// @ts-nocheck
+/**
+ * Valid Documentation Page IDs
+ * Auto-generated by mint-tsdocs during documentation build.
+ * Extracted from docs.json navigation structure.
+ * Used by PageLink component for runtime validation.
+ *
+ * @generated
+ */
+
+/**
+ * Set of all valid PageIds in the documentation
+ */
+export const VALID_PAGES = new Set(${JSON.stringify(pagesArray, null, 2)});
+
+/**
+ * Check if a PageId is valid
+ * @param {string} pageId - The PageId to validate
+ * @returns {boolean} True if the PageId exists
+ */
+export function isValidPage(pageId) {
+  return VALID_PAGES.has(pageId);
+}
+`;
+
+      FileSystem.writeFile(validPagesPath, jsContent);
+
+      // Also generate TypeScript declaration file with union type
+      const validPagesDtsPath = path.join(snippetsFolder, 'ValidPages.d.ts');
+      const pageUnion = pagesArray.map(page => `  | ${JSON.stringify(page)}`).join('\n');
+      const dtsContent = `/**
+ * Type declarations for ValidPages
+ * Auto-generated from docs.json navigation structure.
+ *
+ * @generated
+ */
+
+/**
+ * Union type of all valid page IDs from docs.json
+ */
+export type ValidPageId =
+${pageUnion};
+
+/**
+ * Set of all valid PageIds in the documentation
+ */
+export const VALID_PAGES: Set<ValidPageId>;
+
+/**
+ * Check if a PageId is valid
+ */
+export function isValidPage(pageId: string): pageId is ValidPageId;
+`;
+
+      FileSystem.writeFile(validPagesDtsPath, dtsContent);
+      clack.log.success(`   ✓ Generated ValidPages.jsx with ${validPages.size} page IDs`);
+    } catch (error) {
+      // Log warning but don't fail the build
+      clack.log.warn(`   ⚠ Failed to generate ValidPages: ${error}`);
+      debug.warn('ValidPages generation failed:', error);
     }
   }
 
@@ -2300,6 +2674,17 @@ export class MarkdownDocumenter {
     const notice = '{/* This file was auto-generated from README.md by mint-tsdocs */}\n\n';
     
     return `${frontmatter}\n${notice}${mdxContent}`;
+  }
+
+  /**
+   * Convert kebab-case or snake_case to PascalCase
+   * Used to match TypeInfo package name format
+   */
+  private _toPascalCase(str: string): string {
+    return str
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('');
   }
 
 }

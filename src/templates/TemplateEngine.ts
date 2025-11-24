@@ -5,6 +5,7 @@ import { FileSystem } from '@rushstack/node-core-library';
 
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { SecurityUtils } from '../utils/SecurityUtils';
+import type { DocSegment } from '../utils/DocSectionConverter';
 
 /**
  * Interface for template data that gets passed to EJS templates
@@ -15,8 +16,8 @@ export interface ITemplateData {
     kind: string;
     displayName: string;
     description?: string;
-    summary?: string;
-    remarks?: string;
+    summary?: DocSegment[];
+    remarks?: DocSegment[];
     signature?: string;
     isDeprecated?: boolean;
     isAlpha?: boolean;
@@ -31,6 +32,10 @@ export interface ITemplateData {
       name: string;
       path?: string;
     }>;
+  };
+  // Rendering configuration
+  rendering?: {
+    hideStringEnumValues?: boolean;
   };
   // Semantic variables for template data
   constructors?: ITableRow[];
@@ -58,6 +63,10 @@ export interface ITemplateData {
     name: string;
     path?: string;
   }>;
+  guides?: Array<{
+    path: string;
+    description: string;
+  }>;
 }
 
 export interface ITableData {
@@ -71,6 +80,7 @@ export interface ITableRow {
   titlePath?: string;
   modifiers?: string[];
   type?: string;
+  typeRef?: string; // RefId for the type (used by Link component)
   typePath?: string;
   description?: string;
   isOptional?: boolean;
@@ -81,6 +91,7 @@ export interface ITableRow {
 
 export interface IReturnData {
   type: string;
+  typeRef?: string; // RefId for the type (used by Link component)
   typePath?: string;
   description?: string;
 }

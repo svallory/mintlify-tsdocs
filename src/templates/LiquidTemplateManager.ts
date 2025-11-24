@@ -6,8 +6,9 @@ import { TemplateDataConverter } from './TemplateDataConverter';
 import { TemplateMerger } from './TemplateMerger';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { ITemplateData, ITemplateEngineOptions } from './TemplateEngine';
-import type { ApiItem, ApiItemKind } from '@microsoft/api-extractor-model';
+import type { ApiItem, ApiItemKind, ApiModel } from '@microsoft/api-extractor-model';
 import { createDebugger, type Debugger } from '../utils/debug';
+import { LinkValidator } from '../utils/LinkValidator';
 
 const debug: Debugger = createDebugger('liquid-template-manager');
 
@@ -21,6 +22,14 @@ export interface ILiquidTemplateManagerOptions extends ITemplateEngineOptions {
    * Individual template overrides - map template names to file paths
    */
   overrides?: Record<string, string>;
+  /**
+   * API model for type reference resolution
+   */
+  apiModel?: ApiModel;
+  /**
+   * Link validator for generating type references
+   */
+  linkValidator?: LinkValidator;
 }
 
 /**
@@ -51,7 +60,16 @@ export class LiquidTemplateManager {
       strict: this._strict
     });
 
-    this._templateDataConverter = new TemplateDataConverter();
+    // Create TemplateDataConverter with apiModel and linkValidator if provided
+    if (options.apiModel && options.linkValidator) {
+      this._templateDataConverter = new TemplateDataConverter(options.apiModel, options.linkValidator);
+    } else {
+      // For backward compatibility, throw error if not provided
+      throw new DocumentationError(
+        'apiModel and linkValidator are required for LiquidTemplateManager',
+        ErrorCode.VALIDATION_ERROR
+      );
+    }
   }
 
   /**

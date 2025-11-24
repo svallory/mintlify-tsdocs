@@ -11,6 +11,7 @@ import * as clack from '@clack/prompts';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { loadConfig } from '../config/loader';
 import type { MintlifyTsDocsConfig } from '../config/types';
+import { SecurityUtils } from '../utils/SecurityUtils';
 import { showCliHeader } from './CliHelpers';
 import * as CustomizeHelp from './help/CustomizeHelp';
 
@@ -210,7 +211,7 @@ ${Colorize.gray('Documentation:')} https://mint-tsdocs.saulo.engineer/templates
 
         // Read the current config file
         const configContent = FileSystem.readFile(configPath);
-        const config = JSON.parse(configContent) as MintlifyTsDocsConfig;
+        const config = SecurityUtils.parseJsonSafe<MintlifyTsDocsConfig>(configContent);
 
         // Update templates configuration
         if (!config.templates) {

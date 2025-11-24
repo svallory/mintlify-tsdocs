@@ -189,6 +189,103 @@ export interface ApiExtractorConfig {
 }
 
 /**
+ * Configuration for controlling how API items are rendered in templates.
+ */
+export interface RenderingConfig {
+  /**
+   * Whether to hide the value column in string enum member tables.
+   * For string enums, the value is usually the same as the member name.
+   * @defaultValue true
+   */
+  hideStringEnumValues?: boolean;
+}
+
+/**
+ * Level of coverage requirement for an API item.
+ * @public
+ */
+export type CoverageLevel = 'required' | 'desired' | 'optional';
+
+/**
+ * Rule for determining the coverage level of an API item.
+ * @public
+ */
+export interface CoverageRule {
+  /**
+   * The kind of API item this rule applies to.
+   * e.g., 'Class', 'Interface', 'Method', 'Property'
+   */
+  kind: string | string[];
+
+  /**
+   * The TypeScript visibility of the item.
+   * e.g., 'public', 'protected', 'private'
+   */
+  visibility?: 'public' | 'protected' | 'private' | ('public' | 'protected' | 'private')[];
+
+  /**
+   * The TSDoc release tag of the item.
+   * e.g., 'public', 'beta', 'alpha', 'internal', 'none'
+   */
+  releaseTag?: string | string[];
+
+  /**
+   * The coverage level for this item.
+   * Default: 'required'
+   */
+  level: CoverageLevel;
+}
+
+/**
+ * Configuration for the coverage command.
+ * @public
+ */
+export interface CoverageConfig {
+  /**
+   * Minimum coverage percentage required to pass.
+   * Default: 80
+   */
+  threshold?: number;
+
+  /**
+   * Whether to include internal items in coverage calculation.
+   * Default: false
+   * @deprecated Use `rules` for more granular control.
+   */
+  includeInternal?: boolean;
+
+  /**
+   * Glob patterns for files to include in coverage calculation.
+   * Matches against the source file path of the API item.
+   * @example ["src/utils/**\/*.ts"]
+   */
+  include?: string[];
+
+  /**
+   * Glob patterns for files to exclude from coverage calculation.
+   * Matches against the source file path of the API item.
+   * @example ["**\/*.test.ts"]
+   */
+  exclude?: string[];
+
+  /**
+   * How to group the coverage report.
+   * - `file`: Group by source file
+   * - `folder`: Group by source folder
+   * - `kind`: Group by API item kind (Class, Interface, etc.)
+   * - `none`: No grouping (flat list of items if verbose, or just summary)
+   * @defaultValue "none"
+   */
+  groupBy?: 'file' | 'folder' | 'kind' | 'none';
+
+  /**
+   * Granular rules for coverage calculation.
+   * Rules are evaluated in order. The first matching rule determines the level.
+   */
+  rules?: CoverageRule[];
+}
+
+/**
  * Configuration for customizing documentation templates.
  * Templates control how API items are rendered in MDX format.
  */
@@ -214,6 +311,11 @@ export interface TemplateConfig {
    * @defaultValue true
    */
   strict?: boolean;
+
+  /**
+   * Configuration for controlling how API items are rendered.
+   */
+  rendering?: RenderingConfig;
 }
 
 /**
@@ -291,6 +393,22 @@ export interface MintlifyTsDocsConfig {
    * Configuration is written to .tsdocs/api-extractor.json during generation.
    */
   apiExtractor?: ApiExtractorConfig;
+
+  /**
+   * Coverage configuration.
+   * Settings for the `coverage` command.
+   */
+  coverage?: CoverageConfig;
+}
+
+/**
+ * Resolved rendering configuration with all defaults applied.
+ */
+export interface ResolvedRenderingConfig {
+  /**
+   * Whether to hide the value column in string enum member tables
+   */
+  hideStringEnumValues: boolean;
 }
 
 /**
@@ -312,6 +430,11 @@ export interface ResolvedTemplateConfig {
    * Whether strict mode is enabled for templates
    */
   strict: boolean;
+
+  /**
+   * Resolved rendering configuration
+   */
+  rendering: ResolvedRenderingConfig;
 }
 
 /**
@@ -364,4 +487,9 @@ export interface ResolvedConfig {
    * Resolved API Extractor configuration
    */
   apiExtractor: ApiExtractorConfig;
+
+  /**
+   * Resolved coverage configuration
+   */
+  coverage?: CoverageConfig;
 }

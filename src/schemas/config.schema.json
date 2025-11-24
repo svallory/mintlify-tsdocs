@@ -57,6 +57,17 @@
           "description": "Whether to use strict mode for templates. Defaults to true.",
           "type": "boolean",
           "default": true
+        },
+        "rendering": {
+          "description": "Configuration for controlling how API items are rendered.",
+          "type": "object",
+          "properties": {
+            "hideStringEnumValues": {
+              "description": "Whether to hide the value column in string enum member tables. For string enums, the value is usually the same as the member name. Defaults to true.",
+              "type": "boolean",
+              "default": true
+            }
+          }
         }
       }
     },

@@ -23,6 +23,8 @@ export interface ApiResolutionCacheOptions {
 
 /**
  * Simple LRU cache for API resolution results
+ *
+ * @see /architecture/caching-layer - Caching architecture details
  */
 export class ApiResolutionCache {
   private readonly _cache: Map<string, IResolveDeclarationReferenceResult>;
@@ -128,18 +130,53 @@ export class ApiResolutionCache {
     declarationReference: any,
     contextApiItem?: ApiItem
   ): string {
-    // Use toString() instead of JSON.stringify to avoid circular structure issues
-    // DeclarationReference objects can contain ParserContext with circular references
+    // Create a unique key by serializing the actual object structure
+    // We can't use JSON.stringify due to circular references, but we can extract
+    // the key identifying properties
     let refString: string;
     try {
-      // Try to use the object's toString method if available
-      refString = declarationReference?.toString?.() || String(declarationReference);
-    } catch {
-      // Fallback: create a simple string representation
-      refString = `${declarationReference?.packageName || 'pkg'}:${declarationReference?.memberReferences?.length || 0}`;
+      // Build a unique key from the reference's structure
+      const parts: string[] = [];
+
+      // Add package name
+      if (declarationReference?.packageName) {
+        parts.push(`pkg:${declarationReference.packageName}`);
+      }
+
+      // Add member references with full details
+      if (declarationReference?.memberReferences && Array.isArray(declarationReference.memberReferences)) {
+        const memberParts = declarationReference.memberReferences.map((member: any) => {
+          const memberInfo: string[] = [];
+          if (member.memberIdentifier) memberInfo.push(`id:${member.memberIdentifier}`);
+          if (member.memberSymbol) memberInfo.push(`sym:${member.memberSymbol}`);
+          if (member.name) memberInfo.push(`name:${member.name}`);
+          return memberInfo.join(',');
+        });
+        parts.push(`members:[${memberParts.join(';')}]`);
+      }
+
+      // Add any other identifying data that makes this reference unique
+      if (declarationReference?.data) {
+        parts.push(`data:${String(declarationReference.data)}`);
+      }
+
+      // Use toString() as last resort but include it along with structured data
+      // This ensures we differentiate objects with same toString() but different data
+      const toStringValue = declarationReference?.toString?.();
+      if (toStringValue) {
+        parts.push(`str:${toStringValue}`);
+      }
+
+      refString = parts.length > 0 ? parts.join('|') : String(declarationReference);
+    } catch (error) {
+      // Fallback: create a string representation with object identity
+      // Use multiple properties to minimize collision risk
+      console.warn('Cache key generation fallback used:', error);
+      refString = `${declarationReference?.packageName || 'pkg'}:${declarationReference?.memberReferences?.length || 0}:${declarationReference?.data || 'nodata'}`;
     }
+
     const contextString = contextApiItem?.canonicalReference?.toString() || '';
-    return `${refString}|${contextString}`;
+    return `${refString}||ctx:${contextString}`;
   }
 
   /**

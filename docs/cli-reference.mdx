@@ -244,6 +244,47 @@ mint-tsdocs lint && echo "Docs are good!"
 
 ---
 
+### coverage
+
+Calculate TSDocs coverage for the project.
+
+**Usage:**
+```bash
+mint-tsdocs coverage [OPTIONS]
+```
+
+**Options:**
+- `--threshold NUMBER` - Minimum coverage percentage required to pass (overrides config)
+- `--include GLOB` - Glob pattern for files to include (can be repeated)
+- `--exclude GLOB` - Glob pattern for files to exclude (can be repeated)
+- `--group-by TYPE` - Group results by `file`, `folder`, or `none` (default: `none`)
+- `--json` - Output report in JSON format
+- `--skip-extractor` - Skip running api-extractor (use existing .api.json files)
+
+**Examples:**
+```bash
+# Check coverage with default threshold (80%)
+mint-tsdocs coverage
+
+# Set custom threshold
+mint-tsdocs coverage --threshold 90
+
+# Filter files
+mint-tsdocs coverage --include "src/utils/**/*"
+
+# Group by file
+mint-tsdocs coverage --group-by file
+
+# Output JSON for CI
+mint-tsdocs coverage --json > coverage.json
+```
+
+**Exit Codes:**
+- `0` - Coverage meets or exceeds threshold
+- `1` - Coverage is below threshold
+
+---
+
 ### help
 
 Display comprehensive help information.

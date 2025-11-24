@@ -1,0 +1,44 @@
+---
+title: "executeAsync"
+icon: "function"
+description: "Execute a function with error boundary protection."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# executeAsync
+
+## Summary
+
+Execute a function with error boundary protection.  
+## Signature
+
+```typescript
+executeAsync<T>(operation: () => Promise<T>, context?: ErrorContext, fallback?: () => Promise<T>): Promise<ErrorResult<T>>;
+```
+
+## Parameters
+
+### operation
+**Type**:`() => Promise<T>`
+
+The function to execute
+
+### context
+**Type**:<Link kind="ref" target="mint-tsdocs.ErrorContext">`ErrorContext`</Link>
+**Optional**: Yes
+
+Context information for error reporting
+
+### fallback
+**Type**:`() => Promise<T>`
+**Optional**: Yes
+
+Optional fallback function to try on error
+
+## Returns
+
+**Type**:<Link kind="ref" target="mint-tsdocs.ErrorResult">`Promise<ErrorResult<T>>`</Link>
+
+Execute a function with error boundary protection.

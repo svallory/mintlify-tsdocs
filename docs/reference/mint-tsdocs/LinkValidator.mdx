@@ -1,0 +1,51 @@
+---
+title: "LinkValidator class"
+icon: "box"
+description: "Validates and resolves link targets for the Link component"
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# LinkValidator
+
+## Summary
+
+Validates and resolves link targets for the Link component 
+## Signature
+
+```typescript
+export declare class LinkValidator 
+```
+
+## Constructors
+
+### constructor
+
+Constructs a new instance of the class
+
+## Properties
+
+*No properties defined.*
+
+## Methods
+
+### clearCache
+
+Clear the validation cache
+
+### getRefId
+
+Generate a RefId from an ApiItem Format: "PackageName.ClassName.MemberName"
+
+### validatePageId
+
+Validate a PageId (documentation page path) For now, we just validate the format - actual file existence would be checked at runtime
+
+### validateRefId
+
+Validate a RefId and return validation result
+
+## Events
+
+*No events defined.*

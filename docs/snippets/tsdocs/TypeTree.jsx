@@ -70,6 +70,7 @@ export const TypeTree = ({
         //       it will NOT update the title on open/close if defaultOpen is true 
         <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
           {properties.map((prop, idx) => (
+            // @ts-expect-error - TypeScript doesn't understand the spread with additional props
             <TypeTree key={idx} {...prop} level={level + 1} />
           ))}
         </Expandable>

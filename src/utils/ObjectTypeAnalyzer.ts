@@ -28,6 +28,8 @@ import { TypeAnalysisCache } from '../cache/TypeAnalysisCache';
 
 /**
  * Analyzes TypeScript type strings to extract nested object properties
+ *
+ * @see /architecture/typeinfo-generation - TypeInfo generation architecture
  */
 export class ObjectTypeAnalyzer {
   private readonly _cache: TypeAnalysisCache;

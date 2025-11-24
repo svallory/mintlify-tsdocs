@@ -4,5 +4,8 @@
   "outputFolder": "docs/reference",
   "docsJson": "docs/docs.json",
   "tabName": "Reference",
-  "groupName": "mint-tsdocs"
+  "groupName": "mint-tsdocs",
+  "templates": {
+    "userTemplateDir": "./templates"
+  }
 }

@@ -4,7 +4,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**mint-tsdocs** generates Mintlify-compatible MDX documentation from TypeScript API documentation. It reads `*.api.json` files produced by [API Extractor](https://api-extractor.com/) and converts them to MDX files with proper frontmatter, navigation integration, and Mintlify-specific components.
+**mint-tsdocs** is a developer CLI tool that generates Mintlify-compatible MDX documentation from TypeScript source code. It bridges the gap between TypeScript libraries/CLIs and [Mintlify](https://mintlify.com/)'s documentation platform, making it as easy to document TypeScript projects as it is to document API SDKs.
+
+### Purpose
+
+Mintlify focuses on creating beautiful documentation sites for API SDKs. mint-tsdocs extends this capability to TypeScript libraries and CLIs by:
+
+- Automatically extracting API documentation from TypeScript source using [API Extractor](https://api-extractor.com/) and [TSDoc](https://tsdoc.org/)
+- Converting type definitions to rich, interactive Mintlify pages with native components (`<ParamField>`, `<ResponseField>`, `<Expandable>`)
+- Managing Mintlify navigation structure (`docs.json`) automatically
+- Providing utilities for documentation quality checks (`lint`, `coverage`, `stats`)
+
+### Target Audience
+
+- **Library Authors** - TypeScript package maintainers who want to generate comprehensive API reference documentation
+- **CLI Tool Developers** - Command-line tool creators documenting their interfaces
+- **Open Source Maintainers** - Project maintainers using Mintlify for documentation sites
+- **Documentation Teams** - Teams maintaining TypeScript API documentation
+
+### Runtime Environments
+
+**Current (v1.x):**
+- **Local Development** - Primary use case: runs on developer machines during documentation authoring
+- **Input Source** - Processes `.d.ts` files (TypeScript declaration files) generated from trusted source code
+- **Threat Model** - Developer tool processing locally-generated files; not exposed to internet traffic
+
+**Planned (v2.x+):**
+- **CI/CD Pipelines** - Automated documentation generation on every commit/PR
+- **SaaS Platform** - Potential hosted service triggered by repository updates
+- **Threat Model Evolution** - Multi-tenant environment with untrusted inputs requires enhanced security
+
+### Security Context
+
+**Critical Priorities (All Environments):**
+- **Command Injection** - CRITICAL: Could execute arbitrary code on developer machines or platform infrastructure
+- **Broken Cache System** - CRITICAL: Causes documentation generation failures and incorrect output
+- **Path Traversal** - HIGH: Could access sensitive files locally or in multi-tenant environments
+- **Input Validation** - HIGH: Prevents crashes and unpredictable behavior
+
+**Non-Issues (Content Injection):**
+These are NOT security vulnerabilities in any deployment scenario because users control both input (their TypeScript code) and output (their own docs site):
+- **XSS in Components** - User's own code → User's own docs (no cross-user content mixing)
+- **Template Injection** - User explicitly chooses their own templates
+- **JSON Prototype Pollution** - User's own config files
+- **README Injection** - User's own README
+
+**Rationale:** Each user's repository generates their own documentation site. In SaaS, User A's docs are published to docs.example.com/userA and User B's to docs.example.com/userB (or custom domains). There is no cross-user content mixing, so injection attacks only affect the user's own site.
+
+**Exception:** If building an admin dashboard that previews user-generated docs, sanitize content in the admin UI layer (platform concern, not tool concern).
+
+**Future Priorities (CI/CD/SaaS):**
+When running in CI pipelines or as a hosted service, these escalate in priority:
+- **Command Injection** - CRITICAL: RCE on shared infrastructure, potential container escape
+- **Path Traversal** - CRITICAL: Access to other users' data or platform secrets
+- **Resource Exhaustion** - CRITICAL: DoS attacks affecting all users
+- **Information Disclosure** - HIGH: Could leak data between users or expose platform internals
 
 ## Commands
 
@@ -72,10 +126,29 @@ mint-tsdocs customize -t ./templates --force
 # Run tests
 bun test
 
-# Update snapshots (after intentional output changes)
-bun test -- -u
-# or
-bun jest --updateSnapshot
+# Watch mode for development
+bun test:watch
+
+# Generate coverage report
+bun test:coverage
+
+# Open interactive UI
+bun test:ui
+```
+
+**Test Structure:**
+- All tests are in the `test/` directory at project root
+- Tests mirror the `src/` structure: `test/cache/`, `test/cli/`, etc.
+- Helper utilities in `test/helpers/`
+- Test fixtures in `test/fixtures/`
+
+**Running Specific Tests:**
+```bash
+# Run tests for a specific module
+bun test test/cache/ApiResolutionCache.test.ts
+
+# Run tests matching a pattern
+bun test --grep "cache collision"
 ```
 
 ### Linting
@@ -262,9 +335,23 @@ cacheManager.typeAnalysis.set(typeString, result);
 
 ### Testing
 
-- Snapshot tests for MDX output in `src/markdown/test/`
-- Manually verify MDX renders in Mintlify after changes
-- Update snapshots only after intentional changes
+**Current Status:** Testing infrastructure established (v0.0.3)
+
+**Test Coverage:**
+- Cache system (ApiResolutionCache, TypeAnalysisCache, CacheManager)
+- Security utilities (path validation, input sanitization, content escaping)
+- CLI validation (path handling, command injection prevention)
+
+**Known Test Failures:**
+- Some cache tests document existing bugs (cache key collisions) - these failures are intentional
+- See `docs/testing/TEST_PLAN.md` for comprehensive test strategy
+- See `agent/reports/review/` for documented issues
+
+**Testing Best Practices:**
+- Write tests before fixing bugs to document current behavior
+- Keep tests fast (unit tests < 100ms)
+- Use descriptive test names
+- One test should verify one behavior
 
 ### Performance
 

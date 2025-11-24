@@ -1,0 +1,70 @@
+---
+title: "convertApiItem"
+icon: "function"
+description: "Convert an API item to template data"
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# convertApiItem
+
+## Summary
+
+Convert an API item to template data 
+## Signature
+
+```typescript
+convertApiItem(apiItem: ApiItem, options: {
+        pageTitle: string;
+        pageDescription: string;
+        pageIcon: string;
+        breadcrumb: Array<{
+            name: string;
+            path?: string;
+        }>;
+        navigation?: {
+            id: string;
+            title: string;
+            group?: string;
+        };
+        getLinkFilenameForApiItem: (apiItem: ApiItem) => string | undefined;
+    }): ITemplateData;
+```
+
+## Parameters
+
+### apiItem
+**Type**:`ApiItem`
+
+
+
+### options
+**Type**:
+
+```typescript
+{
+        pageTitle: string;
+        pageDescription: string;
+        pageIcon: string;
+        breadcrumb: Array<{
+            name: string;
+            path?: string;
+        }>;
+        navigation?: {
+            id: string;
+            title: string;
+            group?: string;
+        };
+        getLinkFilenameForApiItem: (apiItem: ApiItem) => string | undefined;
+    }
+```
+
+
+
+
+## Returns
+
+**Type**:<Link kind="ref" target="mint-tsdocs.ITemplateData">`ITemplateData`</Link>
+
+Convert an API item to template data

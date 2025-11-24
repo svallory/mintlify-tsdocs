@@ -1,0 +1,77 @@
+---
+title: "CacheManager class"
+icon: "box"
+description: "Centralized cache manager for coordinating all caching operations"
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# CacheManager
+
+## Summary
+
+Centralized cache manager for coordinating all caching operations  
+## Signature
+
+```typescript
+export declare class CacheManager 
+```
+
+## Constructors
+
+### constructor
+
+Constructs a new instance of the class
+
+## Properties
+
+### apiResolution
+**Modifiers**: readonly
+**Type**:<Link kind="ref" target="mint-tsdocs.ApiResolutionCache">`get apiResolution(): ApiResolutionCache;`</Link>
+**Default**: ``
+
+Get the API resolution cache
+
+### typeAnalysis
+**Modifiers**: readonly
+**Type**:<Link kind="ref" target="mint-tsdocs.TypeAnalysisCache">`get typeAnalysis(): TypeAnalysisCache;`</Link>
+**Default**: ``
+
+Get the type analysis cache
+
+## Methods
+
+### clearAll
+
+Clear all caches
+
+### createDefault
+**Modifiers**: static
+
+Create a cache manager with default settings
+
+### createDevelopment
+**Modifiers**: static
+
+Create a cache manager optimized for development
+
+### createProduction
+**Modifiers**: static
+
+Create a cache manager optimized for production
+
+### getStats
+
+Get statistics for all caches
+
+### printStats
+
+Print cache statistics if enabled
+
+## Events
+
+*No events defined.*
+
+## Related Documentation
+- <PageLink target="/architecture/caching-layer">Caching architecture details</PageLink>

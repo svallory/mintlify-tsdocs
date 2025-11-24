@@ -31,10 +31,14 @@
     "bin/"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/schemas lib/ && cp -r src/components lib/ && cp -r src/templates/defaults lib/templates/ && cp src/templates/README.md lib/templates/",
+    "build": "tsc && cp -r src/schemas lib/ && cp -r src/components lib/ && cp src/components/*.d.ts lib/components/ && cp -r src/templates/defaults lib/templates/ && cp src/templates/README.md lib/templates/",
     "clean": "rm -rf lib",
     "rebuild": "bun run clean && bun run build",
     "docs": "node ./bin/mint-tsdocs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
     "postpublish": "bash scripts/publish-alias.sh"
   },
   "bin": {
@@ -58,18 +62,25 @@
     "debug": "^4.4.3",
     "ejs": "^3.1.10",
     "liquidjs": "^10.24.0",
+    "minimatch": "^10.1.1",
     "react": "18",
     "resolve": "~1.22.11"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^18.19.130",
     "@types/react": "18",
     "@types/resolve": "1.20.2",
     "@typescript-eslint/parser": "^8.47.0",
+    "@vitest/coverage-v8": "^4.0.13",
+    "@vitest/ui": "^4.0.13",
     "eslint": "^9.39.1",
     "eslint-plugin-tsdoc": "^0.5.0",
-    "typescript": "^5.9.3"
+    "happy-dom": "^20.0.10",
+    "type-fest": "^5.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.13"
   }
 }

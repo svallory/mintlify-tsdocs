@@ -6,6 +6,7 @@ import { HelpAction } from './HelpAction';
 import { VersionAction } from './VersionAction';
 import { ShowAction } from './ShowAction';
 import { LintAction } from './LintAction';
+import { CoverageAction } from './CoverageAction';
 
 /**
  * Main CLI parser for the mint-tsdocs tool.
@@ -15,6 +16,8 @@ import { LintAction } from './LintAction';
  * - `init`: Initialize a project with mint-tsdocs configuration
  * - `generate`: Run api-extractor and generate MDX documentation files
  * - `customize`: Create customizable template files for documentation generation
+ *
+ * @see /cli-reference - Complete CLI command reference
  *
  * @public
  */
@@ -95,7 +98,7 @@ export class DocumenterCli extends CommandLineParser {
     const firstArg = actualArgs[0];
 
     // If first arg doesn't start with '-' and isn't a known action, treat it as a directory for generate
-    const knownActions = ['init', 'generate', 'customize', 'show', 'lint', 'help', 'version', '--help', '-h', '--version', '-v'];
+    const knownActions = ['init', 'generate', 'customize', 'show', 'lint', 'coverage', 'help', 'version', '--help', '-h', '--version', '-v'];
     if (!firstArg.startsWith('-') && !knownActions.includes(firstArg)) {
       // Treat as positional argument for generate
       // Insert 'generate' action and pass remaining args as remainder
@@ -117,6 +120,7 @@ export class DocumenterCli extends CommandLineParser {
     this.addAction(new CustomizeAction());
     this.addAction(new ShowAction());
     this.addAction(new LintAction());
+    this.addAction(new CoverageAction(this));
     this.addAction(new HelpAction(this));
     this.addAction(new VersionAction());
   }

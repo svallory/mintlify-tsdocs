@@ -13,6 +13,9 @@ export interface IDocTableParameters extends IDocNodeParameters {
 
 /**
  * Represents table, similar to an HTML `<table>` element.
+ *
+ * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
+ * @see /tsdoc-reference - TSDoc reference
  */
 export class DocTable extends DocNode {
   public readonly header: DocTableRow;

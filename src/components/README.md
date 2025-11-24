@@ -139,6 +139,92 @@ import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx";
 
 ---
 
+### `RefLink.jsx`
+
+Specialized link component for API references with compile-time type safety and runtime validation.
+
+**Purpose:**
+Create type-safe links to API documentation pages (classes, interfaces, functions, etc.) with automatic broken link detection.
+
+**Key Features:**
+
+- ✅ Compile-time type safety via TypeScript union types
+- ✅ Runtime validation highlights broken links with CSS class
+- ✅ IDE autocomplete for valid API references
+- ✅ SSR-safe (validation only runs client-side)
+- ✅ Automatic path generation from RefId
+- ✅ Visual feedback for invalid links
+
+**Props:**
+
+| Prop       | Type        | Default  | Description                    |
+| ---------- | ----------- | -------- | ------------------------------ |
+| `target`   | `RefId`     | required | API reference identifier       |
+| `children` | `ReactNode` | optional | Link text (defaults to target) |
+
+**Usage Example:**
+
+```jsx
+import { RefLink } from "/snippets/tsdocs/RefLink.jsx";
+
+<RefLink target="mint-tsdocs.MarkdownDocumenter">MarkdownDocumenter</RefLink>
+<RefLink target="mint-tsdocs.CacheManager.createProduction">Create Production Cache</RefLink>
+
+// Broken link will have class "broken-link" and title with error message
+<RefLink target="mint-tsdocs.NonExistentClass">Broken Link</RefLink>
+```
+
+**CSS Styling:**
+
+Add to your CSS to style broken links:
+
+```css
+.broken-link {
+  color: #ef4444 !important;
+  text-decoration: wavy underline;
+  border-bottom: 2px dotted red;
+}
+```
+
+---
+
+### `PageLink.jsx`
+
+Specialized link component for documentation pages with compile-time type safety and runtime validation.
+
+**Purpose:**
+Create type-safe links to documentation pages with automatic broken link detection.
+
+**Key Features:**
+
+- ✅ Compile-time type safety via TypeScript union types
+- ✅ Runtime validation highlights broken links with CSS class
+- ✅ IDE autocomplete for valid page paths
+- ✅ SSR-safe (validation only runs client-side)
+- ✅ Automatic path formatting
+- ✅ Visual feedback for invalid links
+
+**Props:**
+
+| Prop       | Type        | Default  | Description                    |
+| ---------- | ----------- | -------- | ------------------------------ |
+| `target`   | `PageId`    | required | Documentation page identifier  |
+| `children` | `ReactNode` | optional | Link text (defaults to target) |
+
+**Usage Example:**
+
+```jsx
+import { PageLink } from "/snippets/tsdocs/PageLink.jsx";
+
+<PageLink target="introduction">Introduction</PageLink>
+<PageLink target="components/type-tree">TypeTree Component</PageLink>
+
+// Broken link will have class "broken-link" and title with error message
+<PageLink target="non-existent-page">Broken Link</PageLink>
+```
+
+---
+
 ### `TypeTreeGroup.jsx`
 
 Wrapper component for grouping multiple `TypeTree` components.

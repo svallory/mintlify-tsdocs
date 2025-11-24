@@ -4,6 +4,8 @@ import { CustomDocNodeKind } from './CustomDocNodeKind';
 /**
  * Represents an Expandable component for Mintlify documentation.
  * Renders as: <Expandable title="...">...</Expandable>
+ *
+ * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
  */
 export class DocExpandable extends DocNode {
   public readonly title: string;

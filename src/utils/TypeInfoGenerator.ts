@@ -39,6 +39,9 @@ interface TypeInfo {
 
 /**
  * Generates TypeInfo.jsx file with type information for documentation
+ *
+ * @see /architecture/typeinfo-generation - TypeInfo generation architecture
+ * @see /components/type-info - TypeInfo component usage
  */
 export class TypeInfoGenerator {
   private readonly _apiModel: ApiModel;
@@ -150,23 +153,49 @@ export class TypeInfoGenerator {
     const nextSpaces = '  '.repeat(indent + 1);
 
     if (Array.isArray(obj)) {
-      return 'TypeTreeProperty[]';
+      // For arrays, generate a tuple type with all elements
+      if (obj.length === 0) {
+        return '[]';
+      }
+      // Generate detailed tuple type for property arrays
+      const tupleElements = obj.map(item => this._generateTypeDeclaration(item, indent + 1));
+      return `[\n${nextSpaces}${tupleElements.join(`,\n${nextSpaces}`)}\n${spaces}]`;
     }
 
     if (typeof obj !== 'object' || obj === null) {
       return typeof obj;
     }
 
-    // Check if this is a TypeInfo property object
-    if (obj.name && obj.type && !obj.properties) {
-      return 'TypeTreeProperty';
+    // Check if this is a TypeInfo property object (has name, type)
+    if (obj.name && obj.type) {
+      const lines: string[] = ['{'];
+      lines.push(`${nextSpaces}name: ${JSON.stringify(obj.name)};`);
+      lines.push(`${nextSpaces}type: ${JSON.stringify(obj.type)};`);
+
+      if (obj.description !== undefined) {
+        lines.push(`${nextSpaces}description?: ${JSON.stringify(obj.description)};`);
+      }
+      if (obj.required !== undefined) {
+        lines.push(`${nextSpaces}required?: ${obj.required};`);
+      }
+      if (obj.deprecated !== undefined) {
+        lines.push(`${nextSpaces}deprecated?: ${obj.deprecated};`);
+      }
+      if (obj.defaultValue !== undefined) {
+        lines.push(`${nextSpaces}defaultValue?: ${JSON.stringify(obj.defaultValue)};`);
+      }
+
+      // Recursively generate type for nested properties
+      if (obj.properties && Array.isArray(obj.properties)) {
+        const propertiesType = this._generateTypeDeclaration(obj.properties, indent + 1);
+        lines.push(`${nextSpaces}properties?: ${propertiesType};`);
+      }
+
+      lines.push(`${spaces}}`);
+      return lines.join('\n');
     }
 
-    if (obj.name && obj.type && obj.properties) {
-      return 'TypeTreeProperty';
-    }
-
-    // Otherwise, it's a nested structure - generate object type
+    // Otherwise, it's a nested structure (package/items) - generate object type
     const entries = Object.entries(obj);
     if (entries.length === 0) {
       return '{}';

@@ -1,0 +1,42 @@
+---
+title: "writeTentative"
+icon: "function"
+description: "Writes before and after messages if and only if mayWrite writes anything. If mayWrite writes \"CONTENT\", this method will write \"&lt;before&gt;CONTENT&lt;after&gt;\". If mayWrite writes nothing, this method will write nothing."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# writeTentative
+
+## Summary
+
+Writes <code>before</code> and <code>after</code> messages if and only if <code>mayWrite</code> writes anything.  If <code>mayWrite</code> writes &quot;CONTENT&quot;, this method will write &quot;CONTENT&quot;. If <code>mayWrite</code> writes nothing, this method will write nothing. 
+## Signature
+
+```typescript
+writeTentative(before: string, after: string, mayWrite: () => void): void;
+```
+
+## Parameters
+
+### before
+**Type**:`string`
+
+
+
+### after
+**Type**:`string`
+
+
+
+### mayWrite
+**Type**:`() => void`
+
+
+
+## Returns
+
+**Type**:`void`
+
+Writes and messages if and only if writes anything.If writes "CONTENT", this method will write "CONTENT". If writes nothing, this method will write nothing.

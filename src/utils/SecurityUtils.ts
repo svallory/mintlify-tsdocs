@@ -54,18 +54,31 @@ export class SecurityUtils {
       throw new Error('Filename cannot be empty');
     }
 
+    // Check for dangerous patterns BEFORE calling basename (which strips them)
+    // This prevents path traversal attacks
+    if (filename.includes('..') || filename.includes('~')) {
+      throw new Error(`Invalid filename: "${filename}" contains dangerous characters`);
+    }
+
+    // Check if input starts with absolute path
+    // We allow paths like '/path/to/file.md' (strip to 'file.md')
+    // But reject single-component absolute paths like '/root'
+    const isAbsolutePath = filename.startsWith('/');
+    const hasMultipleComponents = filename.split('/').filter(Boolean).length > 1;
+
     // Remove any path components (prevent directory traversal)
     const basename = path.basename(filename);
+
+    // Reject if the input was an absolute path to a single file
+    // (e.g., '/root' should be rejected, but '/path/to/file.md' → 'file.md' is OK)
+    if (isAbsolutePath && !hasMultipleComponents) {
+      throw new Error(`Invalid filename: "${filename}" contains dangerous characters`);
+    }
 
     // Check for reserved filenames
     const upperName = basename.toUpperCase();
     if (this.RESERVED_FILENAMES.has(upperName)) {
       throw new Error(`Reserved filename detected: "${basename}"`);
-    }
-
-    // Check for path traversal patterns
-    if (basename.includes('..') || basename.includes('~') || basename.startsWith('/')) {
-      throw new Error(`Invalid filename: "${basename}" contains dangerous characters`);
     }
 
     // Validate filename length
@@ -178,7 +191,7 @@ export class SecurityUtils {
     const dangerousPatterns = [
       /[;&|`]/,           // Command separators and pipes
       /\$\(/,             // Command substitution
-      /<.*>/,             // Redirection
+      /[<>]/,             // Redirection operators (both < and >)
       /\n|\r/             // Newlines that could break commands
     ];
 
@@ -242,5 +255,29 @@ export class SecurityUtils {
     }
 
     return trimmed;
+  }
+
+  /**
+   * Safely parses JSON with prototype pollution protection.
+   * Filters out dangerous keys like __proto__, constructor, and prototype.
+   *
+   * @param jsonString - The JSON string to parse
+   * @returns Parsed JSON object with dangerous keys filtered out
+   * @throws Error if JSON parsing fails
+   *
+   * @example
+   * ```typescript
+   * const safe = SecurityUtils.parseJsonSafe<MyType>('{"name": "test", "__proto__": "evil"}');
+   * // Returns: { name: "test" }
+   * ```
+   */
+  public static parseJsonSafe<T = any>(jsonString: string): T {
+    return JSON.parse(jsonString, (key, value) => {
+      // Filter out prototype pollution keys
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return undefined;
+      }
+      return value;
+    });
   }
 }

@@ -11,6 +11,8 @@ export interface IDocHeadingParameters extends IDocNodeParameters {
 
 /**
  * Represents a section header similar to an HTML `<h1>` or `<h2>` element.
+ *
+ * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
  */
 export class DocHeading extends DocNode {
   public readonly title: string;

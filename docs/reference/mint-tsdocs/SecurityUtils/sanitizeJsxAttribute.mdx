@@ -1,0 +1,38 @@
+---
+title: "sanitizeJsxAttribute"
+icon: "function"
+description: "Sanitizes text for safe use in JSX attributes. Prevents JSX injection and ensures proper escaping."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# sanitizeJsxAttribute
+
+## Summary
+
+Sanitizes text for safe use in JSX attributes. Prevents JSX injection and ensures proper escaping.  
+## Signature
+
+```typescript
+static sanitizeJsxAttribute(text: string, attributeName?: string): string;
+```
+
+## Parameters
+
+### text
+**Type**:`string`
+
+The text to sanitize
+
+### attributeName
+**Type**:`string`
+**Optional**: Yes
+
+The name of the JSX attribute (optional, for context-specific handling)
+
+## Returns
+
+**Type**:`string`
+
+Sanitizes text for safe use in JSX attributes. Prevents JSX injection and ensures proper escaping.

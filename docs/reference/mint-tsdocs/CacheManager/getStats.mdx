@@ -1,0 +1,44 @@
+---
+title: "getStats"
+icon: "function"
+description: "Get statistics for all caches"
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# getStats
+
+## Summary
+
+Get statistics for all caches 
+## Signature
+
+```typescript
+getStats(): {
+        enabled: boolean;
+        typeAnalysis: ReturnType<TypeAnalysisCache['getStats']>;
+        apiResolution: ReturnType<ApiResolutionCache['getStats']>;
+        totalHitRate: number;
+    };
+```
+
+## Parameters
+
+*This method takes no parameters.*
+
+## Returns
+
+**Type**:
+
+```typescript
+{
+        enabled: boolean;
+        typeAnalysis: ReturnType<TypeAnalysisCache['getStats']>;
+        apiResolution: ReturnType<ApiResolutionCache['getStats']>;
+        totalHitRate: number;
+    }
+```
+
+
+Get statistics for all caches

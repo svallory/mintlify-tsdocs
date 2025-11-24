@@ -1,0 +1,47 @@
+// @ts-nocheck
+/**
+ * PageLink Component
+ *
+ * A specialized link component for documentation pages only.
+ * Simpler API than Link component - no kind attribute needed.
+ *
+ * Type safety is provided at compile-time via TypeScript.
+ * Runtime validation highlights broken links with "broken-link" CSS class.
+ *
+ * @version 1.1.0
+ */
+
+import { VALID_PAGES } from './ValidPages';
+
+/**
+ * PageLink - Link component specifically for documentation pages
+ *
+ * @param {Object} props - Component properties
+ * @param {string} props.target - Documentation page identifier (PageId)
+ * @param {*} [props.children] - Link text content (defaults to target if not provided)
+ *
+ * @example
+ * <PageLink target="introduction">Introduction</PageLink>
+ * <PageLink target="components/type-tree">TypeTree Component</PageLink>
+ */
+export const PageLink = ({ target, children }) => {
+  const linkText = children || target;
+
+  // Generate path - prefix with / if not already there
+  let path = target;
+  if (!path.startsWith('/')) {
+    path = `/${target}`;
+  }
+
+  // Runtime validation - only runs client-side
+  // Gracefully handles SSR where VALID_PAGES might not be available
+  const isValid = typeof VALID_PAGES !== 'undefined' && VALID_PAGES.has(target);
+  const className = isValid === false ? 'tsdocs-pagelink broken-link' : 'tsdocs-pagelink';
+  const title = isValid === false ? `Broken page link: ${target}` : undefined;
+
+  return (
+    <a href={path} className={className} title={title}>
+      {linkText}
+    </a>
+  );
+};

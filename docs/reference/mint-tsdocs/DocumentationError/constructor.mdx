@@ -1,0 +1,44 @@
+---
+title: "constructor"
+icon: "function"
+description: "Creates an instance of DocumentationError."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# constructor
+
+## Summary
+
+Creates an instance of DocumentationError.  
+## Signature
+
+```typescript
+constructor(message: string, code?: ErrorCode, context?: ErrorContext, isUserError?: boolean);
+```
+
+## Parameters
+
+### message
+- **Type**:`string`
+
+The primary, human-readable error message.
+
+### code
+- **Type**:<Link kind="ref" target="mint-tsdocs.ErrorCode">`ErrorCode`</Link>
+- **Optional**: Yes
+
+The standardized error code.
+
+### context
+- **Type**:<Link kind="ref" target="mint-tsdocs.ErrorContext">`ErrorContext`</Link>
+- **Optional**: Yes
+
+Additional structured context about the error.
+
+### isUserError
+- **Type**:`boolean`
+- **Optional**: Yes
+
+Whether the error is a user-facing error.

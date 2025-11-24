@@ -8,6 +8,8 @@ export interface IDocNoteBoxParameters extends IDocNodeParameters {}
 
 /**
  * Represents a note box, which is typically displayed as a bordered box containing informational text.
+ *
+ * @see /architecture/ast-nodes-layer - Custom AST nodes architecture
  */
 export class DocNoteBox extends DocNode {
   public readonly content: DocSection;

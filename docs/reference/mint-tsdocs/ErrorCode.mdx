@@ -1,0 +1,49 @@
+---
+title: "ErrorCode enum"
+icon: "list"
+description: "Provides structured error information for better error handling and debugging. These codes are used to categorize errors and allow for programmatic handling."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# ErrorCode
+
+## Summary
+
+Provides structured error information for better error handling and debugging. These codes are used to categorize errors and allow for programmatic handling.   string 
+## Members
+
+| Member | Description |
+| ------ | ----------- |
+| `API_EXTRACTOR_ERROR` | An error occurred during the run. |
+| `API_LOAD_ERROR` | A failure occurred when loading an API model file (). |
+| `API_PARSE_ERROR` | An error occurred while parsing the content of an API model file. |
+| `COMMAND_FAILED` | A command-line tool or external process failed to execute. |
+| `COMMAND_INJECTION` | A potential command injection attempt was detected. |
+| `CONFIG_NOT_FOUND` | The main configuration file (e.g., ) was not found. |
+| `DANGEROUS_INPUT` | Input is considered dangerous (e.g., contains unsafe scripts). |
+| `DIRECTORY_NOT_FOUND` | Indicates that a directory could not be found. |
+| `DOCS_JSON_PARSE_ERROR` | Failed to parse the file for navigation. |
+| `DOCS_JSON_WRITE_ERROR` | Failed to write the file. |
+| `FILE_NOT_FOUND` | Indicates that a file could not be found at the specified path. |
+| `FILE_READ_ERROR` | Indicates a failure to read from a file (e.g., permissions). |
+| `FILE_WRITE_ERROR` | Indicates a failure to write to a file (e.g., permissions, disk full). |
+| `INVALID_API_JSON` | The API model JSON is structurally invalid or missing required fields. |
+| `INVALID_CONFIGURATION` | The configuration is invalid or contains conflicting settings. |
+| `INVALID_FILENAME` | Indicates that a filename is invalid for the operating system. |
+| `INVALID_MARKDOWN` | The markdown content is invalid or malformed. |
+| `INVALID_PARAMETER_VALUE` | A parameter in the configuration has an invalid value. |
+| `MISSING_REQUIRED_PARAMETER` | A required parameter or setting is missing from the configuration. |
+| `NAVIGATION_ERROR` | An error occurred while generating or processing documentation navigation. |
+| `PATH_TRAVERSAL` | Represents a path traversal attempt, a security-related file system error. |
+| `RENDER_ERROR` | A general error during the final rendering stage. |
+| `SECURITY_VIOLATION` | A general security violation that doesn't fit other categories. |
+| `TEMPLATE_COMPILE_ERROR` | An error occurred while compiling a template. |
+| `TEMPLATE_ERROR` | A generic error related to templating. |
+| `TEMPLATE_NOT_FOUND` | A required template file (e.g., ) was not found. |
+| `TEMPLATE_RENDER_ERROR` | An error occurred while rendering a template with data. |
+| `TYPE_ANALYSIS_ERROR` | An error occurred during TypeScript type analysis. |
+| `UNKNOWN_ERROR` | An unknown or unexpected error occurred. This is the default error code. |
+| `USER_CANCELLED` | The user cancelled the operation (e.g., via a CLI prompt). |
+| `VALIDATION_ERROR` | A validation rule failed. Used for general-purpose validation. |

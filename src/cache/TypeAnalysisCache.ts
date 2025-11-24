@@ -23,6 +23,8 @@ export interface TypeAnalysisCacheOptions {
 
 /**
  * Simple LRU cache for type analysis results
+ *
+ * @see /architecture/caching-layer - Caching architecture details
  */
 export class TypeAnalysisCache {
   private readonly _cache: Map<string, TypeAnalysis>;

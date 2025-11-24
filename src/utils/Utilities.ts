@@ -65,4 +65,40 @@ export class Utilities {
       return sanitized;
     }
   }
+
+  /**
+   * Converts bad filename characters to underscores while preserving original casing.
+   * Validates filename to prevent security vulnerabilities.
+   * Used for nested folder structure where case-sensitive names are desired.
+   */
+  public static getSafeFilenamePreservingCase(name: string): string {
+    // Use the SecurityUtils for comprehensive filename validation
+    try {
+      // First validate the name as a safe filename
+      const validatedName = SecurityUtils.validateFilename(name);
+
+      // Apply sanitization without lowercasing
+      return validatedName.replace(Utilities._badFilenameCharsRegExp, '_');
+    } catch (error) {
+      // If validation fails, provide a secure fallback
+      debug.warn(`Warning: Invalid filename "${name}" detected, using sanitized fallback`);
+
+      // Remove path traversal patterns and dangerous characters
+      const sanitized = name
+        .replace(/\.{2,}/g, '') // Remove multiple dots
+        .replace(/[~\/\\]/g, '') // Remove path characters
+        .replace(Utilities._badFilenameCharsRegExp, '_')
+        .substring(0, 50); // Limit length (preserve case)
+
+      if (!sanitized || sanitized.length === 0) {
+        throw new DocumentationError(
+          `Cannot create safe filename from: "${name}"`,
+          ErrorCode.INVALID_FILENAME,
+          { resource: name, operation: 'getSafeFilenamePreservingCase' }
+        );
+      }
+
+      return sanitized;
+    }
+  }
 }

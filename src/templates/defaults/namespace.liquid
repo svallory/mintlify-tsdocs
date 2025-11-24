@@ -1,6 +1,15 @@
 {% layout "layout" %}
 
 {% block content %}
+
+{% if apiItem.signature %}
+## Signature
+
+```typescript
+{{ apiItem.signature }}
+```
+{% endif %}
+
 ## Abstract Classes
 
 {% if abstractClasses and abstractClasses.size > 0 %}

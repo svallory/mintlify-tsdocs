@@ -4,18 +4,24 @@
 ## Members
 
 {% if members and members.size > 0 %}
-{% for member in members %}
-### {{ member.title }}
+{%- assign showValues = true -%}
+{%- if rendering and rendering.hideStringEnumValues == true -%}
+  {%- assign showValues = false -%}
+{%- endif -%}
 
-{% if member.defaultValue %}
-**Value**: `{{ member.defaultValue }}`
-{% endif %}
-
-{% if member.description %}
-{{ member.description }}
-{% endif %}
-
-{% endfor %}
+{%- if showValues -%}
+| Member | Value | Description |
+| ------ | ----- | ----------- |
+{%- for member in members %}
+| `{{ member.title }}` | `{{ member.defaultValue }}` | {{ member.description | default: "" }} |
+{%- endfor %}
+{%- else -%}
+| Member | Description |
+| ------ | ----------- |
+{%- for member in members %}
+| `{{ member.title }}` | {{ member.description | default: "" }} |
+{%- endfor %}
+{%- endif -%}
 {% else %}
 *No members defined.*
 {% endif %}

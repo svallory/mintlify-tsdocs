@@ -1,0 +1,95 @@
+---
+title: Coverage Calculation
+description: Understanding how mint-tsdocs calculates documentation coverage
+---
+
+The `coverage` command helps you track the completeness of your API documentation. This guide explains how coverage is calculated and how to interpret the results.
+
+## How Coverage Works
+
+mint-tsdocs uses [API Extractor](https://api-extractor.com/) to analyze your project's exported API surface. This ensures that we only count items that are actually part of your public API, ignoring internal implementation details.
+
+### What is Counted?
+
+The coverage calculation includes the following API items if they are exported from your entry point:
+
+- Classes
+- Interfaces
+- Functions
+- Enums
+- Type Aliases
+- Variables (const/let)
+- Namespaces
+
+For container items like Classes and Interfaces, their members (methods, properties) are also counted recursively.
+
+### What is Considered "Documented"?
+
+An API item is considered documented if it has a TSDoc comment block associated with it.
+
+```typescript
+/**
+ * This function is counted as documented.
+ */
+export function documentedFunction() {}
+
+// This function is counted as undocumented.
+export function undocumentedFunction() {}
+```
+
+### Internal Items
+
+By default, items marked with the `@internal` release tag are **excluded** from coverage calculations. This allows you to have public-facing types that are not meant for consumers without negatively impacting your coverage score.
+
+```typescript
+/**
+ * This item is excluded from coverage by default.
+ * @internal
+ */
+export class InternalHelper {}
+```
+
+You can include internal items in the calculation by setting `includeInternal: true` in your configuration or using the `--include-internal` flag (if supported).
+
+## Configuration
+
+You can configure coverage settings in `mint-tsdocs.config.json`:
+
+```json
+{
+  "coverage": {
+    "threshold": 80,
+    "includeInternal": false,
+    "include": ["src/core/**/*.ts"],
+    "exclude": ["**/*.test.ts"],
+    "groupBy": "file"
+  }
+}
+```
+
+## Filtering
+
+You can filter which files are included in the coverage calculation using glob patterns.
+
+- **Include**: Only items defined in files matching these patterns are counted.
+- **Exclude**: Items defined in files matching these patterns are ignored.
+
+This is useful for excluding generated code, test utilities, or legacy parts of the codebase.
+
+## Grouping
+
+The coverage report can be grouped to help you identify areas that need attention.
+
+- **None**: Shows a single total percentage.
+- **File**: Breaks down coverage by source file.
+- **Folder**: Breaks down coverage by source folder.
+
+## CI/CD Integration
+
+The `coverage` command exits with code `1` if the coverage percentage is below the configured threshold (default 80%). This makes it easy to integrate into your CI/CD pipeline to prevent regressions in documentation quality.
+
+```yaml
+# Example GitHub Actions step
+- name: Check Documentation Coverage
+  run: npx mint-tsdocs coverage --threshold 90
+```

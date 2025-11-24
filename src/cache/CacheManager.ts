@@ -37,6 +37,13 @@ export interface CacheManagerOptions {
 
 /**
  * Centralized cache manager for coordinating all caching operations
+ *
+ * This class manages all caching operations in mint-tsdocs. To understand how caching
+ * fits into the overall architecture, check the {@link /architecture/caching-layer | Caching Layer}
+ * documentation. The cache system includes {@link TypeAnalysisCache | type analysis caching}
+ * and {@link ApiResolutionCache | API resolution caching}.
+ *
+ * @see /architecture/caching-layer - Caching architecture details
  */
 export class CacheManager {
   private readonly _typeAnalysisCache: TypeAnalysisCache;
@@ -187,10 +194,23 @@ let globalCacheManager: CacheManager | null = null;
 
 /**
  * Get the global cache manager instance
+ *
+ * @param options - Cache configuration options (only used on first call)
+ * @throws {Error} If options are provided after the global cache manager has already been initialized
+ *
+ * @remarks
+ * The global cache manager is a singleton. Options can only be provided on the first call.
+ * If you need to reconfigure, call {@link resetGlobalCacheManager} first, or create a
+ * new instance with `new CacheManager(options)` instead.
  */
 export function getGlobalCacheManager(options?: CacheManagerOptions): CacheManager {
   if (!globalCacheManager) {
     globalCacheManager = new CacheManager(options);
+  } else if (options) {
+    throw new Error(
+      'Global CacheManager already initialized with different options. ' +
+      'Call resetGlobalCacheManager() first to reconfigure, or use new CacheManager(options) for a separate instance.'
+    );
   }
   return globalCacheManager;
 }

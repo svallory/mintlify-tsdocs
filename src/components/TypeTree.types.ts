@@ -7,6 +7,28 @@
  */
 
 /**
+ * Common TypeScript primitive and structural types.
+ * Using a union of common types provides better autocompletion.
+ * The `string` type is included as a fallback for more complex or custom types.
+ *
+ * @public
+ */
+export type TypeAnnotation =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'object'
+  | 'array'
+  | 'function'
+  | 'null'
+  | 'undefined'
+  | 'any'
+  | 'unknown'
+  | 'never'
+  | 'void'
+  | string;
+
+/**
  * Represents a single property in a TypeTree structure.
  * This interface supports recursive nesting through the `properties` field.
  *
@@ -37,8 +59,7 @@ export interface TypeTreeProperty {
   /**
    * The TypeScript type annotation (e.g., `string`, `number`, `object`, `Array<string>`)
    */
-  type: string;
-
+  type: TypeAnnotation;
   /**
    * Human-readable description of what this property represents
    */

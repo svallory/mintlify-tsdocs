@@ -56,6 +56,26 @@ export class HelpAction extends CommandLineAction {
         case 'lint':
           LintHelp.showHelp();
           return;
+        case 'coverage':
+          // We don't have a specific help helper for coverage yet, but we can show the general help or create one.
+          // For now, let's just show the command help using the action itself if possible, 
+          // or just rely on the parser's help which is invoked via --help.
+          // But here we are inside HelpAction.
+          // Let's just print a simple help for now or better, create CoverageHelp.ts later.
+          // For now, I'll just print the usage.
+          showPlainHeader();
+          console.log('\n' + Colorize.bold('USAGE'));
+          console.log('  mint-tsdocs coverage [OPTIONS]\n');
+          console.log(Colorize.bold('DESCRIPTION'));
+          console.log('  Calculate TSDocs coverage for the project.\n');
+          console.log(Colorize.bold('OPTIONS'));
+          console.log('  --threshold <NUMBER>   Minimum coverage percentage required to pass');
+          console.log('  --include <GLOB>       Glob pattern for files to include');
+          console.log('  --exclude <GLOB>       Glob pattern for files to exclude');
+          console.log('  --group-by <TYPE>      Group results by "file", "folder", or "none"');
+          console.log('  --json                 Output report in JSON format');
+          console.log('  --skip-extractor       Skip running api-extractor');
+          return;
         case 'version':
           // Version just shows version, no special help
           showPlainHeader();
@@ -65,7 +85,7 @@ export class HelpAction extends CommandLineAction {
         default:
           showPlainHeader();
           clack.log.warn(`Unknown command: ${Colorize.yellow(commandName)}`);
-          console.log(`\nValid commands: init, generate, customize, show, lint, version\n`);
+          console.log(`\nValid commands: init, generate, customize, show, lint, coverage, version\n`);
           console.log('Run ' + Colorize.cyan('mint-tsdocs help') + ' to see all commands');
           return;
       }
@@ -107,6 +127,10 @@ export class HelpAction extends CommandLineAction {
     console.log('  ' + Colorize.cyan('lint') + '         Check documentation quality and find issues');
     console.log('               Reports undocumented APIs and missing descriptions');
     console.log('               Usage: mint-tsdocs lint\n');
+
+    console.log('  ' + Colorize.cyan('coverage') + '     Calculate TSDocs coverage');
+    console.log('               Reports percentage of documented API items');
+    console.log('               Usage: mint-tsdocs coverage\n');
 
     console.log('  ' + Colorize.cyan('help') + '         Display this help message\n');
 

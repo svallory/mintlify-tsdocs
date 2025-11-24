@@ -2,7 +2,18 @@
 
 Generate beautiful, Mintlify-native API documentation from your TypeScript code.
 
-This tool automatically generates [Mintlify](https://mintlify.com/)-compatible MDX documentation for your TypeScript library. It uses [API Extractor](https://api-extractor.com/) to analyze your code and creates rich, interactive documentation with Mintlify components.
+This tool automatically generates [Mintlify](https://mintlify.com/)-compatible MDX documentation for your TypeScript libraries and CLIs. It uses [API Extractor](https://api-extractor.com/) and [TSDoc](https://tsdoc.org/) to analyze your code and creates rich, interactive documentation with Mintlify components.
+
+## Who Is This For?
+
+mint-tsdocs bridges the gap between TypeScript development and Mintlify's documentation platform:
+
+- **Library Authors** - Generate comprehensive API reference docs for your npm packages
+- **CLI Tool Developers** - Document command-line interfaces with the same quality as API SDKs
+- **Open Source Maintainers** - Automate documentation updates for TypeScript projects
+- **Documentation Teams** - Maintain up-to-date API references without manual effort
+
+While Mintlify excels at API SDK documentation, mint-tsdocs makes it just as easy to document TypeScript libraries and CLIs.
 
 ## Features
 
@@ -128,6 +139,15 @@ Display current configuration or cache statistics.
 
 - Node.js 18 or higher
 - TypeScript project with `declaration: true` in `tsconfig.json`
+
+## Current Status
+
+mint-tsdocs is currently optimized for **local development workflows**. It runs on developer machines to generate documentation from locally-built TypeScript projects.
+
+**Coming Soon:**
+- CI/CD integration for automated documentation on every commit
+- Enhanced security features for multi-tenant environments
+- Potential SaaS offering for repository-triggered documentation updates
 
 ## Built On
 

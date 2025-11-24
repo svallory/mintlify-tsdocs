@@ -1,18 +1,29 @@
-import { ApiItem, ApiItemKind, ApiClass, ApiInterface, ApiEnum, ApiFunction, ApiMethod, ApiProperty, ApiPackage, ApiNamespace, ApiTypeAlias, ApiVariable, ApiEnumMember, ReleaseTag, ApiReleaseTagMixin, ApiDeclaredItem, ApiOptionalMixin, ApiStaticMixin, ApiAbstractMixin, ApiProtectedMixin, ApiReadonlyMixin, ApiInitializerMixin, ApiDocumentedItem } from '@microsoft/api-extractor-model';
+import { ApiItem, ApiItemKind, ApiClass, ApiInterface, ApiEnum, ApiFunction, ApiMethod, ApiProperty, ApiPackage, ApiNamespace, ApiTypeAlias, ApiVariable, ApiEnumMember, ReleaseTag, ApiReleaseTagMixin, ApiDeclaredItem, ApiOptionalMixin, ApiStaticMixin, ApiAbstractMixin, ApiProtectedMixin, ApiReadonlyMixin, ApiInitializerMixin, ApiDocumentedItem, ApiModel, Excerpt, ExcerptToken, ExcerptTokenKind, type IResolveDeclarationReferenceResult } from '@microsoft/api-extractor-model';
 import { DocSection, DocPlainText, DocParagraph } from '@microsoft/tsdoc';
+import { DocSectionConverter } from '../utils/DocSectionConverter';
+import type { DocSegment } from '../utils/DocSectionConverter';
 
 import { ITemplateData, ITableData, ITableRow, IReturnData } from './TemplateEngine';
 import { DocumentationHelper } from '../utils/DocumentationHelper';
 import { Utilities } from '../utils/Utilities';
+import { LinkValidator } from '../utils/LinkValidator';
 
 /**
  * Converts API model data to template-friendly format
+ *
+ * @see /architecture/generation-layer - Data conversion architecture
  */
 export class TemplateDataConverter {
   private readonly _documentationHelper: DocumentationHelper;
+  private readonly _apiModel: ApiModel;
+  private readonly _linkValidator: LinkValidator;
+  private readonly _docSectionConverter: DocSectionConverter;
 
-  public constructor() {
+  public constructor(apiModel: ApiModel, linkValidator: LinkValidator) {
     this._documentationHelper = new DocumentationHelper();
+    this._apiModel = apiModel;
+    this._linkValidator = linkValidator;
+    this._docSectionConverter = new DocSectionConverter();
   }
 
   /**
@@ -49,7 +60,8 @@ export class TemplateDataConverter {
       },
       navigation: options.navigation,
       examples: this._getExamples(apiItem),
-      heritageTypes: this._getHeritageTypes(apiItem, options.getLinkFilenameForApiItem)
+      heritageTypes: this._getHeritageTypes(apiItem, options.getLinkFilenameForApiItem),
+      guides: this._extractGuideLinks(apiItem)
     };
 
     // Add type-specific data
@@ -100,13 +112,13 @@ export class TemplateDataConverter {
 
   private _addFunctionData(data: ITemplateData, apiFunction: ApiFunction, getLinkFilename: (apiItem: ApiItem) => string | undefined): ITemplateData {
     data.parameters = this._createParameterRows(apiFunction, getLinkFilename);
-    data.returnType = this._createReturnData(apiFunction);
+    data.returnType = this._createReturnData(apiFunction, getLinkFilename);
     return data;
   }
 
   private _addMethodData(data: ITemplateData, apiMethod: ApiMethod, getLinkFilename: (apiItem: ApiItem) => string | undefined): ITemplateData {
     data.parameters = this._createParameterRows(apiMethod, getLinkFilename);
-    data.returnType = this._createReturnData(apiMethod);
+    data.returnType = this._createReturnData(apiMethod, getLinkFilename);
     return data;
   }
 
@@ -147,18 +159,22 @@ export class TemplateDataConverter {
   }
 
   private _createTableRows(apiItems: ApiItem[], getLinkFilename: (apiItem: ApiItem) => string | undefined): ITableRow[] {
-    return apiItems.map(apiItem => ({
-      title: Utilities.normalizeDisplayName(apiItem.displayName),
-      titlePath: getLinkFilename(apiItem),
-      modifiers: this._getModifiers(apiItem),
-      type: this._getTypeDisplay(apiItem),
-      typePath: this._getTypePath(apiItem, getLinkFilename),
-      description: this._getDescription(apiItem),
-      isOptional: this._isOptional(apiItem),
-      isInherited: this._isInherited(apiItem),
-      isDeprecated: this._isDeprecated(apiItem),
-      defaultValue: this._getDefaultValue(apiItem)
-    }));
+    return apiItems.map(apiItem => {
+      const typeInfo = this._getTypeInfo(apiItem, getLinkFilename);
+      return {
+        title: Utilities.normalizeDisplayName(apiItem.displayName),
+        titlePath: getLinkFilename(apiItem),
+        modifiers: this._getModifiers(apiItem),
+        type: this._getTypeDisplay(apiItem),
+        typeRef: typeInfo.typeRef,
+        typePath: typeInfo.typePath,
+        description: this._getDescription(apiItem),
+        isOptional: this._isOptional(apiItem),
+        isInherited: this._isInherited(apiItem),
+        isDeprecated: this._isDeprecated(apiItem),
+        defaultValue: this._getDefaultValue(apiItem)
+      };
+    });
   }
 
   private _createParameterRows(apiFunction: ApiFunction | ApiMethod, getLinkFilename: (apiItem: ApiItem) => string | undefined): ITableRow[] {
@@ -178,22 +194,34 @@ export class TemplateDataConverter {
         }
       }
 
+      // Extract type information for linking
+      const typeInfo = this._getTypeInfoFromExcerpt(param.parameterTypeExcerpt, getLinkFilename);
+
       return {
         title: param.name,
         type: param.parameterTypeExcerpt.text,
-        typePath: undefined, // Could be enhanced with type linking
+        typeRef: typeInfo.typeRef,
+        typePath: typeInfo.typePath,
         description: description,
         isOptional: param.isOptional
       };
     });
   }
 
-  private _createReturnData(apiFunction: ApiFunction | ApiMethod): IReturnData {
+  private _createReturnData(apiFunction: ApiFunction | ApiMethod, getLinkFilename: (apiItem: ApiItem) => string | undefined): IReturnData {
     const returnType = apiFunction.returnTypeExcerpt?.text || 'void';
     const description = this._getDescription(apiFunction); // Could extract @returns specifically
 
+    // Extract type information for linking
+    let typeInfo: { typeRef?: string; typePath?: string } = {};
+    if (apiFunction.returnTypeExcerpt) {
+      typeInfo = this._getTypeInfoFromExcerpt(apiFunction.returnTypeExcerpt, getLinkFilename);
+    }
+
     return {
       type: returnType,
+      typeRef: typeInfo.typeRef,
+      typePath: typeInfo.typePath,
       description
     };
   }
@@ -210,24 +238,24 @@ export class TemplateDataConverter {
     return '';
   }
 
-  private _getSummary(apiItem: ApiItem): string {
+  private _getSummary(apiItem: ApiItem): DocSegment[] {
     if (apiItem instanceof ApiDocumentedItem) {
       const tsdocComment = apiItem.tsdocComment;
       if (tsdocComment?.summarySection) {
-        return this._getTextFromDocSection(tsdocComment.summarySection);
+        return this._docSectionConverter.convertSection(tsdocComment.summarySection);
       }
     }
-    return '';
+    return [];
   }
 
-  private _getRemarks(apiItem: ApiItem): string {
+  private _getRemarks(apiItem: ApiItem): DocSegment[] {
     if (apiItem instanceof ApiDocumentedItem) {
       const tsdocComment = apiItem.tsdocComment;
       if (tsdocComment?.remarksBlock) {
-        return this._getTextFromDocSection(tsdocComment.remarksBlock.content);
+        return this._docSectionConverter.convertSection(tsdocComment.remarksBlock.content);
       }
     }
-    return '';
+    return [];
   }
 
   private _getExamples(apiItem: ApiItem): string[] {
@@ -240,6 +268,51 @@ export class TemplateDataConverter {
         .map((block: any) => this._getTextFromDocSection(block.content));
     }
     return [];
+  }
+
+  /**
+   * Extract guide links from @see tags
+   * Supports two formats:
+   * - @see {@link /path | description}
+   * - @see /path - description
+   */
+  private _extractGuideLinks(apiItem: ApiItem): Array<{ path: string; description: string }> {
+    if (!(apiItem instanceof ApiDocumentedItem)) {
+      return [];
+    }
+
+    const tsdocComment = apiItem.tsdocComment;
+    if (!tsdocComment?.seeBlocks || tsdocComment.seeBlocks.length === 0) {
+      return [];
+    }
+
+    const guides: Array<{ path: string; description: string }> = [];
+
+    for (const seeBlock of tsdocComment.seeBlocks) {
+      const text = this._getTextFromDocSection(seeBlock.content);
+
+      // Try to parse {@link /path | description} format
+      const linkMatch = text.match(/\{@link\s+(\/[^\s|}]+)\s*\|\s*([^}]+)\}/);
+      if (linkMatch) {
+        guides.push({
+          path: linkMatch[1].trim(),
+          description: linkMatch[2].trim()
+        });
+        continue;
+      }
+
+      // Try to parse /path - description format
+      // Match: /path then " - " (delimiter) then description
+      const simpleMatch = text.match(/^\s*(\/\S+)\s+-\s+(.+)$/);
+      if (simpleMatch) {
+        guides.push({
+          path: simpleMatch[1].trim(),
+          description: simpleMatch[2].trim()
+        });
+      }
+    }
+
+    return guides;
   }
 
   private _getSignature(apiItem: ApiItem): string {
@@ -280,9 +353,75 @@ export class TemplateDataConverter {
     return '';
   }
 
-  private _getTypePath(apiItem: ApiItem, getLinkFilename: (apiItem: ApiItem) => string | undefined): string | undefined {
-    // Could be enhanced to link to type definitions
-    return undefined;
+  /**
+   * Extract type information including RefId and path for linking
+   */
+  private _getTypeInfo(apiItem: ApiItem, getLinkFilename: (apiItem: ApiItem) => string | undefined): { typeRef?: string; typePath?: string } {
+    if (!(apiItem instanceof ApiDeclaredItem)) {
+      return {};
+    }
+
+    const excerpt = apiItem.excerpt;
+    if (!excerpt || !excerpt.spannedTokens) {
+      return {};
+    }
+
+    // Find the first reference token in the excerpt
+    for (const token of excerpt.spannedTokens) {
+      if (token.kind === ExcerptTokenKind.Reference && token.canonicalReference) {
+        // Try to resolve the reference to an API item
+        const result: IResolveDeclarationReferenceResult = this._apiModel.resolveDeclarationReference(
+          token.canonicalReference,
+          undefined
+        );
+
+        if (result.resolvedApiItem) {
+          // Generate RefId using LinkValidator
+          const refId = this._linkValidator.getRefId(result.resolvedApiItem);
+          const path = getLinkFilename(result.resolvedApiItem);
+
+          return {
+            typeRef: refId,
+            typePath: path
+          };
+        }
+      }
+    }
+
+    return {};
+  }
+
+  /**
+   * Extract type information from an Excerpt directly (for parameters and return types)
+   */
+  private _getTypeInfoFromExcerpt(excerpt: Excerpt, getLinkFilename: (apiItem: ApiItem) => string | undefined): { typeRef?: string; typePath?: string } {
+    if (!excerpt || !excerpt.spannedTokens) {
+      return {};
+    }
+
+    // Find the first reference token in the excerpt
+    for (const token of excerpt.spannedTokens) {
+      if (token.kind === ExcerptTokenKind.Reference && token.canonicalReference) {
+        // Try to resolve the reference to an API item
+        const result: IResolveDeclarationReferenceResult = this._apiModel.resolveDeclarationReference(
+          token.canonicalReference,
+          undefined
+        );
+
+        if (result.resolvedApiItem) {
+          // Generate RefId using LinkValidator
+          const refId = this._linkValidator.getRefId(result.resolvedApiItem);
+          const path = getLinkFilename(result.resolvedApiItem);
+
+          return {
+            typeRef: refId,
+            typePath: path
+          };
+        }
+      }
+    }
+
+    return {};
   }
 
   private _isOptional(apiItem: ApiItem): boolean {
@@ -340,6 +479,21 @@ export class TemplateDataConverter {
         }
       }
     }
+
+    // Remove TSDoc block tags and type annotations
+    // First pass: Remove @tag patterns with their type parameters and descriptions
+    text = text.replace(/@(param|returns?|throws?|example|remarks?|see|alpha|beta|deprecated|internal|public|private|protected|readonly|virtual|override|sealed|event|eventProperty|typeParam|enum|namespace|package|module|class|interface|function|method|property|constructor|variable|typedef|callback|extends|implements)[^\n]*/gi, '');
+
+    // Second pass: Remove any leftover type annotations in curly braces
+    text = text.replace(/\s*\{[^}]*\}\s*/g, ' ');
+
+    // Third pass: Remove common standalone type/class names at the end (leftovers from @extends, @enum, etc.)
+    // Only remove if preceded by period and space/punctuation
+    text = text.replace(/[.!?]\s+(Error|string|number|boolean|object|any|void|null|undefined|never|unknown)\s*$/gi, '.');
+
+    // Clean up extra whitespace
+    text = text.replace(/\s+/g, ' ').trim();
+
     return text;
   }
 }

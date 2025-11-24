@@ -1,6 +1,15 @@
 {%- layout "layout" %}
 
 {%- block content %}
+
+{%- if apiItem.signature %}
+## Signature
+
+```typescript
+{{ apiItem.signature }}
+```
+{%- endif %}
+
 {%- if parameters and parameters.size > 0 %}
 
 ## Parameters
@@ -12,16 +21,16 @@
 {%- if parameter.type %}
 {%- assign formatted_param_type = parameter.type | format_type %}
 {%- if formatted_param_type contains "```" %}
-**Type**:{{ formatted_param_type }}
+- **Type**:{{ formatted_param_type }}
 {%- else %}
-**Type**: {% if parameter.typePath -%}[`{{ formatted_param_type }}`]({{ parameter.typePath }}){%- else -%}`{{ formatted_param_type }}`{%- endif %}
+- **Type**: {%- if parameter.typeRef and autolink != false %}<Link kind="ref" target="{{ parameter.typeRef }}">`{{ formatted_param_type }}`</Link>{%- elsif parameter.typePath -%}[`{{ formatted_param_type }}`]({{ parameter.typePath }}){%- else -%}`{{ formatted_param_type }}`{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- if parameter.isOptional %}
-**Optional**: Yes
+- **Optional**: Yes
 {%- endif %}
 {%- if parameter.defaultValue %}
-**Default**: `{{ parameter.defaultValue }}`
+- **Default**: `{{ parameter.defaultValue }}`
 {%- endif %}
 {%- if parameter.description %}
 

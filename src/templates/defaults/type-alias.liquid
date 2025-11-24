@@ -1,6 +1,15 @@
 {% layout "layout" %}
 
 {% block content %}
+
+{% if apiItem.signature %}
+## Signature
+
+```typescript
+{{ apiItem.signature }}
+```
+{% endif %}
+
 ## Parameters
 
 {% if parameters and parameters.size > 0 %}

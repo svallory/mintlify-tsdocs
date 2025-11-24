@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as child_process from 'child_process';
 import { FileSystem } from '@rushstack/node-core-library';
+import { SecurityUtils } from '../utils/SecurityUtils';
 import {
   type CommandLineStringParameter,
   type CommandLineFlagParameter,
@@ -21,6 +22,9 @@ import * as InitHelp from './help/InitHelp';
  *
  * This action creates a single mint-tsdocs.config.json file at the project root
  * with auto-detected values. The .tsdocs/ directory is used only for cache/generated files.
+ *
+ * @see /guides/setup-guide - Complete setup walkthrough
+ * @see /config-reference - Configuration options reference
  */
 export class InitAction extends CommandLineAction {
   private readonly _cliInstance: DocumenterCli;
@@ -75,15 +79,18 @@ export class InitAction extends CommandLineAction {
     const projectDir = this._projectDirParameter.value || process.cwd();
     const absoluteProjectDir = path.resolve(projectDir);
 
-    try {
-      // Ensure project directory exists
-      if (!FileSystem.exists(absoluteProjectDir)) {
-        throw new DocumentationError(
-          `Project directory does not exist: ${absoluteProjectDir}`,
-          ErrorCode.DIRECTORY_NOT_FOUND
-        );
-      }
+    // Validate project directory exists and is safe
+    if (!FileSystem.exists(absoluteProjectDir)) {
+      throw new DocumentationError(
+        `Project directory does not exist: ${absoluteProjectDir}`,
+        ErrorCode.DIRECTORY_NOT_FOUND
+      );
+    }
 
+    // Ensure project directory is a valid path (defense-in-depth)
+    const validatedProjectDir = SecurityUtils.validateCliInput(absoluteProjectDir, 'Project directory');
+
+    try {
       // Check for package.json
       const packageJsonPath = path.join(absoluteProjectDir, 'package.json');
       if (!FileSystem.exists(packageJsonPath)) {
@@ -152,7 +159,7 @@ export class InitAction extends CommandLineAction {
           }
 
           // Read package name for default group name
-          const packageJson = JSON.parse(FileSystem.readFile(packageJsonPath));
+          const packageJson = SecurityUtils.parseJsonSafe(FileSystem.readFile(packageJsonPath));
           const packageName = packageJson.name || 'API';
 
           groupName = (await clack.text({
@@ -173,7 +180,7 @@ export class InitAction extends CommandLineAction {
           }
         } else {
           // Read package name for default group name
-          const packageJson = JSON.parse(FileSystem.readFile(packageJsonPath));
+          const packageJson = SecurityUtils.parseJsonSafe(FileSystem.readFile(packageJsonPath));
           tabName = 'API Reference';
           groupName = packageJson.name || 'API';
         }
@@ -240,7 +247,7 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
     useDefaults: boolean
   ): Promise<string> {
     // Try to auto-detect from package.json
-    const packageJson = JSON.parse(FileSystem.readFile(packageJsonPath));
+    const packageJson = SecurityUtils.parseJsonSafe(FileSystem.readFile(packageJsonPath));
 
     if (packageJson.types) {
       const entryPoint = path.resolve(projectDir, packageJson.types);
@@ -282,14 +289,19 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
       placeholder: './lib/index.d.ts',
       validate: (value) => {
         if (!value) return 'Entry point is required';
-        const absolutePath = path.resolve(projectDir, value);
-        if (!FileSystem.exists(absolutePath)) {
-          return `File not found: ${value}`;
+        try {
+          // Validate path is within project directory (prevent path traversal)
+          const absolutePath = SecurityUtils.validateFilePath(projectDir, value);
+          if (!FileSystem.exists(absolutePath)) {
+            return `File not found: ${value}`;
+          }
+          if (!value.endsWith('.d.ts')) {
+            return 'Must be a TypeScript declaration file (.d.ts)';
+          }
+          return undefined;
+        } catch (error) {
+          return `Invalid path: ${error instanceof Error ? error.message : String(error)}`;
         }
-        if (!value.endsWith('.d.ts')) {
-          return 'Must be a TypeScript declaration file (.d.ts)';
-        }
-        return undefined;
       }
     });
 
@@ -479,8 +491,21 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
       }
 
       if (choice === 'delete') {
+        // Validate directory is within project and not a critical directory
+        const safeDocsDir = SecurityUtils.validateFilePath(projectDir, path.relative(projectDir, docsDir));
+
+        // Prevent deleting critical directories
+        const basename = path.basename(safeDocsDir);
+        const dangerousDirs = ['/', 'node_modules', 'src', 'lib', 'dist', '.git'];
+        if (dangerousDirs.includes(basename) || safeDocsDir === projectDir) {
+          throw new DocumentationError(
+            `Cannot delete critical directory: ${basename}`,
+            ErrorCode.SECURITY_VIOLATION
+          );
+        }
+
         clack.log.info(`Deleting existing directory: ${docsDirInput}`);
-        FileSystem.deleteFolder(docsDir);
+        FileSystem.deleteFolder(safeDocsDir);
       }
     }
 
@@ -570,7 +595,7 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
     // File exists - validate and potentially update it
     try {
       const existingContent = FileSystem.readFile(tsdocPath);
-      const existing = JSON.parse(existingContent);
+      const existing = SecurityUtils.parseJsonSafe(existingContent);
       const updates: string[] = [];
 
       // Check 1: Must extend tsdoc-base.json
@@ -669,7 +694,7 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
       if (FileSystem.exists(settingsPath)) {
         try {
           const content = FileSystem.readFile(settingsPath);
-          settings = JSON.parse(content);
+          settings = SecurityUtils.parseJsonSafe(content);
         } catch (error) {
           clack.log.warn('Could not parse existing .vscode/settings.json - will create new one');
         }
@@ -692,7 +717,7 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
   private _updateTsConfigForMdx(projectDir: string, tsconfigPath: string): void {
     try {
       const content = FileSystem.readFile(tsconfigPath);
-      const tsconfig = JSON.parse(content);
+      const tsconfig = SecurityUtils.parseJsonSafe(content);
 
       let updated = false;
 
@@ -778,7 +803,7 @@ This directory contains auto-generated files used during documentation generatio
 
     try {
       const packageJsonContent = FileSystem.readFile(packageJsonPath);
-      const packageJson = JSON.parse(packageJsonContent);
+      const packageJson = SecurityUtils.parseJsonSafe(packageJsonContent);
 
       // Check if any existing script uses mint-tsdocs or mint-tsdocs
       if (packageJson.scripts) {
@@ -859,8 +884,8 @@ This directory contains auto-generated files used during documentation generatio
     return new Promise((resolve, reject) => {
       const proc = child_process.spawn(command, args, {
         cwd,
-        stdio: useInherit ? 'inherit' : 'pipe',
-        shell: true
+        stdio: useInherit ? 'inherit' : 'pipe'
+        // No shell: true - prevents command injection via shell interpretation
       });
 
       let stdout = '';

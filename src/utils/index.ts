@@ -7,6 +7,7 @@ export { Utilities } from './Utilities';
 export { DocumentationHelper } from './DocumentationHelper';
 export { ObjectTypeAnalyzer } from './ObjectTypeAnalyzer';
 export { TypeInfoGenerator } from './TypeInfoGenerator';
+export { LinkValidator } from './LinkValidator';
 export {
   DocumentationStats,
   type TypeCoverageStats,

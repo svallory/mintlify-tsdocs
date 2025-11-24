@@ -6,6 +6,9 @@ icon: "{{ page.icon }}"
 description: "{{ page.description }}"
 ---
 
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
 # {{ apiItem.displayName }}
 
 {%- block warnings %}
@@ -30,22 +33,11 @@ description: "{{ page.description }}"
 {%- endblock %}
 
 {%- block summary %}
-{%- if apiItem.summary and apiItem.summary != '' %}
+{%- if apiItem.summary and apiItem.summary.size > 0 %}
 
 ## Summary
 
-{{ apiItem.summary }}
-{%- endif %}
-{%- endblock %}
-
-{%- block signature %}
-{%- if apiItem.signature %}
-
-## Signature
-
-```typescript
-{{ apiItem.signature }}
-```
+{{ apiItem.summary | render_segments }}
 {%- endif %}
 {%- endblock %}
 
@@ -67,11 +59,11 @@ description: "{{ page.description }}"
 {%- block content %}{% endblock %}
 
 {%- block remarks %}
-{%- if apiItem.remarks and apiItem.remarks != '' %}
+{%- if apiItem.remarks and apiItem.remarks.size > 0 %}
 
 ## Remarks
 
-{{ apiItem.remarks }}
+{{ apiItem.remarks | render_segments }}
 {%- endif %}
 {%- endblock %}
 
@@ -87,6 +79,17 @@ description: "{{ page.description }}"
 ```typescript
 {{ example }}
 ```
+{%- endfor %}
+{%- endif %}
+{%- endblock %}
+
+{%- block guides %}
+{%- if guides and guides.size > 0 %}
+
+## Related Documentation
+
+{%- for guide in guides %}
+- <PageLink target="{{ guide.path }}">{{ guide.description }}</PageLink>
 {%- endfor %}
 {%- endif %}
 {%- endblock %}

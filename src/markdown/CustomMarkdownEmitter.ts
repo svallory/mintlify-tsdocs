@@ -39,7 +39,10 @@ export interface ICustomMarkdownEmitterOptions extends IMarkdownEmitterOptions {
 /**
  * Custom markdown emitter that extends the base MarkdownEmitter to provide
  * Mintlify-specific formatting and cross-reference resolution.
- * 
+ *
+ * @see /architecture/emission-layer - Emission layer architecture
+ * @see /components/type-tree - TypeTree component documentation
+ *
  * @public
  */
 export class CustomMarkdownEmitter extends MarkdownEmitter {

@@ -1,0 +1,39 @@
+---
+title: "Changelog"
+description: "What's new in mint-tsdocs"
+icon: "clock-rotate-left"
+---
+
+# Changelog
+
+<Update label="2025-11-21" description="Version 0.0.4">
+
+### Fixed: Enum Documentation
+
+Enums now correctly display all members instead of only the last one.
+
+**Before:** Only the last enum member appeared (e.g., `ErrorCode` with 30 members showed only `VALIDATION_ERROR`)
+
+**After:** All enum members now render in a single file with their values and descriptions
+
+<Frame>
+  <img src="/img/changelog/enum-fix-after.png" alt="Enum documentation fix comparison" />
+</Frame>
+
+</Update>
+
+<Update label="2025-11-20" description="Version 0.0.3">
+
+### Added: TypeInfo Component Generation
+
+- Auto-generates `TypeInfo.jsx` with type information
+- Includes TypeScript definitions for IDE autocomplete
+- Integrated into documentation pipeline
+
+### Improved: Template System
+
+- Better type handling in template data converter
+- Enhanced error messages in Liquid engine
+- Custom template override support
+
+</Update>

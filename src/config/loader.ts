@@ -12,6 +12,9 @@ const MODULE_NAME = 'mint-tsdocs';
 
 /**
  * Search for and load the mint-tsdocs configuration
+ *
+ * @see /config-reference - Configuration options reference
+ * @see /guides/setup-guide - Setup guide
  */
 export function loadConfig(searchFrom?: string): ResolvedConfig {
   const explorer = cosmiconfigSync(MODULE_NAME, {
@@ -148,7 +151,10 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
     templates: {
       userTemplateDir: config.templates?.userTemplateDir || undefined,
       cache: config.templates?.cache ?? true,
-      strict: config.templates?.strict ?? true
+      strict: config.templates?.strict ?? true,
+      rendering: {
+        hideStringEnumValues: config.templates?.rendering?.hideStringEnumValues ?? true
+      }
     },
     apiExtractor: {
       bundledPackages: [],

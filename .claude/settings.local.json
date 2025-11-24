@@ -5,7 +5,8 @@
       "Bash(npx tsc:*)",
       "Bash(bun add:*)",
       "Bash(chmod:*)",
-      "Bash(bun x api-extractor-model-info:*)"
+      "Bash(bun x api-extractor-model-info:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
