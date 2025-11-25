@@ -1,9 +1,5 @@
 import { ApiParameterListMixin, type ApiItem } from '@microsoft/api-extractor-model';
-import { SecurityUtils } from './SecurityUtils';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
-import { createDebugger, type Debugger } from './debug';
-
-const debug: Debugger = createDebugger('utilities');
 
 export class Utilities {
   private static readonly _badFilenameCharsRegExp: RegExp = /[^a-z0-9_\-\.]/gi;
@@ -32,73 +28,71 @@ export class Utilities {
 
   /**
    * Converts bad filename characters to underscores.
-   * Validates filename to prevent security vulnerabilities.
+   * Sanitizes input for safe filesystem use without strict validation.
+   *
+   * This function is designed for API Extractor output (valid identifiers)
+   * and applies minimal sanitization to ensure filesystem compatibility.
    */
   public static getSafeFilenameForName(name: string): string {
-    // Use the SecurityUtils for comprehensive filename validation
-    try {
-      // First validate the name as a safe filename
-      const validatedName = SecurityUtils.validateFilename(name);
-
-      // Then apply the original sanitization logic for consistency
-      return validatedName.replace(Utilities._badFilenameCharsRegExp, '_').toLowerCase();
-    } catch (error) {
-      // If validation fails, provide a secure fallback
-      debug.warn(`Warning: Invalid filename "${name}" detected, using sanitized fallback`);
-
-      // Remove path traversal patterns and dangerous characters
-      const sanitized = name
-        .replace(/\.{2,}/g, '') // Remove multiple dots
-        .replace(/[~\/\\]/g, '') // Remove path characters
-        .replace(Utilities._badFilenameCharsRegExp, '_')
-        .toLowerCase()
-        .substring(0, 50); // Limit length
-
-      if (!sanitized || sanitized.length === 0) {
-        throw new DocumentationError(
-          `Cannot create safe filename from: "${name}"`,
-          ErrorCode.INVALID_FILENAME,
-          { resource: name, operation: 'getSafeFilenameForName' }
-        );
-      }
-
-      return sanitized;
+    if (!name || name.trim().length === 0) {
+      throw new DocumentationError(
+        'Filename cannot be empty',
+        ErrorCode.INVALID_FILENAME,
+        { resource: name, operation: 'getSafeFilenameForName' }
+      );
     }
+
+    // Sanitize: remove path characters and replace invalid chars with underscores
+    const sanitized = name
+      .replace(/\.{2,}/g, '')  // Remove multiple dots (..)
+      .replace(/[~\/\\]/g, '') // Remove path traversal characters
+      .replace(Utilities._badFilenameCharsRegExp, '_')
+      .toLowerCase()
+      .substring(0, 50); // Limit length for filesystem compatibility
+
+    if (!sanitized || sanitized.length === 0) {
+      throw new DocumentationError(
+        `Cannot create safe filename from: "${name}"`,
+        ErrorCode.INVALID_FILENAME,
+        { resource: name, operation: 'getSafeFilenameForName' }
+      );
+    }
+
+    return sanitized;
   }
 
   /**
    * Converts bad filename characters to underscores while preserving original casing.
-   * Validates filename to prevent security vulnerabilities.
+   * Sanitizes input for safe filesystem use without strict validation.
    * Used for nested folder structure where case-sensitive names are desired.
+   *
+   * This function is designed for API Extractor output (valid identifiers)
+   * and applies minimal sanitization to ensure filesystem compatibility.
    */
   public static getSafeFilenamePreservingCase(name: string): string {
-    // Use the SecurityUtils for comprehensive filename validation
-    try {
-      // First validate the name as a safe filename
-      const validatedName = SecurityUtils.validateFilename(name);
-
-      // Apply sanitization without lowercasing
-      return validatedName.replace(Utilities._badFilenameCharsRegExp, '_');
-    } catch (error) {
-      // If validation fails, provide a secure fallback
-      debug.warn(`Warning: Invalid filename "${name}" detected, using sanitized fallback`);
-
-      // Remove path traversal patterns and dangerous characters
-      const sanitized = name
-        .replace(/\.{2,}/g, '') // Remove multiple dots
-        .replace(/[~\/\\]/g, '') // Remove path characters
-        .replace(Utilities._badFilenameCharsRegExp, '_')
-        .substring(0, 50); // Limit length (preserve case)
-
-      if (!sanitized || sanitized.length === 0) {
-        throw new DocumentationError(
-          `Cannot create safe filename from: "${name}"`,
-          ErrorCode.INVALID_FILENAME,
-          { resource: name, operation: 'getSafeFilenamePreservingCase' }
-        );
-      }
-
-      return sanitized;
+    if (!name || name.trim().length === 0) {
+      throw new DocumentationError(
+        'Filename cannot be empty',
+        ErrorCode.INVALID_FILENAME,
+        { resource: name, operation: 'getSafeFilenamePreservingCase' }
+      );
     }
+
+    // Sanitize: remove path characters and replace invalid chars with underscores
+    const sanitized = name
+      .replace(/\.{2,}/g, '')  // Remove multiple dots (..)
+      .replace(/[~\/\\]/g, '') // Remove path traversal characters
+      .replace(Utilities._badFilenameCharsRegExp, '_')
+      .substring(0, 50); // Limit length for filesystem compatibility
+
+    if (!sanitized || sanitized.length === 0) {
+      throw new DocumentationError(
+        `Cannot create safe filename from: "${name}"`,
+        ErrorCode.INVALID_FILENAME,
+        { resource: name, operation: 'getSafeFilenamePreservingCase' }
+      );
+    }
+
+    return sanitized;
   }
 }

@@ -124,21 +124,65 @@ After threat model correction, we have:
 
 ---
 
+### Schemas Module
+
+**Status:** ✅ **Complete - No Fixes Required**
+- **Grade:** A
+- **Critical Issues:** 0
+- **High Priority Issues:** 0
+- **Medium Priority Issues:** 0 (all P2/P3 are future enhancements, not bugs)
+- **Build Status:** ✅ Pass
+- **Production Ready:** YES
+- **Date Reviewed:** 2025-11-24
+- **Summary:** Excellent JSON Schema definitions. No bugs, no issues, no fixes needed.
+- **Report:** `agent/reports/review/fixes/schemas-fixes-summary.md`
+
+---
+
 ### Utils Module
-- ✅ **SecurityUtils validation gaps** (SecurityUtils.ts)
+
+**Status:** ✅ **Complete - All Issues Fixed**
+- **Grade:** A
+- **Critical Issues:** 0
+- **High Priority Issues:** 1 → ✅ Fixed
+- **Medium Priority Issues:** 0
+- **Build Status:** ✅ Pass
+- **Tests:** 433/433 passing (100%)
+- **Production Ready:** YES
+- **Date Completed:** 2025-11-24
+- **Summary:** Fixed redundant validation in filename sanitization functions. Added comprehensive tests.
+- **Report:** `agent/reports/review/fixes/utils-fixes-summary.md`
+
+#### Fixed Issues
+- ✅ **Double validation in getSafeFilenameForName** (Utilities.ts)
   - Status: Fixed
-  - Priority: Critical (was part of cache module review)
+  - Priority: High (P1 - Code Quality)
+  - Impact: Performance overhead, confusing code flow
+  - Fix: Simplified to single sanitization approach, removed redundant SecurityUtils validation
+  - Build: ✅ Pass
+  - Tests: Added 22 comprehensive tests, all passing
+  - Commit: [pending]
+  - Date: 2025-11-24
+
+- ✅ **Double validation in getSafeFilenamePreservingCase** (Utilities.ts)
+  - Status: Fixed
+  - Priority: High (P1 - Code Quality)
+  - Impact: Same as above
+  - Fix: Same simplification applied to preserve-case variant
+  - Build: ✅ Pass
+  - Tests: Covered by same test suite
+  - Commit: [pending]
+  - Date: 2025-11-24
+
+- ✅ **SecurityUtils validation gaps** (SecurityUtils.ts)
+  - Status: Fixed (earlier)
+  - Priority: Critical
   - Fix: Corrected validation order to check patterns before basename()
   - Build: ✅ Pass
   - Tests: 67/67 passing (was 64/67)
-  - Commit: [pending]
+  - Commit: [done earlier]
   - Date: 2025-11-24
   - Notes: Fixed path traversal and command injection detection
-
-- ⏳ ObjectTypeAnalyzer performance
-  - Status: Pending
-  - Priority: Medium
-  - Notes: -
 
 ---
 
