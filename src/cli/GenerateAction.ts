@@ -153,8 +153,6 @@ export class GenerateAction extends CommandLineAction {
 
     try {
       // Step 1: Load configuration
-      clack.log.info('Loading configuration...');
-
       let config;
       try {
         config = loadConfig(projectDir);
@@ -176,10 +174,17 @@ export class GenerateAction extends CommandLineAction {
           }
 
           // Run init action
-          clack.log.info('Running init...');
-          const { InitAction } = await import('./InitAction.js');
-          const initAction = new InitAction(this.parser as any);
-          await initAction.onExecuteAsync();
+          const initSpinner = clack.spinner();
+          initSpinner.start('Initializing mint-tsdocs');
+          try {
+            const { InitAction } = await import('./InitAction.js');
+            const initAction = new InitAction(this.parser as any);
+            await initAction.onExecuteAsync();
+            initSpinner.stop('Initialization complete');
+          } catch (initError) {
+            initSpinner.stop('Initialization failed');
+            throw initError;
+          }
 
           // Load config after init
           config = loadConfig(projectDir);
@@ -200,9 +205,13 @@ export class GenerateAction extends CommandLineAction {
         const cacheStats = FileSystem.getStatistics(tsdocsDir);
 
         if (configStats.mtime > cacheStats.mtime) {
-          clack.log.info('Configuration updated - invalidating cache...');
+          if (this._verboseParameter.value) {
+            clack.log.info('Configuration updated - invalidating cache...');
+          }
           FileSystem.deleteFolder(tsdocsDir);
-          clack.log.success('Cache invalidated');
+          if (this._verboseParameter.value) {
+            clack.log.success('Cache invalidated');
+          }
         }
       }
 
@@ -222,7 +231,9 @@ export class GenerateAction extends CommandLineAction {
             ErrorCode.FILE_NOT_FOUND
           );
         }
-        clack.log.info(`Using custom api-extractor config: ${config.apiExtractor.configPath}`);
+        if (this._verboseParameter.value) {
+          clack.log.info(`Using custom api-extractor config: ${config.apiExtractor.configPath}`);
+        }
 
         // Read input folder from custom config
         const extractorConfig = ExtractorConfig.loadFileAndPrepare(customConfigPath);
@@ -237,9 +248,11 @@ export class GenerateAction extends CommandLineAction {
           !this._lintParameter.value // Invert: suppress when lint is NOT enabled
         );
         FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
-        clack.log.info('Generated .tsdocs/api-extractor.json');
+        if (this._verboseParameter.value) {
+          clack.log.info('Generated .tsdocs/api-extractor.json');
+        }
 
-        if (this._lintParameter.value) {
+        if (this._verboseParameter.value && this._lintParameter.value) {
           clack.log.info('Linting enabled (--lint flag set)');
         }
 
@@ -280,9 +293,15 @@ export class GenerateAction extends CommandLineAction {
         verbose: this._verboseParameter.value
       });
 
-      markdownDocumenter.generateFiles();
-
-      clack.log.success(`Documentation generated in ${config.outputFolder}`);
+      const generateSpinner = clack.spinner();
+      generateSpinner.start('Generating documentation');
+      try {
+        await markdownDocumenter.generateFiles();
+        generateSpinner.stop(`Documentation generated in ${config.outputFolder}`);
+      } catch (generateError) {
+        generateSpinner.stop('Documentation generation failed');
+        throw generateError;
+      }
     } finally {
       // Restore original working directory
       if (projectDir !== originalCwd) {
@@ -423,7 +442,8 @@ export class GenerateAction extends CommandLineAction {
     }
 
     // Compile TypeScript
-    clack.log.info('Compiling TypeScript...');
+    const compileSpinner = clack.spinner();
+    compileSpinner.start('Compiling TypeScript');
     try {
       const { execFileSync } = await import('child_process');
 
@@ -452,8 +472,9 @@ export class GenerateAction extends CommandLineAction {
         }
       }
 
-      clack.log.success('TypeScript compilation completed');
+      compileSpinner.stop('TypeScript compilation completed');
     } catch (error) {
+      compileSpinner.stop('TypeScript compilation failed');
       throw new DocumentationError(
         `TypeScript compilation failed: ${error instanceof Error ? error.message : String(error)}`,
         ErrorCode.COMMAND_FAILED
@@ -468,7 +489,8 @@ export class GenerateAction extends CommandLineAction {
    * @private
    */
   private async _runApiExtractor(configPath: string): Promise<void> {
-    clack.log.info('Running api-extractor...');
+    const extractorSpinner = clack.spinner();
+    extractorSpinner.start('Running api-extractor');
 
     try {
       // Load the config
@@ -540,8 +562,9 @@ export class GenerateAction extends CommandLineAction {
         IssueDisplayUtils.displayGroupedIssues(groups, ungroupedIssues);
 
         if (extractorResult.succeeded) {
-          clack.log.success('api-extractor completed successfully');
+          extractorSpinner.stop('api-extractor completed successfully');
         } else {
+          extractorSpinner.stop('api-extractor completed with errors');
           throw new DocumentationError(
             `api-extractor completed with ${extractorResult.errorCount} errors and ${extractorResult.warningCount} warnings`,
             ErrorCode.COMMAND_FAILED
@@ -554,6 +577,7 @@ export class GenerateAction extends CommandLineAction {
         console.warn = originalConsoleWarn;
       }
     } catch (error) {
+      extractorSpinner.stop('api-extractor failed');
       if (error instanceof DocumentationError) {
         throw error;
       }
@@ -602,8 +626,6 @@ export class GenerateAction extends CommandLineAction {
         try {
           const safeFilename = SecurityUtils.validateFilename(filename);
           const filenamePath = SecurityUtils.validateFilePath(validatedInputFolder, safeFilename);
-
-          clack.log.info(`Reading ${safeFilename}`);
 
           const fileContent = FileSystem.readFile(filenamePath);
           // API JSON files are generated by API Extractor from trusted source code

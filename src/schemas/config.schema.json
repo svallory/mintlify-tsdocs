@@ -230,6 +230,44 @@
           }
         }
       }
+    },
+    "lint": {
+      "description": "Linting configuration for the lint command.",
+      "type": "object",
+      "properties": {
+        "eslint": {
+          "description": "ESLint integration settings.",
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "description": "Enable ESLint linting with tsdoc plugin. Defaults to true.",
+              "type": "boolean",
+              "default": true
+            },
+            "directories": {
+              "description": "Directories to lint (ESLint discovers files automatically). Defaults to ['src'].",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["src"],
+              "examples": [["src"], ["src", "lib"]]
+            },
+            "configPath": {
+              "description": "Path to custom ESLint configuration file. Auto-discovered by default.",
+              "type": "string",
+              "examples": [".eslintrc.js", "config/eslint.config.js"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "failOnError": {
+          "description": "Fail the command (exit code 1) when errors are found. Defaults to true.",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

@@ -1,6 +1,9 @@
 import { PackageJsonLookup } from '@rushstack/node-core-library';
 import { Colorize } from '@rushstack/terminal';
 import * as clack from '@clack/prompts';
+import { S_BAR_START, S_BAR, S_BAR_END, symbolBar } from './utils/constants';
+import { ColorThemes } from './ColorThemes';
+import chalk from 'chalk';
 
 export const BORDER = Colorize.gray('│  ');
 
@@ -9,6 +12,25 @@ export const BORDER = Colorize.gray('│  ');
  */
 export function getPackageVersion(): string {
   return PackageJsonLookup.loadOwnPackageJson(__dirname).version;
+}
+
+export function multiLineOutro(message: string, trim = false): void {
+  const lines = message.split('\n');
+  let last = lines.pop();
+
+  while (last?.trim() === '' && lines.length > 0) {
+    last = lines.pop();
+  }
+
+  if (!last) {
+    return;
+  }
+
+  lines.forEach((line: string) => {
+    console.log(`${chalk.gray(S_BAR)}  ${trim ? line.trim() : line}`);
+  });
+
+  console.log(`${chalk.gray(S_BAR_END)}  ${trim ? last.trim() : last}`);
 }
 
 /**
@@ -30,7 +52,7 @@ export function showPlainHeader(): void {
       Colorize.cyan('https://mint-tsdocs.saulo.engineer/')
     ].join('\n')
   );
-} 
+}
 
 /**
  * Show consistent CLI header with version (with Clack intro border)
@@ -38,17 +60,35 @@ export function showPlainHeader(): void {
 export function showCliHeader(): void {
   const version = getPackageVersion();
 
-  // ANSI escape codes for custom background color rgb(22, 110, 63)
-  const bgGreen = '\x1b[48;2;22;110;63m';  // RGB background
-  const fgWhite = '\x1b[97m';               // Bright white text
-  const bold = '\x1b[1m';                   // Bold
-  const reset = '\x1b[0m';                  // Reset all styles
-
   // Build the header with two lines
-  const line1 = `${bold}${fgWhite}${bgGreen} mint-tsdocs ${reset} ${Colorize.dim(`v${version}`)}`;
-  const line2 = Colorize.cyan('https://mint-tsdocs.saulo.engineer/');
+  const line1 = `${formatTitle('mint-tsdocs', 1)} ${chalk.dim(`v${version}`)}`;
+  const line2 = chalk.cyan('https://mint-tsdocs.saulo.engineer/');
 
-  clack.intro(`${line1}\n${BORDER}${line2}`);
+  clack.intro(`${line1}\n${chalk.gray(S_BAR)}  ${line2}`);
+}
+
+export function formatTitle(title: string, level: number = 1): string {
+
+  switch (level) {
+    case 1:
+      return chalk.bgRgb(22, 110, 63).bold(` ${title} `);
+    case 2:
+      return chalk.bgHex(ColorThemes.Nord.pink).bold(` ${title} `);
+    case 3:
+      return chalk.bgHex(ColorThemes.Nord.blue).bold(` ${title} `);
+    default:
+      return chalk.bgHex(ColorThemes.Nord.green).bold(` ${title} `);
+  }
+}
+
+/**
+ * Show a section header with background styling (similar to CLI header)
+ */
+export function showSectionHeader(title: string): void {
+  const message = `${S_BAR_START}
+${S_BAR}  ${formatTitle(title, 2)}
+${S_BAR_END}`;
+  console.log(message);
 }
 
 /**

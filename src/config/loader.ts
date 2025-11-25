@@ -228,6 +228,16 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
       },
       messages: mergedMessages,
       configPath: config.apiExtractor?.configPath
+    },
+    lint: {
+      eslint: {
+        enabled: config.lint?.eslint?.enabled ?? true,
+        directories: config.lint?.eslint?.directories ?? ['src'],
+        configPath: config.lint?.eslint?.configPath
+          ? path.resolve(configDir, config.lint.eslint.configPath)
+          : undefined
+      },
+      failOnError: config.lint?.failOnError ?? true
     }
   };
 

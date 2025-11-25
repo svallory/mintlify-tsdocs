@@ -286,6 +286,41 @@ export interface CoverageConfig {
 }
 
 /**
+ * Configuration for linting documentation.
+ * @public
+ */
+export interface LintConfig {
+  /**
+   * Configuration for ESLint integration
+   */
+  eslint?: {
+    /**
+     * Enable ESLint linting with tsdoc plugin
+     * @defaultValue true
+     */
+    enabled?: boolean;
+
+    /**
+     * Directories to lint (ESLint will discover files automatically)
+     * @defaultValue ['src']
+     */
+    directories?: string[];
+
+    /**
+     * Path to custom ESLint configuration file
+     * @defaultValue Auto-discovered (eslint.config.js, etc.)
+     */
+    configPath?: string;
+  };
+
+  /**
+   * Fail the command (exit code 1) when errors are found
+   * @defaultValue true
+   */
+  failOnError?: boolean;
+}
+
+/**
  * Configuration for customizing documentation templates.
  * Templates control how API items are rendered in MDX format.
  */
@@ -399,6 +434,12 @@ export interface MintlifyTsDocsConfig {
    * Settings for the `coverage` command.
    */
   coverage?: CoverageConfig;
+
+  /**
+   * Linting configuration.
+   * Settings for the `lint` command.
+   */
+  lint?: LintConfig;
 }
 
 /**
@@ -492,4 +533,16 @@ export interface ResolvedConfig {
    * Resolved coverage configuration
    */
   coverage?: CoverageConfig;
+
+  /**
+   * Resolved linting configuration
+   */
+  lint: {
+    eslint: {
+      enabled: boolean;
+      directories: string[];
+      configPath?: string;
+    };
+    failOnError: boolean;
+  };
 }

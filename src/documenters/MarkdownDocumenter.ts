@@ -2197,8 +2197,6 @@ export class MarkdownDocumenter {
   }
 
   private _deleteOldOutputFiles(): void {
-    clack.log.info('Deleting old output from ' + this._outputFolder);
-
     // Additional safety check: ensure the folder is actually a documentation output folder
     // by checking if it contains expected files or is empty
     try {
@@ -2345,8 +2343,10 @@ export class MarkdownDocumenter {
       const dtsContent = generator.generateTypeInfoDeclaration();
       FileSystem.writeFile(typeInfoDtsPath, dtsContent);
 
-      clack.log.success('   ✓ Generated TypeInfo.jsx with type information');
-      clack.log.success('   ✓ Generated TypeInfo.d.ts for VSCode autocomplete');
+      if (this._verbose) {
+        clack.log.success('   ✓ Generated TypeInfo.jsx with type information');
+        clack.log.success('   ✓ Generated TypeInfo.d.ts for VSCode autocomplete');
+      }
     } catch (error) {
       // Log warning but don't fail the build
       clack.log.warn(`   ⚠ Failed to generate TypeInfo: ${error}`);
@@ -2480,7 +2480,9 @@ export function isValidRef(refId: string): refId is ValidRefId;
 `;
 
       FileSystem.writeFile(validRefsDtsPath, refsDtsContent);
-      clack.log.success(`   ✓ Generated ValidRefs.jsx with ${validRefs.size} reference IDs`);
+      if (this._verbose) {
+        clack.log.success(`   ✓ Generated ValidRefs.jsx with ${validRefs.size} reference IDs`);
+      }
     } catch (error) {
       // Log warning but don't fail the build
       clack.log.warn(`   ⚠ Failed to generate ValidRefs: ${error}`);
@@ -2603,7 +2605,9 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
 `;
 
       FileSystem.writeFile(validPagesDtsPath, dtsContent);
-      clack.log.success(`   ✓ Generated ValidPages.jsx with ${validPages.size} page IDs`);
+      if (this._verbose) {
+        clack.log.success(`   ✓ Generated ValidPages.jsx with ${validPages.size} page IDs`);
+      }
     } catch (error) {
       // Log warning but don't fail the build
       clack.log.warn(`   ⚠ Failed to generate ValidPages: ${error}`);
@@ -2650,7 +2654,9 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
     // Dynamically discover all component files
     const componentFiles = this._discoverComponentFiles(componentsSource);
 
-    clack.log.info('📦 Installing Mintlify components...');
+    if (this._verbose) {
+      clack.log.info('📦 Installing Mintlify components...');
+    }
 
     let installedCount = 0;
     let updatedCount = 0;
@@ -2711,15 +2717,21 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
       }
     }
 
-    // Show summary if not in verbose mode
-    if (!this._verbose) {
-      const totalComponents = installedCount + updatedCount;
+    // Show summary
+    const totalComponents = installedCount + updatedCount;
+    if (this._verbose) {
+      // Verbose: show detailed breakdown
       if (installedCount > 0 && updatedCount > 0) {
         clack.log.success(`   ✓ Installed ${installedCount} and updated ${updatedCount} of ${totalComponents} components`);
       } else if (installedCount > 0) {
         clack.log.success(`   ✓ Installed ${installedCount} component${installedCount === 1 ? '' : 's'}`);
       } else if (updatedCount > 0) {
         clack.log.success(`   ✓ All ${updatedCount} components up to date`);
+      }
+    } else {
+      // Non-verbose: simple success message
+      if (totalComponents > 0) {
+        clack.log.success('Custom Mintlify snippets installed');
       }
     }
   }

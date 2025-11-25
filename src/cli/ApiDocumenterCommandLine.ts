@@ -121,7 +121,7 @@ export class DocumenterCli extends CommandLineParser {
     this.addAction(new CustomizeAction());
     this.addAction(new ShowAction());
     this.addAction(new ConfigAction());
-    this.addAction(new LintAction());
+    this.addAction(new LintAction(this));
     this.addAction(new CoverageAction(this));
     this.addAction(new HelpAction(this));
     this.addAction(new VersionAction());

@@ -890,6 +890,14 @@
                     ]
                   },
                   {
+                    "group": "LintConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/LintConfig",
+                      "reference/mint-tsdocs/LintConfig/eslint",
+                      "reference/mint-tsdocs/LintConfig/failOnError"
+                    ]
+                  },
+                  {
                     "group": "MessageReportingItem",
                     "pages": [
                       "reference/mint-tsdocs/MessageReportingItem",
@@ -908,6 +916,7 @@
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/docsJson",
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/entryPoint",
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/groupName",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/lint",
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/outputFolder",
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/readmeTitle",
                       "reference/mint-tsdocs/MintlifyTsDocsConfig/tabName",
@@ -957,6 +966,7 @@
                       "reference/mint-tsdocs/ResolvedConfig/docsJson",
                       "reference/mint-tsdocs/ResolvedConfig/entryPoint",
                       "reference/mint-tsdocs/ResolvedConfig/groupName",
+                      "reference/mint-tsdocs/ResolvedConfig/lint",
                       "reference/mint-tsdocs/ResolvedConfig/outputFolder",
                       "reference/mint-tsdocs/ResolvedConfig/readmeTitle",
                       "reference/mint-tsdocs/ResolvedConfig/tabName",

@@ -7,8 +7,8 @@ export const ColorThemes = {
         blue: "#81a1c1",
         mint: "#8fbcbb",
         teal: "#88c0d0",
-        purple: "#b48ead",
-        pink: "#d3869b",
+        pink: "#b48ead",
+        brightPink: "#d3869b",
         black: "#4c566a",
         deepBlue: "#5e81ac",
         gray: "#d8dee9"

@@ -134,7 +134,7 @@ export class HelpAction extends CommandLineAction {
 
     console.log('  ' + Colorize.cyan('lint') + '         Check documentation quality and find issues');
     console.log('               Reports undocumented APIs and missing descriptions');
-    console.log('               Usage: mint-tsdocs lint\n');
+    console.log('               Usage: mint-tsdocs lint [PATH]\n');
 
     console.log('  ' + Colorize.cyan('coverage') + '     Calculate TSDocs coverage');
     console.log('               Reports percentage of documented API items');
