@@ -377,6 +377,14 @@ src/
 ├── errors/           # Error handling
 └── performance/      # Performance monitoring
 
+snippets/             # Mintlify JSX components (not compiled by tsc)
+├── TypeTree.jsx      # Recursive type documentation component
+├── PageLink.jsx      # Documentation page link component
+├── RefLink.jsx       # API reference link component
+├── Preview.jsx       # Example preview wrapper component
+├── *.d.ts            # TypeScript type definitions
+└── README.md         # Component documentation
+
 # Project structure after running `mint-tsdocs init`:
 project-root/
 ├── mint-tsdocs.config.json  # Main configuration file
@@ -395,7 +403,7 @@ project-root/
 
 - **`lib/`** - Compiled JavaScript + declarations
 - **`lib/schemas/`** - JSON schemas (copied from `src/schemas/`)
-- **`lib/components/`** - React components (copied from `src/components/`)
+- **`lib/snippets/`** - Mintlify JSX components (copied from `snippets/`)
 - **`lib/templates/defaults/`** - Default templates (copied from `src/templates/defaults/`)
 
 ## Dependencies

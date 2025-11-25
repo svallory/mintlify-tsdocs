@@ -10,27 +10,7 @@
  * @version 1.2.0
  */
 
-import { VALID_REFS } from './ValidRefs';
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-/**
- * Props for the RefLink component.
- *
- * @example
- * ```tsx
- * <RefLink target="mint-tsdocs.MarkdownDocumenter">MarkdownDocumenter</RefLink>
- * <RefLink target="mint-tsdocs.MarkdownDocumenter.generateFiles">Generate Files</RefLink>
- * ```
- */
-export interface RefLinkProps {
-  /** API reference identifier (RefId) - dot-separated path to API item */
-  target: string;
-  /** Link text content (defaults to target if not provided) */
-  children?: React.ReactNode;
-}
+import { VALID_REFS } from '/snippets/tsdocs/ValidRefs.jsx';
 
 // ============================================================================
 // RefLink Component
@@ -38,8 +18,10 @@ export interface RefLinkProps {
 
 /**
  * RefLink - Link component specifically for API references
+ * @param {import('./RefLink').RefLinkProps} props
+ * @returns {JSX.Element}
  */
-export const RefLink = ({ target, children }: RefLinkProps) => {
+export const RefLink = ({ target, children }) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('RefLink: Invalid target prop. Expected non-empty string.');

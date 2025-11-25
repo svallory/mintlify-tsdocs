@@ -16,6 +16,7 @@ import type { MintlifyTsDocsConfig } from '../config';
 import { TsConfigValidator } from '../utils/TsConfigValidator';
 import { showCliHeader } from './CliHelpers';
 import * as InitHelp from './help/InitHelp';
+import { CommandRunner } from './helpers/CommandRunner';
 
 /**
  * CLI action to initialize a new project with mint-tsdocs configuration
@@ -511,12 +512,11 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
 
     // Run mint new
     const relativeDocsDir = path.relative(projectDir, docsDir);
-    await this._runCommand(
+    await CommandRunner.run(
       'mint',
       ['new', relativeDocsDir],
-      projectDir,
       'Initializing Mintlify',
-      { forceInteractive: true }
+      { cwd: projectDir, inheritStdio: true }
     );
 
     // Return docs.json path
@@ -852,99 +852,5 @@ This directory contains auto-generated files used during documentation generatio
     }
 
     clack.log.success('Updated .gitignore');
-  }
-
-  /**
-   * Run a shell command with spinner
-   */
-  private async _runCommand(
-    command: string,
-    args: string[],
-    cwd: string,
-    message: string,
-    options: { forceInteractive?: boolean } = {}
-  ): Promise<void> {
-    const isVerbose = this._cliInstance.isVerbose;
-    const isDebug = this._cliInstance.isDebug;
-    const forceInteractive = options.forceInteractive ?? false;
-    const useInherit = isVerbose || forceInteractive;
-    const spinner = clack.spinner();
-
-    if (isDebug) {
-      clack.log.info(`Running: ${command} ${args.join(' ')}`);
-      clack.log.info(`Working directory: ${cwd}`);
-    }
-
-    if (!forceInteractive) {
-      spinner.start(message);
-    } else {
-      clack.log.info(message);
-    }
-
-    return new Promise((resolve, reject) => {
-      const proc = child_process.spawn(command, args, {
-        cwd,
-        stdio: useInherit ? 'inherit' : 'pipe'
-        // No shell: true - prevents command injection via shell interpretation
-      });
-
-      let stdout = '';
-      let stderr = '';
-
-      if (!useInherit) {
-        proc.stdout?.on('data', (data) => {
-          stdout += data.toString();
-        });
-
-        proc.stderr?.on('data', (data) => {
-          stderr += data.toString();
-        });
-      }
-
-      proc.on('close', (code) => {
-        if (code === 0) {
-          if (!forceInteractive) {
-            spinner.stop(Colorize.green(`✓ ${message}`));
-          } else {
-            clack.log.success(`✓ ${message}`);
-          }
-
-          if (isDebug && !useInherit && stdout) {
-            clack.log.info('Command output:');
-            console.log(stdout);
-          }
-
-          resolve();
-        } else {
-          if (!forceInteractive) {
-            spinner.stop(Colorize.red(`✗ ${message} failed`));
-          }
-          clack.log.error(`Command failed: ${command} ${args.join(' ')}`);
-          if (stderr) {
-            clack.log.error(stderr);
-          } else if (stdout) {
-            clack.log.error(stdout);
-          }
-          reject(
-            new DocumentationError(
-              `Failed to run: ${command} ${args.join(' ')}\n${stderr || stdout}`,
-              ErrorCode.COMMAND_FAILED
-            )
-          );
-        }
-      });
-
-      proc.on('error', (error) => {
-        if (!forceInteractive) {
-          spinner.stop(Colorize.red(`✗ ${message} failed`));
-        }
-        reject(
-          new DocumentationError(
-            `Failed to execute ${command}: ${error.message}`,
-            ErrorCode.COMMAND_FAILED
-          )
-        );
-      });
-    });
   }
 }

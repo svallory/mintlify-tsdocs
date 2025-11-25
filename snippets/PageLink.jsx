@@ -10,27 +10,7 @@
  * @version 1.2.0
  */
 
-import { VALID_PAGES } from './ValidPages';
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-/**
- * Props for the PageLink component.
- *
- * @example
- * ```tsx
- * <PageLink target="introduction">Introduction</PageLink>
- * <PageLink target="components/type-tree">TypeTree Component</PageLink>
- * ```
- */
-export interface PageLinkProps {
-  /** Documentation page identifier (PageId) - path relative to docs root */
-  target: string;
-  /** Link text content (defaults to target if not provided) */
-  children?: React.ReactNode;
-}
+import { VALID_PAGES } from '/snippets/tsdocs/ValidPages.jsx';
 
 // ============================================================================
 // PageLink Component
@@ -38,8 +18,10 @@ export interface PageLinkProps {
 
 /**
  * PageLink - Link component specifically for documentation pages
+ * @param {import('./PageLink').PageLinkProps} props
+ * @returns {JSX.Element}
  */
-export const PageLink = ({ target, children }: PageLinkProps) => {
+export const PageLink = ({ target, children }) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('PageLink: Invalid target prop. Expected non-empty string.');

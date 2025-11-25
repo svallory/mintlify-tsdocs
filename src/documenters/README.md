@@ -251,7 +251,7 @@ private async _installMintlifyComponents(outputFolder: string): Promise<void> {
         {
           resource: sourcePath,
           operation: 'installComponents',
-          suggestion: 'Ensure components are built and available in lib/components/'
+          suggestion: 'Ensure components are built and available in lib/snippets/'
         }
       );
     }

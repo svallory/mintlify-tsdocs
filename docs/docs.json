@@ -1017,35 +1017,6 @@
                       "reference/mint-tsdocs/TypeCoverageStats/total",
                       "reference/mint-tsdocs/TypeCoverageStats/undocumented"
                     ]
-                  },
-                  {
-                    "group": "TypeTreeGroupProps",
-                    "pages": [
-                      "reference/mint-tsdocs/TypeTreeGroupProps",
-                      "reference/mint-tsdocs/TypeTreeGroupProps/children",
-                      "reference/mint-tsdocs/TypeTreeGroupProps/title"
-                    ]
-                  },
-                  {
-                    "group": "TypeTreeProperty",
-                    "pages": [
-                      "reference/mint-tsdocs/TypeTreeProperty",
-                      "reference/mint-tsdocs/TypeTreeProperty/defaultValue",
-                      "reference/mint-tsdocs/TypeTreeProperty/deprecated",
-                      "reference/mint-tsdocs/TypeTreeProperty/description",
-                      "reference/mint-tsdocs/TypeTreeProperty/name",
-                      "reference/mint-tsdocs/TypeTreeProperty/properties",
-                      "reference/mint-tsdocs/TypeTreeProperty/required",
-                      "reference/mint-tsdocs/TypeTreeProperty/type"
-                    ]
-                  },
-                  {
-                    "group": "TypeTreeProps",
-                    "pages": [
-                      "reference/mint-tsdocs/TypeTreeProps",
-                      "reference/mint-tsdocs/TypeTreeProps/level",
-                      "reference/mint-tsdocs/TypeTreeProps/maxDepth"
-                    ]
                   }
                 ]
               },
@@ -1068,8 +1039,7 @@
                 "pages": [
                   "reference/mint-tsdocs/CoverageLevel",
                   "reference/mint-tsdocs/DebugFunction",
-                  "reference/mint-tsdocs/DebugLevel",
-                  "reference/mint-tsdocs/TypeAnnotation"
+                  "reference/mint-tsdocs/DebugLevel"
                 ]
               }
             ]

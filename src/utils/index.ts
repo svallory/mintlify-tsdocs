@@ -54,5 +54,4 @@ export {
 /**
  * Link validation exports
  */
-export { LinkValidator } from './LinkValidator';
-export type { LinkValidation } from '../components/Link';
+export * from './LinkValidator';

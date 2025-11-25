@@ -38,4 +38,4 @@ Writes a link tag that references a code symbol
 
 ## Remarks
 
-  This virtual method must be implemented by subclasses to handle code references like <code>{@link MyClass}</code> or <code>{@link MyClass.method}</code>.  The base class throws an error because code destination handling requires: - Resolving the symbol to a file path - Generating appropriate relative URLs - Determining if the symbol exists in the current documentation set  See <code>CustomMarkdownEmitter.writeLinkTagWithCodeDestination()</code> for an implementation.
+  This virtual method must be implemented by subclasses to handle code references like `\{@link MyClass\}` or `\{@link MyClass.method\}`.  The base class throws an error because code destination handling requires: - Resolving the symbol to a file path - Generating appropriate relative URLs - Determining if the symbol exists in the current documentation set  See `CustomMarkdownEmitter.writeLinkTagWithCodeDestination()` for an implementation.

@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
 import { CommandLineAction } from '@rushstack/ts-command-line';
 import { MarkdownDocumenter } from '../documenters/MarkdownDocumenter';
+import { BaseAction } from './BaseAction';
 import { type CommandLineFlagParameter, type CommandLineStringParameter } from '@rushstack/ts-command-line';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { loadConfig, generateApiExtractorConfig, findConfigPath } from '../config';
@@ -17,6 +18,10 @@ import { TsConfigValidator } from '../utils/TsConfigValidator';
 import { showCliHeader } from './CliHelpers';
 import * as GenerateHelp from './help/GenerateHelp';
 import { IssueDisplayUtils, type IssueMessage, type IssueGroup } from './IssueDisplayUtils';
+import { ApiExtractorService } from './services/ApiExtractorService';
+import { TypeScriptCompiler } from './services/TypeScriptCompiler';
+import { TsConfigHelper } from './helpers/TsConfigHelper';
+import { S_BAR } from './utils/constants';
 
 /**
  * CLI action for generating Mintlify-compatible MDX documentation.
@@ -32,7 +37,7 @@ import { IssueDisplayUtils, type IssueMessage, type IssueGroup } from './IssueDi
  *
  * @public
  */
-export class GenerateAction extends CommandLineAction {
+export class GenerateAction extends BaseAction {
   /** Command-line flag to skip api-extractor execution */
   private readonly _skipExtractorParameter: CommandLineFlagParameter;
 
@@ -277,7 +282,7 @@ export class GenerateAction extends CommandLineAction {
       }
 
       // Step 8: Build API model from .api.json files
-      const apiModel = this._buildApiModel(inputFolder);
+      const { apiModel } = this.buildApiModel(inputFolder);
 
       // Step 9: Generate documentation
       const markdownDocumenter: MarkdownDocumenter = new MarkdownDocumenter({
@@ -293,15 +298,26 @@ export class GenerateAction extends CommandLineAction {
         verbose: this._verboseParameter.value
       });
 
-      const generateSpinner = clack.spinner();
-      generateSpinner.start('Generating documentation');
+      // const generateSpinner = clack.spinner();
+
       try {
         await markdownDocumenter.generateFiles();
-        generateSpinner.stop(`Documentation generated in ${config.outputFolder}`);
+        clack.log.success(`Generation completed`);
       } catch (generateError) {
-        generateSpinner.stop('Documentation generation failed');
+        clack.log.error('Generation failed');
         throw generateError;
       }
+
+      // Calculate Mintlify project root (where mint.json is)
+      const mintProjectRoot = config.docsJson
+        ? path.dirname(config.docsJson)
+        : path.join(projectDir, 'docs');
+
+      // Make path relative to CWD for better readability
+      const relativeMintRoot = path.relative(process.cwd(), mintProjectRoot);
+      const cdCommand = relativeMintRoot ? `cd ${relativeMintRoot} && ` : '';
+
+      clack.outro(`Run ${chalk.cyan(`${cdCommand}mint dev`)} to view the documentation`);
     } finally {
       // Restore original working directory
       if (projectDir !== originalCwd) {
@@ -355,100 +371,25 @@ export class GenerateAction extends CommandLineAction {
     projectDir: string,
     tsconfigPath?: string
   ): Promise<void> {
-    // Find tsconfig.json
-    let resolvedTsconfigPath = tsconfigPath
-      ? path.resolve(projectDir, tsconfigPath)
-      : TsConfigValidator.findTsConfig(projectDir);
+    const spinner = clack.spinner();
 
-    if (!resolvedTsconfigPath) {
-      throw new DocumentationError(
-        'No tsconfig.json found. TypeScript compilation is required to generate .d.ts files.',
-        ErrorCode.FILE_NOT_FOUND
-      );
-    }
-
-    // Validate configuration
-    const validation = TsConfigValidator.validateTsConfig(resolvedTsconfigPath);
-    const displayPath = TsConfigValidator.getDisplayPath(projectDir, resolvedTsconfigPath);
-
-    if (!validation.hasDeclaration) {
-      clack.log.error(
-        `${displayPath} does not have "declaration: true" in compilerOptions.\nThis is required to generate .d.ts files.`
-      );
-
-      // Offer fixes
-      const action = (await clack.select({
-        message: 'How would you like to fix this?',
-        options: [
-          { value: 'fix', label: `Update ${displayPath} with "declaration: true"` },
-          { value: 'extend', label: 'Create tsconfig.tsdocs.json (extends your config)' },
-          { value: 'pick', label: 'Pick a different tsconfig.json file' },
-          { value: 'abort', label: 'Abort generation' }
-        ]
-      })) as string;
-
-      if (clack.isCancel(action) || action === 'abort') {
-        throw new DocumentationError(
-          'Cannot generate documentation without valid TypeScript configuration',
-          ErrorCode.INVALID_CONFIGURATION
-        );
-      }
-
-      let finalTsconfigPath = resolvedTsconfigPath;
-
-      switch (action) {
-        case 'fix':
-          TsConfigValidator.fixTsConfig(resolvedTsconfigPath);
-          clack.log.success(`Updated ${displayPath}`);
-          break;
-
-        case 'extend':
-          finalTsconfigPath = TsConfigValidator.createExtendedTsConfig(projectDir, resolvedTsconfigPath);
-          const extendedDisplayPath = TsConfigValidator.getDisplayPath(projectDir, finalTsconfigPath);
-          clack.log.success(`Created ${extendedDisplayPath}`);
-          break;
-
-        case 'pick':
-          const customPath = (await clack.text({
-            message: 'Path to tsconfig.json:',
-            placeholder: './tsconfig.build.json',
-            validate: (value) => {
-              const resolved = path.resolve(projectDir, value);
-              if (!FileSystem.exists(resolved)) {
-                return 'File does not exist';
-              }
-              const customValidation = TsConfigValidator.validateTsConfig(resolved);
-              if (!customValidation.hasDeclaration) {
-                return 'This tsconfig also does not have "declaration: true"';
-              }
-              return undefined;
-            }
-          })) as string;
-
-          if (clack.isCancel(customPath)) {
-            throw new DocumentationError(
-              'Cannot generate documentation without valid TypeScript configuration',
-              ErrorCode.INVALID_CONFIGURATION
-            );
-          }
-
-          finalTsconfigPath = path.resolve(projectDir, customPath);
-          clack.log.success(`Using ${TsConfigValidator.getDisplayPath(projectDir, finalTsconfigPath)}`);
-          break;
-      }
-
-      // Update the path for compilation
-      resolvedTsconfigPath = finalTsconfigPath;
-    }
-
-    // Compile TypeScript
-    const compileSpinner = clack.spinner();
-    compileSpinner.start('Compiling TypeScript');
     try {
+      // Validate tsconfig
+      spinner.start('Validating TypeScript configuration');
+      const validation = await TsConfigHelper.validateAndFix({
+        projectDir,
+        tsconfigPath,
+        interactive: true // GenerateAction is always interactive
+      });
+      spinner.stop('TypeScript configuration validated');
+
+      // Compile TypeScript
+      spinner.start('Compiling TypeScript');
+
       const { execFileSync } = await import('child_process');
 
       // Use execFileSync with array arguments to prevent command injection
-      execFileSync('npx', ['tsc', '--project', resolvedTsconfigPath], {
+      execFileSync('npx', ['tsc', '--project', validation.tsconfigPath], {
         cwd: projectDir,
         stdio: 'inherit'
       });
@@ -472,13 +413,10 @@ export class GenerateAction extends CommandLineAction {
         }
       }
 
-      compileSpinner.stop('TypeScript compilation completed');
+      spinner.stop('TypeScript compilation completed');
     } catch (error) {
-      compileSpinner.stop('TypeScript compilation failed');
-      throw new DocumentationError(
-        `TypeScript compilation failed: ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.COMMAND_FAILED
-      );
+      spinner.stop('Validation/compilation failed');
+      throw error;
     }
   }
 
@@ -492,171 +430,73 @@ export class GenerateAction extends CommandLineAction {
     const extractorSpinner = clack.spinner();
     extractorSpinner.start('Running api-extractor');
 
+    // Group warnings/errors by file for cleaner display
+    const issueGroups: Map<string, IssueMessage[]> = new Map();
+    const ungroupedIssues: IssueMessage[] = [];
+
     try {
-      // Load the config
-      const extractorConfig: ExtractorConfig = ExtractorConfig.loadFileAndPrepare(configPath);
-
-      // Capture and format api-extractor messages
-      const messages: string[] = [];
-
-      // Group warnings/errors by file for cleaner display
-      const issueGroups: Map<string, IssueMessage[]> = new Map();
-      const ungroupedIssues: IssueMessage[] = [];
-
-      // Intercept console.log/error to prevent duplicate output
-      // while allowing clack output (which goes through a different path)
-      const originalConsoleLog = console.log;
-      const originalConsoleError = console.error;
-      const originalConsoleWarn = console.warn;
-
-      // Suppress direct console output during api-extractor
-      console.log = () => { };
-      console.error = () => { };
-      console.warn = () => { };
-
-      try {
-        // Run api-extractor with message callback to intercept output
-        const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
-          localBuild: true,
-          showVerboseMessages: false,
-          messageCallback: (message: any) => {
-            // Skip messages that have been suppressed (logLevel: 'none')
-            if (message.logLevel === 'none') {
-              return;
-            }
-
-            // When lint is disabled (default), only show errors, not warnings
-            const isError = message.logLevel === 'error';
-            if (!this._lintParameter.value && !isError) {
-              return;
-            }
-
-            // Create issue message with normalized severity
-            const issue: IssueMessage = {
-              text: message.text,
-              severity: IssueDisplayUtils.logLevelToSeverity(message.logLevel),
-              line: message.sourceFileLine,
-              column: message.sourceFileColumn
-            };
-
-            // Group by file or collect without location
-            if (message.sourceFilePath) {
-              const fileKey = message.sourceFilePath;
-              if (!issueGroups.has(fileKey)) {
-                issueGroups.set(fileKey, []);
-              }
-              issueGroups.get(fileKey)!.push(issue);
-            } else {
-              ungroupedIssues.push(issue);
-            }
-
-            messages.push(message.text);
+      const result = await ApiExtractorService.run({
+        configPath,
+        suppressConsole: true,
+        showVerboseMessages: false,
+        messageHandler: (message) => {
+          // Skip messages that have been suppressed (logLevel: 'none')
+          if (message.logLevel === 'none') {
+            return;
           }
-        });
 
-        // Display grouped messages after extraction
-        const groups: IssueGroup[] = Array.from(issueGroups.entries()).map(([filePath, issues]) => ({
-          filePath,
-          issues
-        }));
-        IssueDisplayUtils.displayGroupedIssues(groups, ungroupedIssues);
+          // When lint is disabled (default), only show errors, not warnings
+          const isError = message.logLevel === 'error';
+          if (!this._lintParameter.value && !isError) {
+            return;
+          }
 
-        if (extractorResult.succeeded) {
-          extractorSpinner.stop('api-extractor completed successfully');
-        } else {
-          extractorSpinner.stop('api-extractor completed with errors');
-          throw new DocumentationError(
-            `api-extractor completed with ${extractorResult.errorCount} errors and ${extractorResult.warningCount} warnings`,
-            ErrorCode.COMMAND_FAILED
-          );
+          // Create issue message with normalized severity
+          const issue: IssueMessage = {
+            text: message.text,
+            severity: IssueDisplayUtils.logLevelToSeverity(message.logLevel),
+            line: message.sourceFileLine,
+            column: message.sourceFileColumn
+          };
+
+          // Group by file or collect without location
+          if (message.sourceFilePath) {
+            const fileKey = message.sourceFilePath;
+            if (!issueGroups.has(fileKey)) {
+              issueGroups.set(fileKey, []);
+            }
+            issueGroups.get(fileKey)!.push(issue);
+          } else {
+            ungroupedIssues.push(issue);
+          }
         }
-      } finally {
-        // Restore console methods
-        console.log = originalConsoleLog;
-        console.error = originalConsoleError;
-        console.warn = originalConsoleWarn;
+      });
+
+      // Display grouped messages after extraction
+      const groups: IssueGroup[] = Array.from(issueGroups.entries()).map(([filePath, issues]) => ({
+        filePath,
+        issues
+      }));
+      IssueDisplayUtils.displayGroupedIssues(groups, ungroupedIssues);
+
+      if (result.succeeded) {
+        extractorSpinner.stop('API extraction completed');
+      } else {
+        extractorSpinner.stop('API extraction completed with errors');
+        throw new DocumentationError(
+          `API extraction completed with ${result.errorCount} errors and ${result.warningCount} warnings`,
+          ErrorCode.COMMAND_FAILED
+        );
       }
     } catch (error) {
-      extractorSpinner.stop('api-extractor failed');
+      extractorSpinner.stop('API extraction failed');
       if (error instanceof DocumentationError) {
         throw error;
       }
       throw new DocumentationError(
-        `Failed to run api-extractor: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to run API extraction: ${error instanceof Error ? error.message : String(error)}`,
         ErrorCode.COMMAND_FAILED
       );
     }
-  }
-
-  /**
-   * Builds API model from .api.json files in the input folder
-   *
-   * @param inputFolder - Directory containing .api.json files
-   * @returns The loaded API model
-   * @private
-   */
-  private _buildApiModel(inputFolder: string): ApiModel {
-    const errorBoundary = new ErrorBoundary({
-      continueOnError: false,
-      logErrors: true
-    });
-
-    const result = errorBoundary.executeSync(() => {
-      const apiModel: ApiModel = new ApiModel();
-
-      // Validate input folder
-      const validatedInputFolder = SecurityUtils.validateCliInput(inputFolder, 'Input folder');
-
-      if (!FileSystem.exists(validatedInputFolder)) {
-        throw new DocumentationError(
-          `The input folder does not exist: ${validatedInputFolder}`,
-          ErrorCode.DIRECTORY_NOT_FOUND
-        );
-      }
-
-      // Process API files
-      const apiFiles = FileSystem.readFolderItemNames(validatedInputFolder);
-      let loadedCount = 0;
-
-      for (const filename of apiFiles) {
-        if (!filename.match(/\.api\.json$/i)) {
-          continue;
-        }
-
-        try {
-          const safeFilename = SecurityUtils.validateFilename(filename);
-          const filenamePath = SecurityUtils.validateFilePath(validatedInputFolder, safeFilename);
-
-          const fileContent = FileSystem.readFile(filenamePath);
-          // API JSON files are generated by API Extractor from trusted source code
-          // They contain documentation that legitimately includes security-related terms
-          SecurityUtils.validateJsonContent(fileContent, { skipPatternCheck: true });
-
-          apiModel.loadPackage(filenamePath);
-          loadedCount++;
-        } catch (error) {
-          throw new DocumentationError(
-            `Failed to load API package from ${filename}: ${error instanceof Error ? error.message : String(error)}`,
-            ErrorCode.API_LOAD_ERROR
-          );
-        }
-      }
-
-      if (loadedCount === 0) {
-        throw new DocumentationError(
-          `No .api.json files found in input folder: ${validatedInputFolder}`,
-          ErrorCode.API_LOAD_ERROR
-        );
-      }
-
-      return apiModel;
-    });
-
-    // ErrorBoundary.executeSync returns ErrorResult<ApiModel>
-    if (!result.success || !result.data) {
-      throw result.error || new DocumentationError('Failed to build API model', ErrorCode.API_LOAD_ERROR);
-    }
-
-    return result.data;
   }
 }

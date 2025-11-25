@@ -49,7 +49,8 @@ export * from './utils';
 // ===============================================
 // Component Types
 // ===============================================
-export type { TypeTreeProperty, TypeTreeProps, TypeTreeGroupProps, TypeAnnotation } from './components';
+// Component types are available from 'mint-tsdocs/snippets'
+// They are not re-exported here since snippets/ is not compiled by tsc
 
 // ===============================================
 // Custom TSDoc Nodes

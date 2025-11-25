@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2018",
     "module": "CommonJS",
-    "lib": ["ES2018"],
+    "lib": [
+      "ES2018"
+    ],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -23,12 +25,22 @@
     "checkJs": true,
     "jsx": "preserve",
     "paths": {
-      "/snippets/*": ["./docs/snippets/*"]
+      "/snippets/*": [
+        "./docs/snippets/*"
+      ]
     }
   },
   "mdx": {
     "checkMdx": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "**/*.test.ts", "docs/reference", "docs/snippets/tsdocs"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "docs",
+    "lib",
+    "node_modules",
+    "snippets",
+    "**/*.test.ts"
+  ]
 }

@@ -33,4 +33,4 @@ Escapes text for safe markdown output
 
 ## Remarks
 
-  The escaping order is critical: 1. **Backslashes first** - Prevents double-escaping (e.g., <code>\*</code> becoming <code>\\*</code>) 2. **Markdown syntax** - Escapes <code>*</code>, <code>#</code>, <code>[</code>, <code>]</code>, <code>_</code>, <code>|</code>,  <code> </code><code>, </code>~<code> 3. **Triple hyphens** - Prevents horizontal rules (</code>---<code>) 4. **HTML entities** - Escapes </code>&amp;<code>, </code><code>, </code> for safe HTML rendering  This ensures that literal text like <code>*bold*</code> appears as-is instead of rendering as markdown formatting.
+  The escaping order is critical: 1. **Backslashes first** - Prevents double-escaping (e.g., `\*` becoming `\\*`) 2. **Markdown syntax** - Escapes `*`, `#`, `[`, `]`, `_`, `|`,  ` ``, `~` 3. **Triple hyphens** - Prevents horizontal rules (`---`) 4. **HTML entities** - Escapes `&amp;`, ``, ` for safe HTML rendering  This ensures that literal text like `*bold*` appears as-is instead of rendering as markdown formatting.

@@ -14,6 +14,7 @@ import { CoverageConfig, CoverageLevel, CoverageRule } from '../config/types';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { Extractor, ExtractorConfig, ExtractorResult } from '@microsoft/api-extractor';
 import { showCliHeader } from './CliHelpers';
+import { ApiExtractorService } from './services/ApiExtractorService';
 
 interface CoverageItem {
     name: string;
@@ -211,62 +212,33 @@ export class CoverageAction extends BaseAction {
         }
 
         try {
-            const extractorConfig = ExtractorConfig.loadFileAndPrepare(
-                config.apiExtractor?.configPath
-                    ? path.resolve(projectDir, config.apiExtractor.configPath)
-                    : apiExtractorConfigPath
-            );
+            const configPath = config.apiExtractor?.configPath
+                ? path.resolve(projectDir, config.apiExtractor.configPath)
+                : apiExtractorConfigPath;
 
-            // Suppress console output during api-extractor
-            const originalConsoleLog = console.log;
-            const originalConsoleError = console.error;
-            const originalConsoleWarn = console.warn;
+            const result = await ApiExtractorService.run({
+                configPath,
+                suppressConsole: true,
+                showVerboseMessages: false
+                // No message handler - coverage doesn't need messages
+            });
 
-            console.log = () => { };
-            console.error = () => { };
-            console.warn = () => { };
-
-            try {
-                const extractorResult = Extractor.invoke(extractorConfig, {
-                    localBuild: true,
-                    showVerboseMessages: false,
-                    messageCallback: (message: any) => {
-                        // Skip all messages with logLevel 'none' (suppressed by config)
-                        if (message.logLevel === 'none') {
-                            return;
-                        }
-                        // For coverage, we only care about errors, not warnings
-                        // Warnings are already suppressed by noLint config
-                    }
-                });
-
-                if (!extractorResult.succeeded) {
-                    throw new DocumentationError(
-                        `api-extractor completed with ${extractorResult.errorCount} errors`,
-                        ErrorCode.COMMAND_FAILED
-                    );
-                }
-            } finally {
-                // Restore console methods
-                console.log = originalConsoleLog;
-                console.error = originalConsoleError;
-                console.warn = originalConsoleWarn;
-
-                // Clean up temporary entry point
-                if (tempEntryPoint && FileSystem.exists(tempEntryPoint)) {
-                    FileSystem.deleteFile(tempEntryPoint);
-                }
+            if (!result.succeeded) {
+                throw new DocumentationError(
+                    `api-extractor completed with ${result.errorCount} errors`,
+                    ErrorCode.COMMAND_FAILED
+                );
             }
         } catch (error) {
-            // Clean up temp file on error too
-            if (tempEntryPoint && FileSystem.exists(tempEntryPoint)) {
-                FileSystem.deleteFile(tempEntryPoint);
-            }
-
             throw new DocumentationError(
                 `Failed to run api-extractor: ${error instanceof Error ? error.message : String(error)}`,
                 ErrorCode.COMMAND_FAILED
             );
+        } finally {
+            // Clean up temporary entry point
+            if (tempEntryPoint && FileSystem.exists(tempEntryPoint)) {
+                FileSystem.deleteFile(tempEntryPoint);
+            }
         }
     }
 

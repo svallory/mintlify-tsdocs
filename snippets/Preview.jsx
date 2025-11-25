@@ -8,36 +8,15 @@
  */
 
 // ============================================================================
-// Type Definitions
-// ============================================================================
-
-/**
- * Props for the Preview component.
- *
- * @example
- * ```tsx
- * <Preview title="Component Demo">
- *   <TypeTree name="config" type="object" />
- * </Preview>
- * ```
- */
-export interface PreviewProps {
-  /** The content to display inside the preview box */
-  children: React.ReactNode;
-  /** Title for the preview section */
-  title?: string;
-  /** Additional CSS classes to apply to the outer container */
-  className?: string;
-}
-
-// ============================================================================
 // Preview Component
 // ============================================================================
 
 /**
  * Preview - Wrapper component for displaying examples and demos
+ * @param {import('./Preview').PreviewProps} props
+ * @returns {JSX.Element}
  */
-export const Preview = ({ children, title = "Preview", className }: PreviewProps) => {
+export const Preview = ({ children, title = "Preview", className }) => {
   const outerClasses = [
     "code-block mt-5 mb-8 not-prose rounded-2xl relative group",
     "text-gray-950 bg-gray-50 dark:bg-white/5 dark:text-gray-50",

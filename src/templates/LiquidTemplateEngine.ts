@@ -355,7 +355,13 @@ export class LiquidTemplateEngine {
             return this._escapeHtml(linkText);
 
           case DocNodeKind.CodeSpan:
-            return `<code>${this._escapeHtml(segment.props?.code || '')}</code>`;
+            // Use backticks instead of <code> tags for better MDX compatibility
+            // Escape backticks in the code content and JSX curly braces
+            const code = (segment.props?.code || '')
+              .replace(/`/g, '\\`')
+              .replace(/{/g, '\\{')
+              .replace(/}/g, '\\}');
+            return `\`${code}\``;
 
           case DocNodeKind.SoftBreak:
             return ' ';
@@ -388,7 +394,13 @@ export class LiquidTemplateEngine {
           return this._escapeHtml(linkText);
 
         case DocNodeKind.CodeSpan:
-          return `<code>${this._escapeHtml(segment.props.code || '')}</code>`;
+          // Use backticks instead of <code> tags for better MDX compatibility
+          // Escape backticks in the code content and JSX curly braces
+          const singleCode = (segment.props.code || '')
+            .replace(/`/g, '\\`')
+            .replace(/{/g, '\\{')
+            .replace(/}/g, '\\}');
+          return `\`${singleCode}\``;
 
         default:
           return segment.props.text ? this._escapeHtml(segment.props.text) : '';

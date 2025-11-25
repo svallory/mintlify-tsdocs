@@ -12,6 +12,7 @@ import { formatTitle, multiLineOutro, showCliHeader, showSectionHeader } from '.
 import { IssueDisplayUtils, type IssueMessage, type IssueGroup, type IssueSeverity } from './IssueDisplayUtils';
 import chalk from 'chalk';
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
+import { ApiExtractorService } from './services/ApiExtractorService';
 
 
 /**
@@ -182,106 +183,83 @@ export class LintAction extends CommandLineAction {
     isFileFilter?: boolean
   ): Promise<void> {
     try {
-      const extractorConfig: ExtractorConfig = ExtractorConfig.loadFileAndPrepare(configPath);
+      const result = await ApiExtractorService.run({
+        configPath,
+        suppressConsole: true,
+        showVerboseMessages: false,
+        messageHandler: (message) => {
+          // Skip suppressed messages
+          if (message.logLevel === 'none') {
+            return;
+          }
 
-      // Suppress console to prevent duplicate output (API Extractor writes warnings twice)
-      const originalConsoleLog = console.log;
-      const originalConsoleWarn = console.warn;
-      const originalConsoleError = console.error;
-
-      const noop = () => { };
-      console.log = noop;
-      console.warn = noop;
-      console.error = noop;
-
-      try {
-        // Run api-extractor with message callback
-        const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
-          localBuild: true,
-          showVerboseMessages: false,
-          messageCallback: (message: any) => {
-            // Skip suppressed messages
-            if (message.logLevel === 'none') {
-              return;
-            }
-
-            // Write verbose/info messages immediately to stdout so they appear in correct order
-            // These are messages like "Analysis will use TypeScript version..." that should appear early
-            // Only show in verbose mode
-            if (message.logLevel === 'verbose' || message.logLevel === 'info') {
-              if (this._verboseParameter.value) {
-                // Temporarily restore console to write the message
-                console.log = originalConsoleLog;
-
-                // Show header before first verbose message
-                if (!this._shownApiExtractorHeader) {
-                  clack.log.step(chalk.dim('Running API Extractor'));
-                  console.log(chalk.gray(S_BAR));
-                  this._shownApiExtractorHeader = true;
-                }
-
-                console.log(chalk.gray(S_BAR) + '  ' + message.text);
-                console.log = noop;
+          // Write verbose/info messages immediately to stdout so they appear in correct order
+          // These are messages like "Analysis will use TypeScript version..." that should appear early
+          // Only show in verbose mode
+          if (message.logLevel === 'verbose' || message.logLevel === 'info') {
+            if (this._verboseParameter.value) {
+              // Show header before first verbose message
+              if (!this._shownApiExtractorHeader) {
+                clack.log.step(chalk.dim('Running API Extractor'));
+                console.log(chalk.gray(S_BAR));
+                this._shownApiExtractorHeader = true;
               }
-              return;
+
+              console.log(chalk.gray(S_BAR) + '  ' + message.text);
             }
+            return;
+          }
 
-            // Create deduplication key using messageId + file + line
-            const dedupeKey = `${message.messageId}:${message.sourceFilePath}:${message.sourceFileLine}`;
+          // Create deduplication key using messageId + file + line
+          const dedupeKey = `${message.messageId}:${message.sourceFilePath}:${message.sourceFileLine}`;
 
-            // Skip if already seen
-            if (this._seenIssues.has(dedupeKey)) {
-              return;
-            }
-            this._seenIssues.add(dedupeKey);
+          // Skip if already seen
+          if (this._seenIssues.has(dedupeKey)) {
+            return;
+          }
+          this._seenIssues.add(dedupeKey);
 
-            // Apply path filter if specified
-            if (pathFilter && message.sourceFilePath) {
-              const normalizedSourcePath = path.resolve(message.sourceFilePath);
-              if (isFileFilter) {
-                // For file filter, only include issues from the exact file
-                if (normalizedSourcePath !== pathFilter) {
-                  return; // Skip issues from other files
-                }
-              } else {
-                // For folder filter, include issues from files within the folder
-                if (!normalizedSourcePath.startsWith(pathFilter)) {
-                  return; // Skip issues outside the filtered folder
-                }
+          // Apply path filter if specified
+          if (pathFilter && message.sourceFilePath) {
+            const normalizedSourcePath = path.resolve(message.sourceFilePath);
+            if (isFileFilter) {
+              // For file filter, only include issues from the exact file
+              if (normalizedSourcePath !== pathFilter) {
+                return; // Skip issues from other files
               }
-            }
-
-            // Create issue message
-            const issue: IssueMessage = {
-              text: message.text,
-              severity: IssueDisplayUtils.logLevelToSeverity(message.logLevel),
-              line: message.sourceFileLine,
-              column: message.sourceFileColumn
-            };
-
-            // Group by file or collect without location
-            if (message.sourceFilePath) {
-              const fileKey = message.sourceFilePath;
-              if (!issueGroups.has(fileKey)) {
-                issueGroups.set(fileKey, []);
-              }
-              issueGroups.get(fileKey)!.push(issue);
             } else {
-              ungroupedIssues.push(issue);
+              // For folder filter, include issues from files within the folder
+              if (!normalizedSourcePath.startsWith(pathFilter)) {
+                return; // Skip issues outside the filtered folder
+              }
             }
           }
-        });
 
-        if (!extractorResult.succeeded) {
-          clack.log.warn(
-            `API Extractor completed with ${extractorResult.errorCount} errors and ${extractorResult.warningCount} warnings`
-          );
+          // Create issue message
+          const issue: IssueMessage = {
+            text: message.text,
+            severity: IssueDisplayUtils.logLevelToSeverity(message.logLevel),
+            line: message.sourceFileLine,
+            column: message.sourceFileColumn
+          };
+
+          // Group by file or collect without location
+          if (message.sourceFilePath) {
+            const fileKey = message.sourceFilePath;
+            if (!issueGroups.has(fileKey)) {
+              issueGroups.set(fileKey, []);
+            }
+            issueGroups.get(fileKey)!.push(issue);
+          } else {
+            ungroupedIssues.push(issue);
+          }
         }
-      } finally {
-        // Restore console
-        console.log = originalConsoleLog;
-        console.warn = originalConsoleWarn;
-        console.error = originalConsoleError;
+      });
+
+      if (!result.succeeded) {
+        clack.log.warn(
+          `API Extractor completed with ${result.errorCount} errors and ${result.warningCount} warnings`
+        );
       }
     } catch (error) {
       clack.log.warn('API Extractor analysis failed: ' + (error instanceof Error ? error.message : String(error)));

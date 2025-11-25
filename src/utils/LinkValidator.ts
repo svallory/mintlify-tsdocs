@@ -5,7 +5,18 @@
 
 import { ApiItem, ApiModel, ApiItemKind } from '@microsoft/api-extractor-model';
 import { PackageName } from '@rushstack/node-core-library';
-import { LinkValidation } from '../components/Link';
+
+/**
+ * Validation result for links
+ */
+export interface LinkValidation {
+  /** Whether the link target is valid */
+  isValid: boolean;
+  /** The resolved path to the target (if valid) */
+  path?: string;
+  /** Error message if validation failed */
+  error?: string;
+}
 
 /**
  * Validates and resolves link targets for the Link component

@@ -18,6 +18,7 @@ import { DocTableRow } from '../../src/nodes/DocTableRow';
 import { DocTableCell } from '../../src/nodes/DocTableCell';
 import { CustomDocNodeKind } from '../../src/nodes/CustomDocNodeKind';
 import { createMockApiItem } from '../helpers/mocks';
+import { IndentedWriter } from '../../src/utils/IndentedWriter';
 
 /**
  * Helper to create a TSDoc configuration mock
@@ -439,7 +440,7 @@ describe('CustomMarkdownEmitter', () => {
         const stringBuilder = new StringBuilder();
         const table = createPropertyTable(mockConfig, 'Property');
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -463,7 +464,7 @@ describe('CustomMarkdownEmitter', () => {
         const stringBuilder = new StringBuilder();
         const table = createPropertyTable(mockConfig, 'Property');
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -486,7 +487,7 @@ describe('CustomMarkdownEmitter', () => {
         const table1 = createPropertyTable(mockConfig, 'Property');
         const table2 = createPropertyTable(mockConfig, 'Parameter');
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -519,7 +520,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('Description');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -551,7 +552,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('(Optional) An optional property');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -575,7 +576,7 @@ describe('CustomMarkdownEmitter', () => {
         const stringBuilder = new StringBuilder();
         const table = createMethodTable(mockConfig, 'Method');
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -598,7 +599,7 @@ describe('CustomMarkdownEmitter', () => {
         const stringBuilder = new StringBuilder();
         const table = createMethodTable(mockConfig, 'Method');
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -628,7 +629,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('Deprecated: Use newMethod() instead');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -658,7 +659,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('Creates instance');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -690,7 +691,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('Value2');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -724,7 +725,7 @@ describe('CustomMarkdownEmitter', () => {
         row.addPlainTextCell('Value3');
 
         const context = {
-          writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+          writer: new IndentedWriter(stringBuilder),
           boldRequested: false,
           italicRequested: false,
           writingBold: false,
@@ -753,7 +754,7 @@ describe('CustomMarkdownEmitter', () => {
       });
 
       const context = {
-        writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+        writer: new IndentedWriter(stringBuilder),
         boldRequested: false,
         italicRequested: false,
         writingBold: false,
@@ -785,7 +786,7 @@ describe('CustomMarkdownEmitter', () => {
       row.addPlainTextCell(''); // Empty description
 
       const context = {
-        writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+        writer: new IndentedWriter(stringBuilder),
         boldRequested: false,
         italicRequested: false,
         writingBold: false,
@@ -820,7 +821,7 @@ describe('CustomMarkdownEmitter', () => {
       row.addPlainTextCell('Description');
 
       const context = {
-        writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+        writer: new IndentedWriter(stringBuilder),
         boldRequested: false,
         italicRequested: false,
         writingBold: false,
@@ -852,7 +853,7 @@ describe('CustomMarkdownEmitter', () => {
       row.addPlainTextCell('Unicode test: 你好 🚀');
 
       const context = {
-        writer: new (require('../../src/utils/IndentedWriter').IndentedWriter)(stringBuilder),
+        writer: new IndentedWriter(stringBuilder),
         boldRequested: false,
         italicRequested: false,
         writingBold: false,
