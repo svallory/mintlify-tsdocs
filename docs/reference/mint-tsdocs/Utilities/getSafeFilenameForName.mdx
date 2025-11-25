@@ -1,7 +1,7 @@
 ---
 title: "getSafeFilenameForName"
 icon: "function"
-description: "Converts bad filename characters to underscores. Validates filename to prevent security vulnerabilities."
+description: "Converts bad filename characters to underscores. Sanitizes input for safe filesystem use without strict validation. This function is designed for API Extractor output (valid identifiers) and applies minimal sanitization to ensure filesystem compatibility."
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Converts bad filename characters to underscores. Validates filename to prevent security vulnerabilities. 
+Converts bad filename characters to underscores. Sanitizes input for safe filesystem use without strict validation.  This function is designed for API Extractor output (valid identifiers) and applies minimal sanitization to ensure filesystem compatibility. 
 ## Signature
 
 ```typescript
@@ -29,4 +29,4 @@ static getSafeFilenameForName(name: string): string;
 
 **Type**:`string`
 
-Converts bad filename characters to underscores. Validates filename to prevent security vulnerabilities.
+Converts bad filename characters to underscores. Sanitizes input for safe filesystem use without strict validation.This function is designed for API Extractor output (valid identifiers) and applies minimal sanitization to ensure filesystem compatibility.

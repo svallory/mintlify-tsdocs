@@ -8,7 +8,6 @@ import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { createDebugger, type Debugger } from '../utils/debug';
 import { NavigationManager, NavigationItem } from '../navigation/NavigationManager';
 import { CacheManager, getGlobalCacheManager } from '../cache/CacheManager';
-import { getGlobalPerformanceMonitor } from '../performance/PerformanceMonitor';
 import {
   DocSection,
   DocPlainText,
@@ -232,9 +231,6 @@ export class MarkdownDocumenter {
       apiResolution: { maxSize: 500, enabled: true }
     });
 
-    // Initialize performance monitoring
-    const performanceMonitor = getGlobalPerformanceMonitor(true);
-
     // Create markdown emitter with caching
     this._markdownEmitter = new CustomMarkdownEmitter(this._apiModel);
 
@@ -249,52 +245,46 @@ export class MarkdownDocumenter {
   }
 
   public async generateFiles(): Promise<void> {
-    const performanceMonitor = getGlobalPerformanceMonitor();
     const cacheManager = getGlobalCacheManager();
 
-    await performanceMonitor.measureAsync('Documentation Generation', async () => {
-      // Initialize template system
-      await this._templateManager.initialize();
+    // Initialize template system
+    await this._templateManager.initialize();
 
-      try {
-        this._deleteOldOutputFiles();
+    try {
+      this._deleteOldOutputFiles();
 
-        // Copy Mintlify components to snippets folder
-        this._copyMintlifyComponents();
+      // Copy Mintlify components to snippets folder
+      this._copyMintlifyComponents();
 
-        // Generate TypeInfo.jsx with type information
-        this._generateTypeInfo();
+      // Generate TypeInfo.jsx with type information
+      this._generateTypeInfo();
 
-        // Generate ValidRefs.jsx for link validation
-        this._generateValidRefs();
+      // Generate ValidRefs.jsx for link validation
+      this._generateValidRefs();
 
-        // Generate ValidPages.jsx for page link validation
-        this._generateValidPages();
+      // Generate ValidPages.jsx for page link validation
+      this._generateValidPages();
 
-        // Use the new template-based approach
-        await this._writeApiItemPageTemplate(this._apiModel);
+      // Use the new template-based approach
+      await this._writeApiItemPageTemplate(this._apiModel);
 
-        // Convert README.md to index.mdx if requested
-        if (this._convertReadme) {
-          this._convertReadmeToIndex();
-        }
-
-        // Generate navigation after all pages are written
-        const navigationConfig = this._navigationManager.getStats();
-        if (navigationConfig.totalItems > 0) {
-          this.generateNavigation();
-        }
-
-        // Print performance statistics
-        performanceMonitor.printSummary();
-
-        // Print cache statistics
-        cacheManager.printStats();
-      } finally {
-        // Cleanup template resources
-        await this._templateManager.cleanup();
+      // Convert README.md to index.mdx if requested
+      if (this._convertReadme) {
+        this._convertReadmeToIndex();
       }
-    });
+
+      // Generate navigation after all pages are written
+      const navigationConfig = this._navigationManager.getStats();
+      if (navigationConfig.totalItems > 0) {
+        this.generateNavigation();
+      }
+
+      // Print cache statistics
+      cacheManager.printStats();
+    } finally {
+      // Cleanup template resources
+      await this._templateManager.cleanup();
+    }
   }
 
   /**
@@ -423,8 +413,13 @@ export class MarkdownDocumenter {
     // Process child items recursively, passing current item as parent
     // Skip enum members - they are rendered within the parent enum file
     if ('members' in apiItem && apiItem.kind !== ApiItemKind.Enum) {
-      for (const member of (apiItem as any).members) {
-        await this._writeApiItemPageTemplate(member, apiItem);
+      this._currentRecursionDepth++;
+      try {
+        for (const member of (apiItem as any).members) {
+          await this._writeApiItemPageTemplate(member, apiItem);
+        }
+      } finally {
+        this._currentRecursionDepth--;
       }
     }
   }
@@ -2655,23 +2650,52 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
     clack.log.info('📦 Installing Mintlify components...');
 
     for (const componentFile of componentFiles) {
-      const sourcePath = path.join(componentsSource, componentFile);
-      const targetPath = path.join(snippetsFolder, componentFile);
+      try {
+        const sourcePath = path.join(componentsSource, componentFile);
+        const targetPath = path.join(snippetsFolder, componentFile);
 
-      // Check if we should update the component
-      let shouldCopy = true;
-      if (FileSystem.exists(targetPath)) {
-        // Component already exists - check version
-        shouldCopy = this._shouldUpdateComponent(sourcePath, targetPath);
-      }
+        // Validate paths before processing
+        SecurityUtils.validateFilePath(componentsSource, sourcePath);
+        SecurityUtils.validateFilePath(snippetsFolder, targetPath);
 
-      if (shouldCopy) {
-        FileSystem.ensureFolder(path.dirname(targetPath));
-        const componentContent = FileSystem.readFile(sourcePath);
-        FileSystem.writeFile(targetPath, componentContent);
-        clack.log.success(`   ✓ Installed ${componentFile}`);
-      } else {
-        clack.log.info(`   ✓ ${componentFile} is up to date`);
+        // Check if we should update the component
+        let shouldCopy = true;
+        if (FileSystem.exists(targetPath)) {
+          // Component already exists - check version
+          shouldCopy = this._shouldUpdateComponent(sourcePath, targetPath);
+        }
+
+        if (shouldCopy) {
+          FileSystem.ensureFolder(path.dirname(targetPath));
+          const componentContent = FileSystem.readFile(sourcePath);
+
+          // Validate component content size
+          const contentLength = Buffer.byteLength(componentContent, 'utf8');
+          if (contentLength > MarkdownDocumenter.MAX_FILE_SIZE_BYTES) {
+            throw new ValidationError(
+              `Component file too large: ${componentFile} (${contentLength} bytes)`,
+              { resource: componentFile, operation: 'installComponent', data: { size: contentLength } }
+            );
+          }
+
+          FileSystem.writeFile(targetPath, componentContent);
+          clack.log.success(`   ✓ Installed ${componentFile}`);
+        } else {
+          clack.log.info(`   ✓ ${componentFile} is up to date`);
+        }
+      } catch (error) {
+        if (error instanceof DocumentationError) {
+          throw error;
+        }
+        throw new FileSystemError(
+          `Failed to install component: ${componentFile}`,
+          ErrorCode.FILE_WRITE_ERROR,
+          {
+            resource: componentFile,
+            operation: 'installComponent',
+            cause: error instanceof Error ? error : new Error(String(error))
+          }
+        );
       }
     }
   }
@@ -2681,24 +2705,70 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
    */
   private _discoverComponentFiles(dir: string, baseDir: string = dir): string[] {
     const files: string[] = [];
-    const items = FileSystem.readFolderItemNames(dir);
 
-    for (const item of items) {
-      const fullPath = path.join(dir, item);
-      const stats = FileSystem.getStatistics(fullPath);
+    try {
+      // Validate the directory exists and is accessible
+      if (!FileSystem.exists(dir)) {
+        throw new FileSystemError(
+          `Components directory does not exist: ${dir}`,
+          ErrorCode.FILE_NOT_FOUND,
+          { resource: dir, operation: 'discoverComponentFiles' }
+        );
+      }
 
-      if (stats.isDirectory()) {
-        // Recursively search subdirectories
-        files.push(...this._discoverComponentFiles(fullPath, baseDir));
-      } else if (stats.isFile()) {
-        // Include .jsx files (compiled from .jsx or .tsx), .d.ts files (for TypeScript support), and README.md
-        // Mintlify can import .jsx files with raw JSX syntax
-        // .d.ts files provide type checking in MDX files
-        if (/\.jsx$/i.test(item) || /\.d\.ts$/i.test(item) || item === 'README.md') {
-          const relativePath = path.relative(baseDir, fullPath);
-          files.push(relativePath);
+      const items = FileSystem.readFolderItemNames(dir);
+
+      for (const item of items) {
+        try {
+          const fullPath = path.join(dir, item);
+
+          // Validate the path
+          SecurityUtils.validateFilePath(dir, fullPath);
+
+          const stats = FileSystem.getStatistics(fullPath);
+
+          if (stats.isDirectory()) {
+            // Recursively search subdirectories
+            files.push(...this._discoverComponentFiles(fullPath, baseDir));
+          } else if (stats.isFile()) {
+            // Include .jsx files (compiled from .jsx or .tsx), .d.ts files (for TypeScript support), and README.md
+            // Mintlify can import .jsx files with raw JSX syntax
+            // .d.ts files provide type checking in MDX files
+            if (/\.jsx$/i.test(item) || /\.d\.ts$/i.test(item) || item === 'README.md') {
+              const relativePath = path.relative(baseDir, fullPath);
+
+              // Validate relative path doesn't contain dangerous patterns
+              if (relativePath.includes('..')) {
+                throw new ValidationError(
+                  `Component path contains dangerous pattern: ${relativePath}`,
+                  { resource: relativePath, operation: 'discoverComponentFiles' }
+                );
+              }
+
+              files.push(relativePath);
+            }
+          }
+        } catch (error) {
+          if (error instanceof DocumentationError) {
+            throw error;
+          }
+          // Log warning for individual file issues but continue processing
+          debug.warn(`Warning: Failed to process component file ${item}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
+    } catch (error) {
+      if (error instanceof DocumentationError) {
+        throw error;
+      }
+      throw new FileSystemError(
+        `Failed to discover component files in directory: ${dir}`,
+        ErrorCode.FILE_READ_ERROR,
+        {
+          resource: dir,
+          operation: 'discoverComponentFiles',
+          cause: error instanceof Error ? error : new Error(String(error))
+        }
+      );
     }
 
     return files;

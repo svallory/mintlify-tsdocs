@@ -1,7 +1,7 @@
 ---
 title: "writeLinkTagWithCodeDestination"
 icon: "function"
-description: "writeLinkTagWithCodeDestination API documentation"
+description: "Writes a link tag that references code entities (API items). Overrides parent implementation to: 1. Resolve API references via ApiModel with caching 2. Generate markdown links to resolved items' documentation pages 3. Use scoped names as link text when not explicitly provided"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
- 
+Writes a link tag that references code entities (API items).  Overrides parent implementation to: 1. Resolve API references via ApiModel with caching 2. Generate markdown links to resolved items&#39; documentation pages 3. Use scoped names as link text when not explicitly provided  
 ## Signature
 
 ```typescript
@@ -23,13 +23,19 @@ protected writeLinkTagWithCodeDestination(docLinkTag: DocLinkTag, context: IMark
 ### docLinkTag
 **Type**:`DocLinkTag`
 
-
+The link tag to write
 
 ### context
 **Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>`</Link>
 
-
+Emission context with options containing contextApiItem and filename resolver
 
 ## Returns
 
 **Type**:`void`
+
+Writes a link tag that references code entities (API items).Overrides parent implementation to: 1. Resolve API references via ApiModel with caching 2. Generate markdown links to resolved items' documentation pages 3. Use scoped names as link text when not explicitly provided
+
+## Remarks
+
+  Uses ApiResolutionCache for performance. Cache hit rates are typically 90% during documentation generation due to repeated references to common types.  If resolution fails, logs a debug warning but doesn&#39;t write anything (fails silently). This is intentional - unresolvable references are usually external types or errors in the source TSDoc.

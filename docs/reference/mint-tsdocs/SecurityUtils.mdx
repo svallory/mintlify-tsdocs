@@ -28,6 +28,11 @@ export declare class SecurityUtils
 
 ## Methods
 
+### parseJsonSafe
+**Modifiers**: static
+
+Safely parses JSON with prototype pollution protection. Filters out dangerous keys like __proto__, constructor, and prototype.
+
 ### sanitizeJsonForJsx
 **Modifiers**: static
 

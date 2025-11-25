@@ -8,8 +8,6 @@
 /**
  * Provides structured error information for better error handling and debugging.
  * These codes are used to categorize errors and allow for programmatic handling.
- *
- * @enum {string}
  */
 export enum ErrorCode {
   // --- File System Errors ---
@@ -95,8 +93,6 @@ export enum ErrorCode {
 
 /**
  * Provides structured metadata about an error, offering rich context for debugging and logging.
- *
- * @interface ErrorContext
  */
 export interface ErrorContext {
   /**
@@ -145,8 +141,6 @@ export interface ErrorContext {
 /**
  * Base class for all custom errors in the documentation generation process.
  * It extends the native `Error` class with additional structured context.
- *
- * @extends Error
  */
 export class DocumentationError extends Error {
   /**
@@ -266,8 +260,6 @@ export class DocumentationError extends Error {
 /**
  * Represents an error related to security, such as path traversal or command injection.
  * These are always considered user errors.
- *
- * @extends DocumentationError
  */
 export class SecurityError extends DocumentationError {
   /**
@@ -285,8 +277,6 @@ export class SecurityError extends DocumentationError {
 
 /**
  * Represents an error related to file system operations (read, write, etc.).
- *
- * @extends DocumentationError
  */
 export class FileSystemError extends DocumentationError {
   /**
@@ -305,8 +295,6 @@ export class FileSystemError extends DocumentationError {
 /**
  * Represents an error related to input validation.
  * These are always considered user errors.
- *
- * @extends DocumentationError
  */
 export class ValidationError extends DocumentationError {
   /**
@@ -323,8 +311,6 @@ export class ValidationError extends DocumentationError {
 
 /**
  * Represents an error related to loading or parsing API model files (`.api.json`).
- *
- * @extends DocumentationError
  */
 export class ApiModelError extends DocumentationError {
   /**

@@ -13,6 +13,7 @@ import { loadConfig, generateApiExtractorConfig } from '../config';
 import { CoverageConfig, CoverageLevel, CoverageRule } from '../config/types';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { Extractor, ExtractorConfig, ExtractorResult } from '@microsoft/api-extractor';
+import { showCliHeader } from './CliHelpers';
 
 interface CoverageItem {
     name: string;
@@ -55,6 +56,7 @@ export class CoverageAction extends BaseAction {
     private readonly _groupByParameter: CommandLineChoiceParameter;
     private readonly _jsonParameter: CommandLineFlagParameter;
     private readonly _skipExtractorParameter: CommandLineFlagParameter;
+    private readonly _includePrivateParameter: CommandLineFlagParameter;
     private readonly _projectDirParameter: CommandLineStringParameter;
 
     public constructor(parser: DocumenterCli) {
@@ -100,6 +102,11 @@ export class CoverageAction extends BaseAction {
             description: 'Skip running api-extractor (use existing .api.json files)'
         });
 
+        this._includePrivateParameter = this.defineFlagParameter({
+            parameterLongName: '--include-private',
+            description: 'Include internal/private code (non-exported) in coverage analysis'
+        });
+
         this._projectDirParameter = this.defineStringParameter({
             parameterLongName: '--project-dir',
             argumentName: 'PATH',
@@ -112,6 +119,8 @@ export class CoverageAction extends BaseAction {
     }
 
     protected async onExecuteAsync(): Promise<void> {
+        showCliHeader();
+
         const projectDir = this._projectDirParameter.value
             ? path.resolve(process.cwd(), this._projectDirParameter.value)
             : process.cwd();
@@ -126,7 +135,7 @@ export class CoverageAction extends BaseAction {
 
         // Run api-extractor if not skipped
         if (!this._skipExtractorParameter.value) {
-            await this._runApiExtractor(config, projectDir, tsdocsDir);
+            await this._runApiExtractor(config, projectDir, tsdocsDir, this._includePrivateParameter.value);
         }
 
         // Build API model
@@ -161,13 +170,44 @@ export class CoverageAction extends BaseAction {
         }
     }
 
-    private async _runApiExtractor(config: any, projectDir: string, tsdocsDir: string): Promise<void> {
+    private async _runApiExtractor(config: any, projectDir: string, tsdocsDir: string, includePrivate: boolean = false): Promise<void> {
         FileSystem.ensureFolder(tsdocsDir);
         const apiExtractorConfigPath = path.join(tsdocsDir, 'api-extractor.json');
 
+        let tempEntryPoint: string | undefined;
+        let originalEntryPoint: string | undefined;
+
         if (!config.apiExtractor?.configPath) {
-            const apiExtractorConfig = generateApiExtractorConfig(config, projectDir, tsdocsDir);
+            // If including private code, create a temporary entry point that exports everything
+            if (includePrivate) {
+                originalEntryPoint = config.entryPoint;
+                tempEntryPoint = path.join(tsdocsDir, 'temp-full-entry.d.ts');
+
+                // Find all .d.ts files in lib directory
+                const libDir = path.dirname(path.resolve(projectDir, config.entryPoint));
+                const allDtsFiles = this._findAllDtsFiles(libDir, libDir);
+
+                // Create entry point that exports everything
+                const tempDir = path.dirname(tempEntryPoint);
+                const exports = allDtsFiles.map(file => {
+                    const relativePath = './' + path.relative(tempDir, file).replace(/\.d\.ts$/, '');
+                    return `export * from '${relativePath}';`;
+                }).join('\n');
+
+                FileSystem.writeFile(tempEntryPoint, exports);
+
+                // Temporarily modify config to use temp entry point
+                config.entryPoint = tempEntryPoint;
+            }
+
+            // Always suppress lint warnings for coverage command
+            const apiExtractorConfig = generateApiExtractorConfig(config, projectDir, tsdocsDir, true);
             FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
+
+            // Restore original entry point
+            if (originalEntryPoint) {
+                config.entryPoint = originalEntryPoint;
+            }
         }
 
         try {
@@ -177,23 +217,80 @@ export class CoverageAction extends BaseAction {
                     : apiExtractorConfigPath
             );
 
-            const extractorResult = Extractor.invoke(extractorConfig, {
-                localBuild: true,
-                showVerboseMessages: false
-            });
+            // Suppress console output during api-extractor
+            const originalConsoleLog = console.log;
+            const originalConsoleError = console.error;
+            const originalConsoleWarn = console.warn;
 
-            if (!extractorResult.succeeded) {
-                throw new DocumentationError(
-                    `api-extractor completed with ${extractorResult.errorCount} errors`,
-                    ErrorCode.COMMAND_FAILED
-                );
+            console.log = () => { };
+            console.error = () => { };
+            console.warn = () => { };
+
+            try {
+                const extractorResult = Extractor.invoke(extractorConfig, {
+                    localBuild: true,
+                    showVerboseMessages: false,
+                    messageCallback: (message: any) => {
+                        // Skip all messages with logLevel 'none' (suppressed by config)
+                        if (message.logLevel === 'none') {
+                            return;
+                        }
+                        // For coverage, we only care about errors, not warnings
+                        // Warnings are already suppressed by noLint config
+                    }
+                });
+
+                if (!extractorResult.succeeded) {
+                    throw new DocumentationError(
+                        `api-extractor completed with ${extractorResult.errorCount} errors`,
+                        ErrorCode.COMMAND_FAILED
+                    );
+                }
+            } finally {
+                // Restore console methods
+                console.log = originalConsoleLog;
+                console.error = originalConsoleError;
+                console.warn = originalConsoleWarn;
+
+                // Clean up temporary entry point
+                if (tempEntryPoint && FileSystem.exists(tempEntryPoint)) {
+                    FileSystem.deleteFile(tempEntryPoint);
+                }
             }
         } catch (error) {
+            // Clean up temp file on error too
+            if (tempEntryPoint && FileSystem.exists(tempEntryPoint)) {
+                FileSystem.deleteFile(tempEntryPoint);
+            }
+
             throw new DocumentationError(
                 `Failed to run api-extractor: ${error instanceof Error ? error.message : String(error)}`,
                 ErrorCode.COMMAND_FAILED
             );
         }
+    }
+
+    private _findAllDtsFiles(baseDir: string, currentDir: string): string[] {
+        const files: string[] = [];
+        const items = FileSystem.readFolderItemNames(currentDir);
+
+        for (const item of items) {
+            const fullPath = path.join(currentDir, item);
+            const stats = FileSystem.getStatistics(fullPath);
+
+            if (stats.isDirectory()) {
+                // Recurse into subdirectories
+                files.push(...this._findAllDtsFiles(baseDir, fullPath));
+            } else if (item.endsWith('.d.ts') && !item.endsWith('.d.ts.map')) {
+                // Skip special files that shouldn't be exported
+                if (item === 'globals.d.ts' || item === 'global.d.ts') {
+                    continue;
+                }
+                files.push(fullPath);
+            }
+        }
+
+        return files;
     }
 
     private _collectApiItems(apiModel: ApiModel, coverageConfig?: CoverageConfig): CoverageItem[] {
@@ -220,9 +317,16 @@ export class CoverageAction extends BaseAction {
                         return;
                     }
 
+                    // Try to get source file from item or its parents
                     let sourceFile = 'unknown';
-                    if (item instanceof ApiDeclaredItem && item.fileUrlPath) {
-                        sourceFile = item.fileUrlPath;
+                    let currentItem: ApiItem | undefined = item;
+
+                    while (currentItem && sourceFile === 'unknown') {
+                        if (currentItem instanceof ApiDeclaredItem && currentItem.fileUrlPath) {
+                            sourceFile = currentItem.fileUrlPath;
+                            break;
+                        }
+                        currentItem = currentItem.parent;
                     }
 
                     const isDocumented = !!item.tsdocComment;
@@ -427,45 +531,77 @@ export class CoverageAction extends BaseAction {
     }
 
     private _reportText(grouped: GroupedCoverage, totalStats: CoverageStats, threshold: number, groupBy: string): void {
-        clack.log.info(`Coverage Report (Threshold: ${threshold}%)`);
+        // Determine column header based on grouping
+        const groupHeader = groupBy === 'file' ? 'File' :
+                           groupBy === 'folder' ? 'Folder' :
+                           groupBy === 'kind' ? 'Type' :
+                           'Type';
+
+        clack.log.message('');
+        clack.log.message(Colorize.bold(`API Surface Coverage (Threshold: ${threshold}%)`));
+        clack.log.message('');
 
         const table = new Table({
-            head: ['Group', 'Required', 'Desired', 'Total'],
-            style: { head: ['cyan'] }
+            head: [groupHeader, 'Total', 'Documented', 'Undocumented', 'Coverage'],
+            style: {
+                head: ['cyan'],
+                border: [],
+                compact: false
+            }
         });
 
-        for (const [group, data] of Object.entries(grouped)) {
-            if (group === 'all' && groupBy !== 'none') continue;
+        // Sort entries - put 'all' last if it exists
+        const entries = Object.entries(grouped).sort(([keyA], [keyB]) => {
+            if (keyA === 'all') return 1;
+            if (keyB === 'all') return -1;
+            return keyA.localeCompare(keyB);
+        });
 
-            const formatStat = (stat: { percentage: number, total: number, documented: number }, isRequired: boolean) => {
-                const percentage = stat.percentage.toFixed(1) + '%';
-                const count = `${stat.total - stat.documented}/${stat.total}`;
+        // Add individual groups first
+        for (const [group, data] of entries) {
+            if (group === 'all') continue; // Skip 'all' for now, will add as TOTAL at end
 
-                if (stat.total === 0) return Colorize.gray('-');
+            const { total, documented } = data.stats;
+            const undocumented = total - documented;
+            const percentage = data.stats.percentage;
 
-                if (isRequired) {
-                    return stat.percentage >= threshold
-                        ? Colorize.green(`${percentage} (${count})`)
-                        : Colorize.red(`${percentage} (${count})`);
-                } else {
-                    return Colorize.yellow(`${percentage} (${count})`);
-                }
-            };
+            // Color code the coverage percentage
+            const coverageColor = percentage >= threshold ? Colorize.green :
+                                 percentage >= 50 ? Colorize.yellow :
+                                 Colorize.red;
 
             table.push([
-                group === 'all' ? 'Total' : group,
-                formatStat(data.stats.required, true),
-                formatStat(data.stats.desired, false),
-                `${data.stats.percentage.toFixed(1)}%`
+                group,
+                total.toString(),
+                documented.toString(),
+                undocumented.toString(),
+                coverageColor(`${percentage.toFixed(1)}%`)
             ]);
         }
 
-        console.log(table.toString());
+        // Always add TOTAL line at the end
+        const { total, documented } = totalStats;
+        const undocumented = total - documented;
+        const percentage = totalStats.percentage;
+        const coverageColor = percentage >= threshold ? Colorize.green :
+                             percentage >= 50 ? Colorize.yellow :
+                             Colorize.red;
 
-        if (totalStats.required.percentage < threshold) {
-            clack.log.error(`Coverage check failed: ${totalStats.required.percentage.toFixed(1)}% < ${threshold}% (Required)`);
+        table.push([
+            Colorize.bold('TOTAL'),
+            Colorize.bold(total.toString()),
+            Colorize.bold(documented.toString()),
+            Colorize.bold(undocumented.toString()),
+            Colorize.bold(coverageColor(`${percentage.toFixed(1)}%`))
+        ]);
+
+        clack.log.message(table.toString());
+        clack.log.message('');
+
+        if (totalStats.percentage < threshold) {
+            clack.log.error(`Coverage check failed: ${totalStats.percentage.toFixed(1)}% < ${threshold}%`);
         } else {
-            clack.log.success(`Coverage check passed: ${totalStats.required.percentage.toFixed(1)}% (Required)`);
+            clack.log.success(`Coverage check passed: ${totalStats.percentage.toFixed(1)}%`);
         }
     }
 

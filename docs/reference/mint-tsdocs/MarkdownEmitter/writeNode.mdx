@@ -1,7 +1,7 @@
 ---
 title: "writeNode"
 icon: "function"
-description: "writeNode API documentation"
+description: "Writes a single TSDoc node to the output"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
- 
+Writes a single TSDoc node to the output  
 ## Signature
 
 ```typescript
@@ -23,18 +23,24 @@ protected writeNode(docNode: DocNode, context: IMarkdownEmitterContext, docNodeS
 ### docNode
 **Type**:`DocNode`
 
-
+The TSDoc node to write
 
 ### context
 **Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</Link>
 
-
+Emission context (writer, formatting state)
 
 ### docNodeSiblings
 **Type**:`boolean`
 
-
+Whether this node has siblings (used for formatting decisions)
 
 ## Returns
 
 **Type**:`void`
+
+Writes a single TSDoc node to the output
+
+## Remarks
+
+  This is the core dispatch method that handles all TSDoc node types: - **PlainText** - Regular text content - **HtmlStartTag/HtmlEndTag** - Raw HTML pass-through - **CodeSpan** - Inline code (backticks) - **LinkTag** - Links to code symbols or URLs - **Paragraph** - Text blocks with spacing - **FencedCode** - Code blocks with syntax highlighting - **Section** - Logical grouping of content - **SoftBreak** - Whitespace normalization - **EscapedText** - Pre-escaped text - **ErrorText** - Parser error recovery - **InlineTag** - Ignored (handled elsewhere) - **BlockTag** - Known tags skipped, unknown tags logged  Subclasses can override this to customize handling for specific node types.

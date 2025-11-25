@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/mint-tsdocs/lib/schemas/config.schema.json",
+  "$schema": "./src/schemas/config.schema.json",
   "entryPoint": "lib/index.d.ts",
   "outputFolder": "docs/reference",
   "docsJson": "docs/docs.json",
@@ -7,5 +7,14 @@
   "groupName": "mint-tsdocs",
   "templates": {
     "userTemplateDir": "./templates"
+  },
+  "apiExtractor": {
+    "messages": {
+      "extractorMessageReporting": {
+        "ae-missing-release-tag": {
+          "logLevel": "none"
+        }
+      }
+    }
   }
 }

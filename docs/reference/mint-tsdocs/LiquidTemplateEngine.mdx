@@ -1,17 +1,13 @@
 ---
 title: "LiquidTemplateEngine class"
 icon: "box"
-description: "LiquidJS-based template engine implementation"
+description: "LiquidTemplateEngine API documentation"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 # LiquidTemplateEngine
-
-## Summary
-
-LiquidJS-based template engine implementation  
 ## Signature
 
 ```typescript
@@ -62,9 +58,14 @@ Post-process template output (public for template manager)
 
 Render a template with the provided data
 
+### validateAllTemplates
+
+Validate all templates in the template directory
+
+### validateTemplate
+
+Validate a template file for syntax errors
+
 ## Events
 
 *No events defined.*
-
-## Related Documentation
-- <PageLink target="/architecture/generation-layer">Template engine architecture</PageLink>

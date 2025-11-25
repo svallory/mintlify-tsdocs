@@ -11,6 +11,30 @@ import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 const MODULE_NAME = 'mint-tsdocs';
 
 /**
+ * Find the path to the mint-tsdocs configuration file
+ *
+ * @param searchFrom - Directory to start searching from (default: current directory)
+ * @returns Path to the config file, or undefined if not found
+ */
+export function findConfigPath(searchFrom?: string): string | undefined {
+  const explorer = cosmiconfigSync(MODULE_NAME, {
+    searchPlaces: [
+      'package.json',
+      `.${MODULE_NAME}rc`,
+      `.${MODULE_NAME}rc.json`,
+      `.${MODULE_NAME}rc.js`,
+      `.${MODULE_NAME}rc.cjs`,
+      `${MODULE_NAME}.config.js`,
+      `${MODULE_NAME}.config.cjs`,
+      `${MODULE_NAME}.config.json`
+    ]
+  });
+
+  const result = explorer.search(searchFrom);
+  return result?.filepath;
+}
+
+/**
  * Search for and load the mint-tsdocs configuration
  *
  * @see /config-reference - Configuration options reference
@@ -139,6 +163,40 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
     ? path.resolve(configDir, config.outputFolder)
     : path.resolve(configDir, './docs/reference');
 
+  // Deep merge messages configuration to preserve defaults
+  const defaultMessages = {
+    compilerMessageReporting: {
+      default: {
+        logLevel: 'warning' as const
+      }
+    },
+    extractorMessageReporting: {
+      default: {
+        logLevel: 'warning' as const
+      }
+    },
+    tsdocMessageReporting: {
+      default: {
+        logLevel: 'warning' as const
+      }
+    }
+  };
+
+  const mergedMessages = {
+    compilerMessageReporting: {
+      ...defaultMessages.compilerMessageReporting,
+      ...config.apiExtractor?.messages?.compilerMessageReporting
+    },
+    extractorMessageReporting: {
+      ...defaultMessages.extractorMessageReporting,
+      ...config.apiExtractor?.messages?.extractorMessageReporting
+    },
+    tsdocMessageReporting: {
+      ...defaultMessages.tsdocMessageReporting,
+      ...config.apiExtractor?.messages?.tsdocMessageReporting
+    }
+  };
+
   // Resolve defaults
   const resolved: ResolvedConfig = {
     entryPoint,
@@ -157,35 +215,19 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
       }
     },
     apiExtractor: {
-      bundledPackages: [],
-      compiler: {},
-      apiReport: {
+      bundledPackages: config.apiExtractor?.bundledPackages || [],
+      compiler: config.apiExtractor?.compiler || {},
+      apiReport: config.apiExtractor?.apiReport || {
         enabled: false
       },
-      docModel: {
+      docModel: config.apiExtractor?.docModel || {
         enabled: true
       },
-      dtsRollup: {
+      dtsRollup: config.apiExtractor?.dtsRollup || {
         enabled: false
       },
-      messages: {
-        compilerMessageReporting: {
-          default: {
-            logLevel: 'warning'
-          }
-        },
-        extractorMessageReporting: {
-          default: {
-            logLevel: 'warning'
-          }
-        },
-        tsdocMessageReporting: {
-          default: {
-            logLevel: 'warning'
-          }
-        }
-      },
-      ...config.apiExtractor
+      messages: mergedMessages,
+      configPath: config.apiExtractor?.configPath
     }
   };
 
@@ -194,11 +236,17 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
 
 /**
  * Generate API Extractor config from resolved config
+ *
+ * @param resolved - Resolved configuration
+ * @param configDir - Configuration directory
+ * @param tsdocsDir - .tsdocs cache directory
+ * @param noLint - If true, suppress all linting warnings
  */
 export function generateApiExtractorConfig(
   resolved: ResolvedConfig,
   configDir: string,
-  tsdocsDir: string
+  tsdocsDir: string,
+  noLint?: boolean
 ): any {
   // If custom config path specified, don't generate
   if (resolved.apiExtractor.configPath) {
@@ -240,16 +288,18 @@ export function generateApiExtractorConfig(
       enabled: true
     },
 
-    messages: resolved.apiExtractor.messages || {
-      compilerMessageReporting: {
-        default: { logLevel: 'warning' }
-      },
-      extractorMessageReporting: {
-        default: { logLevel: 'warning' }
-      },
-      tsdocMessageReporting: {
-        default: { logLevel: 'warning' }
-      }
-    }
+    messages: noLint
+      ? {
+          compilerMessageReporting: {
+            default: { logLevel: 'none' }
+          },
+          extractorMessageReporting: {
+            default: { logLevel: 'none' }
+          },
+          tsdocMessageReporting: {
+            default: { logLevel: 'none' }
+          }
+        }
+      : resolved.apiExtractor.messages
   };
 }

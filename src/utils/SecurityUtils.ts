@@ -213,10 +213,15 @@ export class SecurityUtils {
    * Validates JSON content to ensure it's safe to parse.
    *
    * @param jsonString - The JSON string to validate
+   * @param options - Validation options
+   * @param options.skipPatternCheck - Skip dangerous pattern checks (for trusted API JSON files from API Extractor)
    * @returns The original JSON string if valid
    * @throws Error if JSON appears dangerous or malformed
    */
-  public static validateJsonContent(jsonString: string): string {
+  public static validateJsonContent(
+    jsonString: string,
+    options: { skipPatternCheck?: boolean } = {}
+  ): string {
     if (!jsonString || jsonString.trim().length === 0) {
       throw new Error('JSON content cannot be empty');
     }
@@ -232,20 +237,24 @@ export class SecurityUtils {
       throw new Error('Invalid JSON: must end with } or ]');
     }
 
-    // Check for potentially dangerous content
-    // Note: We allow "constructor" and "prototype" as they're legitimate in API documentation
-    // Only check for actual code execution patterns
-    const dangerousPatterns = [
-      /__proto__/,        // Prototype pollution (still dangerous even in JSON keys)
-      /eval\s*\(/,         // Code execution
-      /Function\s*\(/,     // Function constructor
-      /setTimeout\s*\(/,   // Timed code execution
-      /setInterval\s*\(/   // Repeated code execution
-    ];
+    // Skip pattern checks for trusted sources (e.g., API Extractor output)
+    // API JSON files contain documentation that legitimately includes terms like __proto__, eval, etc.
+    if (!options.skipPatternCheck) {
+      // Check for potentially dangerous content
+      // Note: We allow "constructor" and "prototype" as they're legitimate in API documentation
+      // Only check for actual code execution patterns
+      const dangerousPatterns = [
+        /__proto__/,        // Prototype pollution (still dangerous even in JSON keys)
+        /eval\s*\(/,         // Code execution
+        /Function\s*\(/,     // Function constructor
+        /setTimeout\s*\(/,   // Timed code execution
+        /setInterval\s*\(/   // Repeated code execution
+      ];
 
-    for (const pattern of dangerousPatterns) {
-      if (pattern.test(trimmed)) {
-        throw new Error('JSON content contains potentially dangerous patterns');
+      for (const pattern of dangerousPatterns) {
+        if (pattern.test(trimmed)) {
+          throw new Error('JSON content contains potentially dangerous patterns');
+        }
       }
     }
 

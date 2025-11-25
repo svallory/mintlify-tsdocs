@@ -14,7 +14,6 @@ The utilities layer provides essential helper classes for type analysis, caching
   - `DocumentationHelper` - Type analysis and property extraction
   - `SecurityUtils` - File path and content validation
   - `CacheManager` - Centralized caching coordination
-  - `PerformanceMonitor` - Performance metrics collection
 </Info>
 
 <Note>
@@ -30,16 +29,15 @@ graph TD
     A --> C[DocumentationHelper]
     A --> D[SecurityUtils]
     A --> E[CacheManager]
-    A --> F[PerformanceMonitor]
 
-    B --> G[TypeAnalysisCache]
+    B --> F[TypeAnalysisCache]
     C --> B
-    E --> G
-    E --> H[ApiResolutionCache]
+    E --> F
+    E --> G[ApiResolutionCache]
 
     style A fill:#e1f5ff
+    style F fill:#fff2e1
     style G fill:#fff2e1
-    style H fill:#fff2e1
 ```
 </Frame>
 
@@ -436,57 +434,6 @@ public static validateJsonContent(content: string): void {
 - **Error Context**: Detailed validation errors
 </Accordion>
 
-### PerformanceMonitor
-
-<Accordion title="Operation Timing" icon="stopwatch">
-High-resolution performance measurement:
-
-```typescript
-export class PerformanceMonitor {
-  public measure<T>(
-    operation: string,
-    fn: () => T,
-    metadata?: Record<string, unknown>
-  ): T {
-    const startTime = performance.now();
-
-    try {
-      const result = fn();
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
-      this._metrics.push({
-        operation,
-        duration,
-        timestamp: new Date(),
-        metadata
-      });
-
-      return result;
-    } catch (error) {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
-      this._metrics.push({
-        operation,
-        duration,
-        timestamp: new Date(),
-        metadata: { ...metadata, error: error instanceof Error ? error.message : String(error) }
-      });
-
-      throw error;
-    }
-  }
-}
-```
-
-**Features**:
-- **Microsecond Precision**: Uses `performance.now()`
-- **Error-Aware Timing**: Tracks failed operations
-- **Metadata Support**: Contextual information
-- **Minimal Overhead**: < 0.1ms per measurement
-</Accordion>
-
 ## Integration Patterns
 
 <Accordion title="Caching Integration" icon="link">
@@ -502,13 +449,8 @@ const cacheManager = CacheManager.createProduction({
 const typeAnalyzer = new ObjectTypeAnalyzer(cacheManager.typeAnalysis);
 const docHelper = new DocumentationHelper(typeAnalyzer);
 
-// Performance monitoring
-const performanceMonitor = getGlobalPerformanceMonitor(true);
-
-// Measure cached operation
-const result = performanceMonitor.measure('Type Analysis', () => {
-  return docHelper.analyzeTypeProperties(complexTypeString);
-}, { type: complexTypeString, complexity: 'high' });
+// Use cached operations
+const result = docHelper.analyzeTypeProperties(complexTypeString);
 
 // Check cache performance
 const cacheStats = cacheManager.getStats();
@@ -782,9 +724,6 @@ try {
 <CardGroup cols={2}>
   <Card title="Caching Layer" icon="database" href="/architecture/caching-layer">
     Deep dive into caching implementation
-  </Card>
-  <Card title="Performance Layer" icon="gauge-high" href="/architecture/performance-layer">
-    Performance monitoring and metrics
   </Card>
   <Card title="Generation Layer" icon="cogs" href="/architecture/generation-layer">
     See utilities in document generation

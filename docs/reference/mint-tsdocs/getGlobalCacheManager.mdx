@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Get the global cache manager instance 
+Get the global cache manager instance  
 
 
 ## Signature
@@ -38,7 +38,7 @@ export declare function getGlobalCacheManager(options?: CacheManagerOptions): Ca
 
 
 
-
+Cache configuration options (only used on first call)
 
 
 
@@ -53,3 +53,10 @@ export declare function getGlobalCacheManager(options?: CacheManagerOptions): Ca
 
 
 Get the global cache manager instance
+
+
+
+
+## Remarks
+
+  The global cache manager is a singleton. Options can only be provided on the first call. If you need to reconfigure, call [object Object] first, or create a new instance with <code>new CacheManager(options)</code> instead.

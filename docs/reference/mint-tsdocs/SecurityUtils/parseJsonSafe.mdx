@@ -1,0 +1,40 @@
+---
+title: "parseJsonSafe"
+icon: "function"
+description: "Safely parses JSON with prototype pollution protection. Filters out dangerous keys like \\\\proto\\\\, constructor, and prototype."
+---
+
+import { Link } from '/snippets/tsdocs/Link.jsx';
+import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+
+# parseJsonSafe
+
+## Summary
+
+Safely parses JSON with prototype pollution protection. Filters out dangerous keys like __proto__, constructor, and prototype.  
+## Signature
+
+```typescript
+static parseJsonSafe<T = any>(jsonString: string): T;
+```
+
+## Parameters
+
+### jsonString
+**Type**:`string`
+
+The JSON string to parse
+
+## Returns
+
+**Type**:`T`
+
+Safely parses JSON with prototype pollution protection. Filters out dangerous keys like __proto__, constructor, and prototype.
+
+## Examples
+
+### Example 1
+
+```typescript
+
+```

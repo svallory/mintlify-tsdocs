@@ -15,7 +15,9 @@ Validates JSON content to ensure it&#39;s safe to parse.
 ## Signature
 
 ```typescript
-static validateJsonContent(jsonString: string): string;
+static validateJsonContent(jsonString: string, options?: {
+        skipPatternCheck?: boolean;
+    }): string;
 ```
 
 ## Parameters
@@ -24,6 +26,19 @@ static validateJsonContent(jsonString: string): string;
 **Type**:`string`
 
 The JSON string to validate
+
+### options
+**Type**:
+
+```typescript
+{
+        skipPatternCheck?: boolean;
+    }
+```
+
+**Optional**: Yes
+
+Validation options
 
 ## Returns
 

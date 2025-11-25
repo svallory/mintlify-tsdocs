@@ -24,6 +24,8 @@ const APP_NAMESPACE = 'mint-tsdocs';
 
 /**
  * Debug levels in increasing verbosity order
+ *
+ * @beta
  */
 export const DebugLevel = {
   ERROR: 'error',
@@ -37,11 +39,15 @@ export type DebugLevel = typeof DebugLevel[keyof typeof DebugLevel];
 
 /**
  * Debug function type (matches debug package signature)
+ *
+ * @beta
  */
 export type DebugFunction = debug.Debugger;
 
 /**
  * Debugger instance with level-specific methods
+ *
+ * @beta
  */
 export interface Debugger {
   /**
@@ -96,6 +102,8 @@ export interface Debugger {
  *   debug.trace('Template data: %O', complexObject);
  * }
  * ```
+ *
+ * @beta
  */
 export function createDebugger(namespace: string): Debugger {
   const fullNamespace = `${APP_NAMESPACE}:${namespace}`;

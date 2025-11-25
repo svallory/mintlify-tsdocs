@@ -60,7 +60,7 @@ The codebase is organized into distinct layers, each with a specific responsibil
     - `MarkdownDocumenter.ts` - Core orchestrator (now modular)
     - Builds TSDoc AST for each page
     - Delegates navigation to `NavigationManager`
-    - Integrates performance monitoring and caching
+    - Integrates caching for performance optimization
   </Step>
 
   <Step title="Emission Layer" icon="file-export">
@@ -93,16 +93,6 @@ The codebase is organized into distinct layers, each with a specific responsibil
     - `TypeAnalysisCache.ts` - Caches expensive type parsing operations
     - `ApiResolutionCache.ts` - Caches API model cross-reference resolution
     - LRU eviction with configurable sizes
-  </Step>
-
-  <Step title="Performance Layer" icon="gauge-high">
-    **Location**: `src/performance/`
-
-    Performance monitoring and metrics collection.
-
-    - `PerformanceMonitor.ts` - Execution time tracking
-    - Operation-level metrics
-    - Statistics reporting
   </Step>
 
   <Step title="Utilities & Nodes" icon="puzzle-piece">
@@ -165,14 +155,7 @@ For each page, `MarkdownDocumenter`:
 - Supports Mintlify v4 tab structure
 - Writes updated `docs.json`
 
-### 7. Performance Monitoring
-`PerformanceMonitor` tracks:
-- Operation execution times
-- Cache hit rates
-- Generation statistics
-- Prints summary report
-
-### 8. Cache Statistics
+### 7. Cache Statistics
 `CacheManager.printStats()` reports:
 - Type analysis cache performance
 - API resolution cache performance
@@ -245,18 +228,6 @@ For each page, `MarkdownDocumenter`:
     - Hit rate monitoring and statistics
 
     **Key Feature**: Intelligent caching with environment-specific configurations
-  </Accordion>
-
-  <Accordion title="PerformanceMonitor" icon="gauge-high">
-    **The Metrics Collector**
-
-    Responsibilities:
-    - Operation execution time tracking
-    - Performance statistics collection
-    - Summary reporting with detailed metrics
-    - Error-aware timing (includes failed operations)
-
-    **Key Feature**: Detailed performance insights for optimization
   </Accordion>
 
   <Accordion title="ObjectTypeAnalyzer" icon="microscope">
@@ -355,7 +326,6 @@ sequenceDiagram
     participant Documenter
     participant NavigationManager
     participant CacheManager
-    participant PerformanceMonitor
     participant Emitter
     participant Helper
     participant TypeAnalyzer
@@ -363,7 +333,6 @@ sequenceDiagram
     CLI->>Action: execute markdown command
     Action->>Action: buildApiModel()
     Action->>Documenter: generateFiles()
-    Documenter->>PerformanceMonitor: start monitoring
     Documenter->>CacheManager: initialize caches
     Documenter->>Documenter: traverse API items
     loop For each API item
@@ -385,7 +354,6 @@ sequenceDiagram
         Documenter->>NavigationManager: add to navigation
     end
     Documenter->>NavigationManager: generateNavigation()
-    Documenter->>PerformanceMonitor: print summary
     Documenter->>CacheManager: print stats
 ```
 </Frame>

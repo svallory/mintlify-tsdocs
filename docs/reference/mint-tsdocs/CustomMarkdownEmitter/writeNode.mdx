@@ -1,7 +1,7 @@
 ---
 title: "writeNode"
 icon: "function"
-description: "writeNode API documentation"
+description: "Writes a single DocNode to the output. Overrides parent implementation to add custom handling for: - DocHeading - Markdown headings with configurable levels - DocNoteBox - Block quotes for note/warning boxes - DocTable - Mintlify components (TypeTree, ResponseField) or HTML fallback - DocEmphasisSpan - Bold/italic text spans - DocExpandable - Collapsible sections All other node types delegate to parent class."
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
- 
+Writes a single DocNode to the output.  Overrides parent implementation to add custom handling for: - DocHeading - Markdown headings with configurable levels - DocNoteBox - Block quotes for note/warning boxes - DocTable - Mintlify components (TypeTree, ResponseField) or HTML fallback - DocEmphasisSpan - Bold/italic text spans - DocExpandable - Collapsible sections  All other node types delegate to parent class.  
 ## Signature
 
 ```typescript
@@ -23,18 +23,20 @@ protected writeNode(docNode: DocNode, context: IMarkdownEmitterContext<ICustomMa
 ### docNode
 **Type**:`DocNode`
 
-
+The node to write
 
 ### context
 **Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>`</Link>
 
-
+Emission context with writer and options
 
 ### docNodeSiblings
 **Type**:`boolean`
 
-
+Whether this node has siblings (affects spacing)
 
 ## Returns
 
 **Type**:`void`
+
+Writes a single DocNode to the output.Overrides parent implementation to add custom handling for: - DocHeading - Markdown headings with configurable levels - DocNoteBox - Block quotes for note/warning boxes - DocTable - Mintlify components (TypeTree, ResponseField) or HTML fallback - DocEmphasisSpan - Bold/italic text spans - DocExpandable - Collapsible sectionsAll other node types delegate to parent class.

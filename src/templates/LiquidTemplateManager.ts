@@ -30,6 +30,11 @@ export interface ILiquidTemplateManagerOptions extends ITemplateEngineOptions {
    * Link validator for generating type references
    */
   linkValidator?: LinkValidator;
+  /**
+   * Whether to trust template data and skip sanitization
+   * Default: false (data is sanitized for security)
+   */
+  trustData?: boolean;
 }
 
 /**
@@ -44,6 +49,7 @@ export class LiquidTemplateManager {
   private _mergedTemplateDir?: string;
   private _cache: boolean;
   private _strict: boolean;
+  private readonly _trustData: boolean;
 
   public constructor(options: ILiquidTemplateManagerOptions = {}) {
     this._overrides = options.overrides || {};
@@ -52,12 +58,14 @@ export class LiquidTemplateManager {
     this._defaultTemplateDir = options.defaultTemplateDir || path.join(__dirname, '..', 'templates', 'defaults');
     this._cache = options.cache !== false;
     this._strict = options.strict !== false;
+    this._trustData = options.trustData ?? false;
 
     // Create Liquid engine (will be initialized with merged directory)
     this._liquidEngine = new LiquidTemplateEngine({
       templateDir: this._defaultTemplateDir, // Temporary, will be updated
       cache: this._cache,
-      strict: this._strict
+      strict: this._strict,
+      trustData: this._trustData
     });
 
     // Create TemplateDataConverter with apiModel and linkValidator if provided
@@ -86,7 +94,8 @@ export class LiquidTemplateManager {
     this._liquidEngine = new LiquidTemplateEngine({
       templateDir: this._mergedTemplateDir,
       cache: this._cache,
-      strict: this._strict
+      strict: this._strict,
+      trustData: this._trustData
     });
   }
 
@@ -140,9 +149,22 @@ export class LiquidTemplateManager {
     try {
       return await this._liquidEngine.render(templateName, data);
     } catch (error) {
+      // Enhanced error message with context about the data being rendered
+      const apiItemName = data.apiItem?.name || 'unknown';
+      const apiItemKind = data.apiItem?.kind || 'unknown';
+      const contextInfo = apiItemName !== 'unknown' ? ` (API item: ${apiItemName} [${apiItemKind}])` : '';
+
       throw new DocumentationError(
-        `Failed to render Liquid template '${templateName}': ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.TEMPLATE_RENDER_ERROR
+        `Failed to render Liquid template '${templateName}'${contextInfo}: ${error instanceof Error ? error.message : String(error)}`,
+        ErrorCode.TEMPLATE_RENDER_ERROR,
+        {
+          cause: error instanceof Error ? error : new Error(String(error)),
+          data: {
+            template: templateName,
+            apiItem: data.apiItem,
+            availableTemplates: this.getAvailableTemplates()
+          }
+        }
       );
     }
   }
@@ -156,9 +178,22 @@ export class LiquidTemplateManager {
       const result = await this._liquidEngine.liquid.parseAndRender(content, data);
       return this._liquidEngine.postProcessOutput(result);
     } catch (error) {
+      // Enhanced error message with context
+      const apiItemName = data.apiItem?.name || 'unknown';
+      const apiItemKind = data.apiItem?.kind || 'unknown';
+      const contextInfo = apiItemName !== 'unknown' ? ` (API item: ${apiItemName} [${apiItemKind}])` : '';
+
       throw new DocumentationError(
-        `Failed to render Liquid template override '${templateName}': ${error instanceof Error ? error.message : String(error)}`,
-        ErrorCode.TEMPLATE_RENDER_ERROR
+        `Failed to render Liquid template override '${templateName}'${contextInfo}: ${error instanceof Error ? error.message : String(error)}`,
+        ErrorCode.TEMPLATE_RENDER_ERROR,
+        {
+          cause: error instanceof Error ? error : new Error(String(error)),
+          data: {
+            template: templateName,
+            templateType: 'override',
+            apiItem: data.apiItem
+          }
+        }
       );
     }
   }

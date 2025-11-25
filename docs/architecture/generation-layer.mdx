@@ -6,14 +6,14 @@ icon: "cogs"
 
 ## Overview
 
-The generation layer is the central orchestrator of `mint-tsdocs`. It traverses the API model and constructs the semantic structure of each documentation page using TSDoc AST nodes. The layer has been refactored to use modular components for navigation management, caching, and performance monitoring.
+The generation layer is the central orchestrator of `mint-tsdocs`. It traverses the API model and constructs the semantic structure of each documentation page using TSDoc AST nodes. The layer has been refactored to use modular components for navigation management and caching.
 
 <Info>
   **Primary Component**: `src/documenters/MarkdownDocumenter.ts`
 </Info>
 
 <Note>
-  **Recent Architecture Changes**: The generation layer now delegates navigation to `NavigationManager`, integrates caching through `CacheManager`, and includes performance monitoring via `PerformanceMonitor`.
+  **Recent Architecture Changes**: The generation layer now delegates navigation to `NavigationManager` and integrates caching through `CacheManager` for performance optimization.
 </Note>
 
 ## Key Responsibilities
@@ -30,9 +30,6 @@ The generation layer is the central orchestrator of `mint-tsdocs`. It traverses 
   </Card>
   <Card title="Navigation Management" icon="map">
     Delegates to `NavigationManager` for docs.json updates
-  </Card>
-  <Card title="Performance Monitoring" icon="gauge-high">
-    Integrates `PerformanceMonitor` for execution tracking
   </Card>
   <Card title="Caching Integration" icon="database">
     Coordinates with `CacheManager` for optimization
@@ -71,10 +68,6 @@ The generation layer is the central orchestrator of `mint-tsdocs`. It traverses 
 
   <Step title="Update Navigation">
     `NavigationManager.generateNavigation()` merges new pages into `docs.json`
-  </Step>
-
-  <Step title="Performance Reporting">
-    `PerformanceMonitor.printSummary()` displays execution statistics
   </Step>
 
   <Step title="Cache Statistics">
@@ -140,26 +133,18 @@ The generation layer is the central orchestrator of `mint-tsdocs`. It traverses 
   </Accordion>
 
   <Accordion title="Performance Monitoring" icon="gauge-high">
-    **Built-in Performance Tracking**: Integrated monitoring for optimization:
+    **Built-in Cache Statistics**: Track cache effectiveness for optimization:
 
 ```typescript
-    // Initialize performance monitoring
-    const performanceMonitor = getGlobalPerformanceMonitor(true);
-
-    // Measure overall generation
-    performanceMonitor.measure('Documentation Generation', () => {
-    // Generation logic here
-    });
-
-    // Print performance statistics
-    performanceMonitor.printSummary();
+    // Check cache performance
+    const cacheStats = cacheManager.getStats();
+    cacheManager.printStats();
 ```
 
     **Metrics Tracked**:
-    - Operation execution times
     - Cache hit rates
-    - Generation statistics
-    - Performance bottlenecks
+    - Type analysis cache performance
+    - API resolution cache performance
   </Accordion>
 </AccordionGroup>
 
@@ -629,9 +614,6 @@ private _writeEnumPage(output: DocSection, apiEnum: ApiEnum): void {
   </Card>
   <Card title="Caching Layer" icon="database" href="/architecture/caching-layer">
     Explore performance optimization through caching
-  </Card>
-  <Card title="Performance Layer" icon="gauge-high" href="/architecture/performance-layer">
-    Understand performance monitoring and metrics
   </Card>
   <Card title="Emission Layer" icon="file-export" href="/architecture/emission-layer">
     See how AST is converted to MDX

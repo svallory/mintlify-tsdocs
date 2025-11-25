@@ -11,13 +11,13 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Generate API Extractor config from resolved config 
+Generate API Extractor config from resolved config  
 
 
 ## Signature
 
 ```typescript
-export declare function generateApiExtractorConfig(resolved: ResolvedConfig, configDir: string, tsdocsDir: string): any;
+export declare function generateApiExtractorConfig(resolved: ResolvedConfig, configDir: string, tsdocsDir: string, noLint?: boolean): any;
 ```
 
 
@@ -36,7 +36,7 @@ export declare function generateApiExtractorConfig(resolved: ResolvedConfig, con
 
 
 
-
+Resolved configuration
 
 
 
@@ -51,7 +51,7 @@ export declare function generateApiExtractorConfig(resolved: ResolvedConfig, con
 
 
 
-
+Configuration directory
 
 
 
@@ -66,7 +66,24 @@ export declare function generateApiExtractorConfig(resolved: ResolvedConfig, con
 
 
 
+.tsdocs cache directory
 
+
+
+### noLint
+
+
+**Type**: boolean
+
+
+
+**Optional**: Yes
+
+
+
+
+
+If true, suppress all linting warnings
 
 
 

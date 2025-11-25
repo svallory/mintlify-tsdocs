@@ -35,6 +35,8 @@
     "clean": "rm -rf lib",
     "rebuild": "bun run clean && bun run build",
     "docs": "node ./bin/mint-tsdocs",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

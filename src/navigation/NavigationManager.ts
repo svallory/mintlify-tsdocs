@@ -193,7 +193,9 @@ export class NavigationManager {
       try {
         if (FileSystem.exists(validatedDocsJsonPath)) {
           const existingContent = FileSystem.readFile(validatedDocsJsonPath);
-          SecurityUtils.validateJsonContent(existingContent);
+          // docs.json is user-controlled navigation config that may legitimately contain
+          // security-related terms in page titles/descriptions (e.g., "Prototype Pollution Prevention")
+          SecurityUtils.validateJsonContent(existingContent, { skipPatternCheck: true });
           docsJson = JSON.parse(existingContent);
         }
       } catch (error) {

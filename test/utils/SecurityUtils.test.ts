@@ -505,6 +505,36 @@ describe('SecurityUtils', () => {
       }).toThrow(/too large/);
     });
 
+    it('should allow dangerous patterns when skipPatternCheck is true', () => {
+      // API JSON files contain documentation that may mention security terms
+      const apiJson = '{"docComment": "Prevents __proto__ pollution using parseJsonSafe"}';
+      const result = SecurityUtils.validateJsonContent(apiJson, { skipPatternCheck: true });
+      expect(result).toBe(apiJson);
+
+      // Should also work with eval, Function, etc. in documentation
+      const docsJson = '{"title": "eval() Function Security Guide"}';
+      const result2 = SecurityUtils.validateJsonContent(docsJson, { skipPatternCheck: true });
+      expect(result2).toBe(docsJson);
+    });
+
+    it('should still validate JSON structure when skipPatternCheck is true', () => {
+      // Empty JSON should still be rejected
+      expect(() => {
+        SecurityUtils.validateJsonContent('', { skipPatternCheck: true });
+      }).toThrow(/cannot be empty/);
+
+      // Invalid structure should still be rejected
+      expect(() => {
+        SecurityUtils.validateJsonContent('invalid json', { skipPatternCheck: true });
+      }).toThrow(/must start with/);
+
+      // Size limit should still apply
+      const largeJson = `{"data": "${'x'.repeat(11 * 1024 * 1024)}"}`;
+      expect(() => {
+        SecurityUtils.validateJsonContent(largeJson, { skipPatternCheck: true });
+      }).toThrow(/too large/);
+    });
+
     it('should handle complex valid JSON', () => {
       const complexJson = JSON.stringify({
         name: 'TestAPI',

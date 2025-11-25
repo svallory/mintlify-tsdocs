@@ -1,13 +1,17 @@
 ---
 title: "emit"
 icon: "function"
-description: "emit API documentation"
+description: "Converts a TSDoc node tree to markdown text"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 # emit
+
+## Summary
+
+Converts a TSDoc node tree to markdown text  
 ## Signature
 
 ```typescript
@@ -19,18 +23,24 @@ emit(stringBuilder: StringBuilder, docNode: DocNode, options: IMarkdownEmitterOp
 ### stringBuilder
 **Type**:`StringBuilder`
 
-
+Output buffer to write markdown to
 
 ### docNode
 **Type**:`DocNode`
 
-
+Root TSDoc node to emit
 
 ### options
 **Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterOptions">`IMarkdownEmitterOptions`</Link>
 
-
+Emission configuration options
 
 ## Returns
 
 **Type**:`string`
+
+Converts a TSDoc node tree to markdown text
+
+## Remarks
+
+  This is the main entry point for markdown emission. It initializes the emission context (writer, formatting state) and recursively processes the node tree. The output is automatically terminated with a newline.

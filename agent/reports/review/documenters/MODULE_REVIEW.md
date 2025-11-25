@@ -172,8 +172,7 @@ MarkdownDocumenter
 ├── CacheManager              (Performance optimization)
 ├── CustomMarkdownEmitter     (Content rendering)
 ├── LinkValidator             (Link validation)
-├── TypeInfoGenerator         (Component generation)
-└── PerformanceMonitor        (Performance tracking)
+└── TypeInfoGenerator         (Component generation)
 ```
 
 ---

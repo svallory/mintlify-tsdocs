@@ -274,7 +274,39 @@ private async _installMintlifyComponents(outputFolder: string): Promise<void> {
 - **Filename validation**: Generated filenames validated for safety
 - **JSON validation**: docs.json validated before writing
 
-**Code Quality:** ⭐⭐⭐⭐⭐
+**Security & Reliability Enhancements (Latest):**
+
+1. **Comprehensive Path Validation & Security:**
+   - Enhanced filename generation with multi-layer validation
+   - Detection of dangerous patterns (path traversal, Windows device names)
+   - Maximum filename length enforcement (200 characters)
+   - Final path validation to prevent absolute paths and traversal
+
+2. **Resource Protection & Limits:**
+   - Maximum file size: 50MB per generated file
+   - Maximum total output: 500MB across all files
+   - Maximum recursion depth: 25 levels (prevents stack overflow)
+   - Maximum processing time: 10 minutes
+   - Real-time resource usage tracking
+
+3. **Recursion Depth Protection:**
+   - Automatic detection of deeply nested API structures
+   - Graceful failure with clear error messages
+   - Proper cleanup with try/finally blocks
+
+4. **Enhanced Error Handling:**
+   - Comprehensive error context with operation details
+   - Individual file validation during component installation
+   - Graceful handling of malformed API items
+   - Proper error propagation with cause chains
+
+5. **Input Validation & Dangerous Content Detection:**
+   - API item validation before processing
+   - Detection of null bytes, HTML injection, and dangerous characters
+   - Processing time limit enforcement
+   - Display name length validation (1000 character limit)
+
+**Code Quality:** ⭐⭐⭐⭐⭐ (Enhanced with comprehensive security and reliability measures)
 
 ## Usage for Contributors
 
@@ -420,6 +452,13 @@ describe("MarkdownDocumenter", () => {
 ### 🔴 Critical
 
 **None identified** (all critical issues from conversation have been fixed)
+
+**✅ Recent Security & Reliability Fixes:**
+- Path traversal protection with multi-layer validation
+- Resource exhaustion prevention (file size, recursion depth, processing time limits)
+- Enhanced error handling with comprehensive context
+- Input validation for dangerous content detection
+- LinkValidator utility restoration for build stability
 
 ### 🟡 Major
 
@@ -658,5 +697,8 @@ The MarkdownDocumenter is the **heart of mint-tsdocs**. It orchestrates all subs
 ✅ Component installation
 ✅ Error handling
 ✅ Performance optimization
+✅ **Security validation** (path traversal protection, input sanitization)
+✅ **Resource management** (file size limits, recursion depth protection)
+✅ **Comprehensive error context** (detailed error messages with operation details)
 
-Every module in the project ultimately serves MarkdownDocumenter's goal: **generating high-quality, accessible API documentation**.
+Every module in the project ultimately serves MarkdownDocumenter's goal: **generating high-quality, secure, and accessible API documentation** with enterprise-grade reliability protections.

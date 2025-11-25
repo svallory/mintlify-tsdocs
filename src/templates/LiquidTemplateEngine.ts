@@ -13,18 +13,28 @@ import { DocNodeKind } from '@microsoft/tsdoc';
  *
  * @see /architecture/generation-layer - Template engine architecture
  */
+export interface ILiquidTemplateEngineOptions extends ITemplateEngineOptions {
+  /**
+   * Whether to trust template data and skip sanitization
+   * Default: false (data is sanitized for security)
+   */
+  trustData?: boolean;
+}
+
 export class LiquidTemplateEngine {
   private readonly _templateDir: string;
   private readonly _cache: boolean;
   private readonly _strict: boolean;
+  private readonly _trustData: boolean;
   private readonly _liquid: Liquid;
   private readonly _templateCache: Map<string, string> = new Map();
 
-  public constructor(options: ITemplateEngineOptions = {}) {
+  public constructor(options: ILiquidTemplateEngineOptions = {}) {
     // Default templates are bundled in lib/templates/defaults after build
     this._templateDir = options.templateDir || path.join(__dirname, '..', 'templates', 'defaults');
     this._cache = options.cache !== false;
     this._strict = options.strict !== false;
+    this._trustData = options.trustData ?? false;
 
     this._liquid = new Liquid({
       root: this._templateDir,
@@ -55,10 +65,11 @@ export class LiquidTemplateEngine {
    */
   public async render(templateName: string, data: ITemplateData): Promise<string> {
     try {
-      const sanitizedData = this._sanitizeTemplateData(data);
+      // Use trusted data directly if configured, otherwise sanitize
+      const processedData = this._trustData ? data : this._sanitizeTemplateData(data);
 
       // Use renderFile instead of parseAndRender to properly support layout tags
-      const result = await this._liquid.renderFile(templateName, sanitizedData);
+      const result = await this._liquid.renderFile(templateName, processedData);
 
       // Post-process to ensure valid MDX
       return this._postProcessOutput(result);
@@ -405,6 +416,46 @@ export class LiquidTemplateEngine {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Validate a template file for syntax errors
+   */
+  public validateTemplate(templatePath: string): { valid: boolean; errors: string[] } {
+    try {
+      this._liquid.parseFileSync(templatePath);
+      return { valid: true, errors: [] };
+    } catch (error) {
+      return {
+        valid: false,
+        errors: [error instanceof Error ? error.message : String(error)]
+      };
+    }
+  }
+
+  /**
+   * Validate all templates in the template directory
+   */
+  public validateAllTemplates(): { valid: boolean; errors: Array<{ template: string; errors: string[] }> } {
+    const templateNames = this.getAvailableTemplates();
+    const allErrors: Array<{ template: string; errors: string[] }> = [];
+
+    for (const templateName of templateNames) {
+      const templatePath = this._getTemplatePath(templateName);
+      const validation = this.validateTemplate(templatePath);
+
+      if (!validation.valid) {
+        allErrors.push({
+          template: templateName,
+          errors: validation.errors
+        });
+      }
+    }
+
+    return {
+      valid: allErrors.length === 0,
+      errors: allErrors
+    };
   }
 
   /**

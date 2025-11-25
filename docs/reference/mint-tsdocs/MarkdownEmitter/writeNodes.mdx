@@ -1,13 +1,17 @@
 ---
 title: "writeNodes"
 icon: "function"
-description: "writeNodes API documentation"
+description: "Writes multiple TSDoc nodes sequentially"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 # writeNodes
+
+## Summary
+
+Writes multiple TSDoc nodes sequentially  
 ## Signature
 
 ```typescript
@@ -19,13 +23,19 @@ protected writeNodes(docNodes: ReadonlyArray<DocNode>, context: IMarkdownEmitter
 ### docNodes
 **Type**:`ReadonlyArray<DocNode>`
 
-
+Array of nodes to write
 
 ### context
 **Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</Link>
 
-
+Emission context
 
 ## Returns
 
 **Type**:`void`
+
+Writes multiple TSDoc nodes sequentially
+
+## Remarks
+
+  This helper iterates through a node array and calls <code>writeNode()</code> for each. The <code>docNodeSiblings</code> parameter passed to <code>writeNode()</code> is set based on whether there are multiple nodes (used for formatting decisions).

@@ -222,7 +222,6 @@ public get(key: string): T | undefined {
 
 - **`utils/ObjectTypeAnalyzer`** - Primary consumer of TypeAnalysisCache
 - **`documenters/MarkdownDocumenter`** - Uses both caches via CacheManager
-- **`performance/PerformanceMonitor`** - Monitors cache impact on performance
 
 ## References
 

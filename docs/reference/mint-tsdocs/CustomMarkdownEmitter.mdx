@@ -1,7 +1,7 @@
 ---
 title: "CustomMarkdownEmitter class"
 icon: "box"
-description: "Custom markdown emitter that extends the base MarkdownEmitter to provide Mintlify-specific formatting and cross-reference resolution."
+description: "Custom markdown emitter that extends the base MarkdownEmitter to provide Mintlify-specific formatting and cross-reference resolution. This emitter converts TSDoc tables into Mintlify components (ParamField, ResponseField, TypeTree) for better documentation UX. It also handles API reference resolution with caching for performance. \\#\\# Architecture The emission process follows this flow: 1. TSDoc nodes are traversed recursively via writeNode() 2. Tables are detected and classified by their header content 3. Property tables → TypeTree components with nested object support 4. Method/Constructor tables → ResponseField components 5. Other tables → HTML table fallback \\#\\# Security Considerations All user content is sanitized through SecurityUtils before being embedded in JSX/MDX: - sanitizeJsxAttribute() - For JSX attribute values (prevents quote escape attacks) - sanitizeJsonForJsx() - For JSON data embedded in JSX props - getEscapedText() - For markdown content (prevents markdown injection) Note: Content injection (XSS, template injection) is NOT a threat because users generate documentation from their own code for their own sites. Security focus is on command injection and path traversal (see CLAUDE.md). \\#\\# Caching Strategy API reference resolution is cached via ApiResolutionCache (LRU cache) to avoid repeated expensive lookups during documentation generation. Cache is ephemeral (per-run) and does not persist across builds."
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Custom markdown emitter that extends the base MarkdownEmitter to provide Mintlify-specific formatting and cross-reference resolution.  
+Custom markdown emitter that extends the base MarkdownEmitter to provide Mintlify-specific formatting and cross-reference resolution.  This emitter converts TSDoc tables into Mintlify components (ParamField, ResponseField, TypeTree) for better documentation UX. It also handles API reference resolution with caching for performance.  ## Architecture  The emission process follows this flow: 1. TSDoc nodes are traversed recursively via <code>writeNode()</code> 2. Tables are detected and classified by their header content 3. Property tables → TypeTree components with nested object support 4. Method/Constructor tables → ResponseField components 5. Other tables → HTML table fallback  ## Security Considerations  All user content is sanitized through SecurityUtils before being embedded in JSX/MDX: - <code>sanitizeJsxAttribute()</code> - For JSX attribute values (prevents quote escape attacks) - <code>sanitizeJsonForJsx()</code> - For JSON data embedded in JSX props - <code>getEscapedText()</code> - For markdown content (prevents markdown injection)  Note: Content injection (XSS, template injection) is NOT a threat because users generate documentation from their own code for their own sites. Security focus is on command injection and path traversal (see CLAUDE.md).  ## Caching Strategy  API reference resolution is cached via ApiResolutionCache (LRU cache) to avoid repeated expensive lookups during documentation generation. Cache is ephemeral (per-run) and does not persist across builds.  
 ## Signature
 
 ```typescript
@@ -32,17 +32,17 @@ Constructs a new instance of the class
 
 ### emit
 
-
+Emits markdown content from a DocNode tree.Entry point for the emission process. Delegates to parent class implementation which handles the recursive node traversal via .
 
 ### writeLinkTagWithCodeDestination
 **Modifiers**: protected
 
-
+Writes a link tag that references code entities (API items).Overrides parent implementation to: 1. Resolve API references via ApiModel with caching 2. Generate markdown links to resolved items' documentation pages 3. Use scoped names as link text when not explicitly provided
 
 ### writeNode
 **Modifiers**: protected
 
-
+Writes a single DocNode to the output.Overrides parent implementation to add custom handling for: - DocHeading - Markdown headings with configurable levels - DocNoteBox - Block quotes for note/warning boxes - DocTable - Mintlify components (TypeTree, ResponseField) or HTML fallback - DocEmphasisSpan - Bold/italic text spans - DocExpandable - Collapsible sectionsAll other node types delegate to parent class.
 
 ## Events
 

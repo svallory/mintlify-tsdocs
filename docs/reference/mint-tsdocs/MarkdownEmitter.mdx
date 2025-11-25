@@ -1,7 +1,7 @@
 ---
 title: "MarkdownEmitter class"
 icon: "box"
-description: "Renders MarkupElement content in the Markdown file format. For more info: https://en.wikipedia.org/wiki/Markdown"
+description: "Base class for rendering TSDoc nodes to Markdown/MDX format This emitter traverses a TSDoc abstract syntax tree and converts it to markdown text. It handles standard markdown constructs (bold, italic, code, links) and provides extension points for subclasses to customize behavior. \\#\\# Key Features - \\\\TSDoc Node Processing\\\\: Converts all standard TSDoc nodes to markdown - \\\\Text Escaping\\\\: Ensures special markdown characters are properly escaped - \\\\Formatting Tracking\\\\: Maintains state for bold/italic formatting - \\\\Extension Points\\\\: Virtual methods for subclass customization \\#\\# Extension Points Subclasses can override these virtual methods: - writeNode() - Customize handling for specific node types - writeLinkTagWithCodeDestination() - Handle links to code symbols (e.g., ) - writeLinkTagWithUrlDestination() - Handle external URL links \\#\\# Usage Example ``typescript const emitter = new MarkdownEmitter(); const markdown = emitter.emit(stringBuilder, docNode, options); ``"
 ---
 
 import { Link } from '/snippets/tsdocs/Link.jsx';
@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Renders MarkupElement content in the Markdown file format. For more info: https://en.wikipedia.org/wiki/Markdown   
+Base class for rendering TSDoc nodes to Markdown/MDX format  This emitter traverses a TSDoc abstract syntax tree and converts it to markdown text. It handles standard markdown constructs (bold, italic, code, links) and provides extension points for subclasses to customize behavior.  ## Key Features  - **TSDoc Node Processing**: Converts all standard TSDoc nodes to markdown - **Text Escaping**: Ensures special markdown characters are properly escaped - **Formatting Tracking**: Maintains state for bold/italic formatting - **Extension Points**: Virtual methods for subclass customization  ## Extension Points  Subclasses can override these virtual methods: - <code>writeNode()</code> - Customize handling for specific node types - <code>writeLinkTagWithCodeDestination()</code> - Handle links to code symbols (e.g., [object Object]) - <code>writeLinkTagWithUrlDestination()</code> - Handle external URL links  ## Usage Example  
 ## Signature
 
 ```typescript
@@ -30,43 +30,47 @@ export declare class MarkdownEmitter
 
 ### emit
 
-
+Converts a TSDoc node tree to markdown text
 
 ### getEscapedText
 **Modifiers**: protected
 
-
+Escapes text for safe markdown output
 
 ### getTableEscapedText
 **Modifiers**: protected
 
-
+Escapes text for safe output in markdown table cells
 
 ### writeLinkTagWithCodeDestination
 **Modifiers**: protected
 
-
+Writes a link tag that references a code symbol
 
 ### writeLinkTagWithUrlDestination
 **Modifiers**: protected
 
-
+Writes a link tag that references an external URL
 
 ### writeNode
 **Modifiers**: protected
 
-
+Writes a single TSDoc node to the output
 
 ### writeNodes
 **Modifiers**: protected
 
-
+Writes multiple TSDoc nodes sequentially
 
 ### writePlainText
 **Modifiers**: protected
 
-
+Writes plain text with context-aware formatting
 
 ## Events
 
 *No events defined.*
+
+## Remarks
+
+  This class is designed to be extended. The base implementation provides standard markdown output, but subclasses like CustomMarkdownEmitter add support for Mintlify components and other custom behaviors.

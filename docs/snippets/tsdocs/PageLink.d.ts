@@ -1,63 +1,32 @@
 /**
- * Type definitions for PageLink component
+ * PageLink Component
  *
- * Provides compile-time type safety for documentation page links.
- * The target prop is validated against all valid PageIds at runtime.
+ * A specialized link component for documentation pages only.
+ * Simpler API than Link component - no kind attribute needed.
+ *
+ * Type safety is provided at compile-time via TypeScript.
+ * Runtime validation highlights broken links with "broken-link" CSS class.
+ *
+ * @version 1.2.0
  */
-
-import type * as React from 'react';
-import type { ValidPageId } from './ValidPages';
-
 /**
- * PageId represents a documentation page identifier
- * Must match a page path in docs.json navigation
+ * Props for the PageLink component.
  *
  * @example
- * "introduction"
- * "installation"
- * "reference/mint-tsdocs.markdowndocumenter"
- * "components/type-tree"
- */
-export type PageId = ValidPageId;
-
-/**
- * Props for the PageLink component
+ * ```tsx
+ * <PageLink target="introduction">Introduction</PageLink>
+ * <PageLink target="components/type-tree">TypeTree Component</PageLink>
+ * ```
  */
 export interface PageLinkProps {
-  /**
-   * The documentation page identifier (PageId)
-   * Must be a valid page that exists in docs.json navigation
-   *
-   * @example
-   * "introduction"
-   * "installation"
-   * "reference/mint-tsdocs.markdowndocumenter"
-   */
-  target: PageId;
-
-  /**
-   * Optional children to render as link text
-   * If not provided, the target will be used as the link text
-   */
-  children?: React.ReactNode;
+    /** Documentation page identifier (PageId) - path relative to docs root */
+    target: string;
+    /** Link text content (defaults to target if not provided) */
+    children?: React.ReactNode;
 }
-
 /**
- * PageLink component - specialized for documentation page links
- *
- * @remarks
- * - Simpler than Link component (no kind attribute needed)
- * - Runtime validation ensures target exists in ValidPages
- * - Automatically converts PageId to proper documentation path
- * - Handles both simple paths and paths with slashes
- *
- * @example Simple page
- * <PageLink target="introduction">Introduction</PageLink>
- *
- * @example Page with path
- * <PageLink target="components/type-tree">TypeTree Component</PageLink>
- *
- * @example Reference page
- * <PageLink target="reference/mint-tsdocs.markdowndocumenter">MarkdownDocumenter</PageLink>
+ * PageLink - Link component specifically for documentation pages
  */
-export const PageLink: React.FC<PageLinkProps>;
+export declare const PageLink: ({ target, children }: PageLinkProps) => import("react").JSX.Element;
+export default PageLink;
+//# sourceMappingURL=PageLink.d.ts.map

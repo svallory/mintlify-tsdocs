@@ -11,7 +11,7 @@ import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
 
 ## Summary
 
-Represents a span of text that is styled with CommonMark emphasis (italics), strong emphasis (boldface), or both. 
+Represents a span of text that is styled with CommonMark emphasis (italics), strong emphasis (boldface), or both.  
 ## Signature
 
 ```typescript
@@ -54,3 +54,18 @@ Constructs a new instance of the class
 ## Events
 
 *No events defined.*
+
+## Remarks
+
+  This node can contain PlainText and SoftBreak nodes. The text content is rendered with markdown emphasis markers: <code>*italic*</code> for italic, <code>**bold**</code> for bold, or <code>***bold italic***</code> for both.  
+
+## Examples
+
+### Example 1
+
+```typescript
+
+```
+
+## Related Documentation
+- <PageLink target="/architecture/ast-nodes-layer">Custom AST nodes architecture</PageLink>
