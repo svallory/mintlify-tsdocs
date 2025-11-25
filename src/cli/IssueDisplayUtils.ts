@@ -126,38 +126,41 @@ export class IssueDisplayUtils {
         continue;
       }
 
+      // Use intro to start the file section
+      clack.intro(ISSUE_THEME.filePath(relativePath));
+
       // Display each severity level as its own Clack message
       // Display errors first (highest priority)
       if (errors.length > 0) {
-        const errorMessages = errors.map(issue =>
-          this._formatIssue(issue, terminalWidth)
-        ).join('\n\n');
-        clack.log.error(`${ISSUE_THEME.filePath(relativePath)}\n${errorMessages}`);
+        for (const issue of errors) {
+          clack.log.error(this._formatIssue(issue, terminalWidth));
+        }
       }
 
       // Then warnings
       if (warnings.length > 0) {
-        const warningMessages = warnings.map(issue =>
-          this._formatIssue(issue, terminalWidth)
-        ).join('\n\n');
-        clack.log.warn(`${ISSUE_THEME.filePath(relativePath)}\n${warningMessages}`);
+        for (const issue of warnings) {
+          clack.log.warn(this._formatIssue(issue, terminalWidth));
+        }
       }
 
       // Then info
       if (infos.length > 0) {
-        const infoMessages = infos.map(issue =>
-          this._formatIssue(issue, terminalWidth)
-        ).join('\n\n');
-        clack.log.info(`${ISSUE_THEME.filePath(relativePath)}\n${infoMessages}`);
+        for (const issue of infos) {
+          clack.log.info(this._formatIssue(issue, terminalWidth));
+        }
       }
 
       // Finally other messages (dimmed)
       if (messages.length > 0 && showAllGroups) {
-        const otherMessages = messages.map(issue =>
-          this._formatIssue(issue, terminalWidth)
-        ).join('\n\n');
-        clack.log.message(`${ISSUE_THEME.dim(ISSUE_THEME.filePath(relativePath))}\n${ISSUE_THEME.dim(otherMessages)}`);
+        for (const issue of messages) {
+          clack.log.message(ISSUE_THEME.dim(this._formatIssue(issue, terminalWidth)));
+        }
       }
+
+      // Use outro to close the file section
+      const issueCount = errors.length + warnings.length + infos.length + (showAllGroups ? messages.length : 0);
+      clack.outro(ISSUE_THEME.dim(`${issueCount} issue${issueCount === 1 ? '' : 's'}`));
     }
 
     // Display ungrouped issues (without file location)
