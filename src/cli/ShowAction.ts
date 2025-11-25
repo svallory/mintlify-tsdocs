@@ -3,6 +3,7 @@ import { CommandLineAction } from '@rushstack/ts-command-line';
 import { FileSystem } from '@rushstack/node-core-library';
 import { Colorize } from '@rushstack/terminal';
 import * as clack from '@clack/prompts';
+import chalk from 'chalk';
 import Table from 'cli-table3';
 import { ApiModel } from '@microsoft/api-extractor-model';
 import { loadConfig } from '../config';
@@ -11,6 +12,7 @@ import { DocumentationStats, type TypeCoverageStats } from '../utils/Documentati
 import { showCliHeader } from './CliHelpers';
 import * as ShowHelp from './help/ShowHelp';
 import { displayConfig } from './utils/configDisplay';
+import { ColorThemes } from './ColorThemes';
 
 /**
  * CLI action for displaying configuration and statistics.
@@ -50,8 +52,8 @@ export class ShowAction extends CommandLineAction {
     // Handle deprecated 'stats' option - show warning and execute coverage
     if (target.toLowerCase() === 'stats') {
       showCliHeader();
-      clack.log.warn('The "show stats" command is deprecated and will be removed in a future version.');
-      clack.log.message(Colorize.dim('Please use "mint-tsdocs coverage" instead.\n'));
+      clack.log.message(chalk.hex(ColorThemes.Nord.yellow)('⚠  The "show stats" command is deprecated and will be removed in a future version.'));
+      clack.log.message(Colorize.dim('   Please use "mint-tsdocs coverage" instead.\n'));
 
       // Execute coverage command
       const { CoverageAction } = await import('./CoverageAction.js');
@@ -64,8 +66,8 @@ export class ShowAction extends CommandLineAction {
     // Handle deprecated 'show config' - show warning and execute config
     if (target.toLowerCase() === 'config') {
       showCliHeader();
-      clack.log.warn('The "show config" command is deprecated and will be removed in a future version.');
-      clack.log.message(Colorize.dim('Please use "mint-tsdocs config" instead.\n'));
+      clack.log.message(chalk.hex(ColorThemes.Nord.yellow)('⚠  The "show config" command is deprecated and will be removed in a future version.'));
+      clack.log.message(Colorize.dim('   Please use "mint-tsdocs config" instead.\n'));
 
       // Execute config display
       await displayConfig();
