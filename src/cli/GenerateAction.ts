@@ -10,29 +10,13 @@ import { CommandLineAction } from '@rushstack/ts-command-line';
 import { MarkdownDocumenter } from '../documenters/MarkdownDocumenter';
 import { type CommandLineFlagParameter, type CommandLineStringParameter } from '@rushstack/ts-command-line';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
-import { loadConfig, generateApiExtractorConfig } from '../config';
+import { loadConfig, generateApiExtractorConfig, findConfigPath } from '../config';
 import { SecurityUtils } from '../utils/SecurityUtils';
 import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { TsConfigValidator } from '../utils/TsConfigValidator';
 import { showCliHeader } from './CliHelpers';
 import * as GenerateHelp from './help/GenerateHelp';
-
-/**
- * Color theme for warning messages - matches Clack's color scheme with true color support
- */
-const WARNING_THEME = {
-  // File/location colors (informational - cyan like Clack)
-  filePath: chalk.cyan,
-  lineNumber: chalk.hex('#9ece6a'),   // Green with true color support
-
-  // Content highlighting
-  identifier: chalk.hex('#7aa2f7'),   // Blue with true color support
-  tag: chalk.yellow,                   // @ tags like @alpha, @public
-
-  // Message text
-  message: (text: string) => text,    // Default/uncolored
-  dim: chalk.dim,                      // Subtle text
-} as const;
+import { IssueDisplayUtils, type IssueMessage, type IssueGroup } from './IssueDisplayUtils';
 
 /**
  * CLI action for generating Mintlify-compatible MDX documentation.
@@ -51,6 +35,9 @@ const WARNING_THEME = {
 export class GenerateAction extends CommandLineAction {
   /** Command-line flag to skip api-extractor execution */
   private readonly _skipExtractorParameter: CommandLineFlagParameter;
+
+  /** Command-line flag to disable all linting warnings */
+  private readonly _noLintParameter: CommandLineFlagParameter;
 
   /** Project directory parameter (flag) */
   private readonly _projectDirParameter: CommandLineStringParameter;
@@ -93,6 +80,11 @@ export class GenerateAction extends CommandLineAction {
       description: 'Skip running api-extractor (use existing .api.json files in .tsdocs/)'
     });
 
+    this._noLintParameter = this.defineFlagParameter({
+      parameterLongName: '--no-lint',
+      description: 'Disable all API Extractor linting warnings (suppress all messages)'
+    });
+
     // Define remainder to accept positional project directory argument
     this.defineCommandLineRemainder({
       description: 'Optional project directory path'
@@ -104,11 +96,14 @@ export class GenerateAction extends CommandLineAction {
    *
    * This method:
    * 1. Loads unified config via cosmiconfig
-   * 2. Creates .tsdocs/ directory if needed
-   * 3. Generates api-extractor.json and tsdoc.json in .tsdocs/
-   * 4. Runs api-extractor (unless --skip-extractor)
-   * 5. Builds API model from .api.json files
-   * 6. Generates MDX documentation
+   * 2. Invalidates cache if config is newer than .tsdocs/
+   * 3. Creates .tsdocs/ directory if needed
+   * 4. Generates api-extractor.json and tsdoc.json in .tsdocs/
+   * 5. Validates tsdoc.json configuration
+   * 6. Validates and compiles TypeScript
+   * 7. Runs api-extractor (unless --skip-extractor)
+   * 8. Builds API model from .api.json files
+   * 9. Generates MDX documentation
    *
    * @protected
    * @override
@@ -189,10 +184,23 @@ export class GenerateAction extends CommandLineAction {
         ? path.join(path.dirname(config.docsJson), '.tsdocs')
         : path.join(projectDir, 'docs', '.tsdocs');
 
-      // Step 2: Ensure .tsdocs directory exists
+      // Step 2: Check if config file is newer than cache - invalidate if so
+      const configPath = findConfigPath(projectDir);
+      if (configPath && FileSystem.exists(tsdocsDir)) {
+        const configStats = FileSystem.getStatistics(configPath);
+        const cacheStats = FileSystem.getStatistics(tsdocsDir);
+
+        if (configStats.mtime > cacheStats.mtime) {
+          clack.log.info('Configuration updated - invalidating cache...');
+          FileSystem.deleteFolder(tsdocsDir);
+          clack.log.success('Cache invalidated');
+        }
+      }
+
+      // Step 3: Ensure .tsdocs directory exists
       FileSystem.ensureFolder(tsdocsDir);
 
-      // Step 3: Generate api-extractor.json in .tsdocs/
+      // Step 4: Generate api-extractor.json in .tsdocs/
       const apiExtractorConfigPath = path.join(tsdocsDir, 'api-extractor.json');
       let inputFolder: string;
 
@@ -212,20 +220,29 @@ export class GenerateAction extends CommandLineAction {
         inputFolder = path.dirname(extractorConfig.apiJsonFilePath);
       } else {
         // Generate api-extractor.json
-        const apiExtractorConfig = generateApiExtractorConfig(config, projectDir, tsdocsDir);
+        const apiExtractorConfig = generateApiExtractorConfig(
+          config,
+          projectDir,
+          tsdocsDir,
+          this._noLintParameter.value
+        );
         FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
         clack.log.info('Generated .tsdocs/api-extractor.json');
+
+        if (this._noLintParameter.value) {
+          clack.log.info('Linting disabled (--no-lint flag set)');
+        }
 
         inputFolder = tsdocsDir;
       }
 
-      // Step 4: Validate tsdoc.json exists and is correctly configured
+      // Step 5: Validate tsdoc.json exists and is correctly configured
       this._validateTsDocConfig(projectDir);
 
-      // Step 5: Validate and compile TypeScript
+      // Step 6: Validate and compile TypeScript
       await this._validateAndCompileTypeScript(projectDir, config.apiExtractor.compiler?.tsconfigFilePath);
 
-      // Step 6: Run api-extractor if not skipped
+      // Step 7: Run api-extractor if not skipped
       if (!this._skipExtractorParameter.value) {
         await this._runApiExtractor(
           config.apiExtractor.configPath
@@ -236,10 +253,10 @@ export class GenerateAction extends CommandLineAction {
         clack.log.warn('Skipping api-extractor (--skip-extractor flag set)');
       }
 
-      // Step 7: Build API model from .api.json files
+      // Step 8: Build API model from .api.json files
       const apiModel = this._buildApiModel(inputFolder);
 
-      // Step 8: Generate documentation
+      // Step 9: Generate documentation
       const markdownDocumenter: MarkdownDocumenter = new MarkdownDocumenter({
         apiModel,
         outputFolder: config.outputFolder,
@@ -450,14 +467,8 @@ export class GenerateAction extends CommandLineAction {
       const messages: string[] = [];
 
       // Group warnings/errors by file for cleaner display
-      interface MessageInfo {
-        text: string;
-        logLevel: string;
-        line?: number;
-        column?: number;
-      }
-      const messagesByFile = new Map<string, MessageInfo[]>();
-      const messagesWithoutLocation: MessageInfo[] = [];
+      const issueGroups: Map<string, IssueMessage[]> = new Map();
+      const ungroupedIssues: IssueMessage[] = [];
 
       // Intercept console.log/error to prevent duplicate output
       // while allowing clack output (which goes through a different path)
@@ -476,33 +487,40 @@ export class GenerateAction extends CommandLineAction {
           localBuild: true,
           showVerboseMessages: false,
           messageCallback: (message: any) => {
-            // Format message based on log level
-            const text = message.text;
-            const logLevel = message.logLevel;
-
-            // Extract line and column if available
-            const line = message.sourceFileLine;
-            const column = message.sourceFileColumn;
-
-            // Group by file or collect without location
-            const messageInfo: MessageInfo = { text, logLevel, line, column };
-
-            if (message.sourceFilePath) {
-              const fileKey = message.sourceFilePath;
-              if (!messagesByFile.has(fileKey)) {
-                messagesByFile.set(fileKey, []);
-              }
-              messagesByFile.get(fileKey)!.push(messageInfo);
-            } else {
-              messagesWithoutLocation.push(messageInfo);
+            // Skip messages that have been suppressed (logLevel: 'none')
+            if (message.logLevel === 'none') {
+              return;
             }
 
-            messages.push(text);
+            // Create issue message with normalized severity
+            const issue: IssueMessage = {
+              text: message.text,
+              severity: IssueDisplayUtils.logLevelToSeverity(message.logLevel),
+              line: message.sourceFileLine,
+              column: message.sourceFileColumn
+            };
+
+            // Group by file or collect without location
+            if (message.sourceFilePath) {
+              const fileKey = message.sourceFilePath;
+              if (!issueGroups.has(fileKey)) {
+                issueGroups.set(fileKey, []);
+              }
+              issueGroups.get(fileKey)!.push(issue);
+            } else {
+              ungroupedIssues.push(issue);
+            }
+
+            messages.push(message.text);
           }
         });
 
         // Display grouped messages after extraction
-        this._displayGroupedMessages(messagesByFile, messagesWithoutLocation);
+        const groups: IssueGroup[] = Array.from(issueGroups.entries()).map(([filePath, issues]) => ({
+          filePath,
+          issues
+        }));
+        IssueDisplayUtils.displayGroupedIssues(groups, ungroupedIssues);
 
         if (extractorResult.succeeded) {
           clack.log.success('api-extractor completed successfully');
@@ -527,238 +545,6 @@ export class GenerateAction extends CommandLineAction {
         ErrorCode.COMMAND_FAILED
       );
     }
-  }
-
-  /**
-   * Display grouped messages by file for cleaner output
-   */
-  private _displayGroupedMessages(
-    messagesByFile: Map<string, Array<{ text: string; logLevel: string; line?: number; column?: number }>>,
-    messagesWithoutLocation: Array<{ text: string; logLevel: string; line?: number; column?: number }>
-  ): void {
-    const terminalWidth = this._getTerminalWidth();
-
-    // Display messages grouped by file
-    for (const [filePath, messages] of messagesByFile.entries()) {
-      const relativePath = path.relative(process.cwd(), filePath);
-
-      // Group messages by log level within this file
-      const errors = messages.filter(m => m.logLevel === 'error');
-      const warnings = messages.filter(m => m.logLevel === 'warning');
-      const infos = messages.filter(m => m.logLevel === 'info');
-      const others = messages.filter(m => !['error', 'warning', 'info'].includes(m.logLevel));
-
-      // Display errors first
-      if (errors.length > 0) {
-        const errorMessages = errors.map(m =>
-          this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n\n');
-        clack.log.error(`${WARNING_THEME.filePath(relativePath)}\n${errorMessages}`);
-      }
-
-      // Then warnings
-      if (warnings.length > 0) {
-        const warningMessages = warnings.map(m =>
-          this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n\n');
-        clack.log.warn(`${WARNING_THEME.filePath(relativePath)}\n${warningMessages}`);
-      }
-
-      // Then info
-      if (infos.length > 0) {
-        const infoMessages = infos.map(m =>
-          this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n\n');
-        clack.log.info(`${WARNING_THEME.filePath(relativePath)}\n${infoMessages}`);
-      }
-
-      // Finally other messages
-      if (others.length > 0) {
-        const otherMessages = others.map(m =>
-          this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n\n');
-        clack.log.message(`${WARNING_THEME.dim(WARNING_THEME.filePath(relativePath))}\n${WARNING_THEME.dim(otherMessages)}`);
-      }
-    }
-
-    // Display messages without location (ungrouped)
-    for (const message of messagesWithoutLocation) {
-      const lines = message.text.split('\n');
-      for (const line of lines) {
-        if (!line.trim()) continue;
-
-        const wrapped = this._wrapText(line, terminalWidth, 0, 0);
-
-        if (message.logLevel === 'error') {
-          clack.log.error(wrapped);
-        } else if (message.logLevel === 'warning') {
-          clack.log.warn(wrapped);
-        } else if (message.logLevel === 'info') {
-          clack.log.info(wrapped);
-        } else {
-          clack.log.message(WARNING_THEME.dim(wrapped));
-        }
-      }
-    }
-  }
-
-  /**
-   * Get terminal width with margin
-   */
-  private _getTerminalWidth(): number {
-    const defaultWidth = 80;
-    const margin = 4; // Extra safety margin to prevent incorrect line breaks
-    const width = process.stdout.columns || defaultWidth;
-    return Math.max(40, width - margin); // Minimum 40 chars
-  }
-
-  /**
-   * Format a message with location and colorized components
-   */
-  private _formatMessage(line: number | undefined, column: number | undefined, text: string, maxWidth: number): string {
-    // Build location string (just line number, not column)
-    let location = '';
-    if (line !== undefined) {
-      location = String(line);
-    }
-
-    // Colorize message components
-    const coloredText = this._colorizeMessageText(text);
-
-    // Format: "  line: message" (clack provides the left border)
-    const indent = '  ';
-    const separator = ': ';
-    const coloredLocation = location ? WARNING_THEME.lineNumber(location) : '';
-    const locationStr = location ? `${coloredLocation}${separator}` : '';
-
-    // Calculate lengths without ANSI codes for proper wrapping
-    const firstLineIndent = indent.length + location.length + separator.length;
-    const continuationIndent = indent.length + location.length + separator.length;
-
-    // Wrap the message text if needed
-    const wrappedLines = this._wrapText(coloredText, maxWidth, firstLineIndent, continuationIndent);
-
-    // Format first line
-    const lines = wrappedLines.split('\n');
-    const result = [`${indent}${locationStr}${lines[0]}`];
-
-    // Add continuation lines with proper indentation
-    for (let i = 1; i < lines.length; i++) {
-      // Align continuation with the start of the message text
-      const continuationIndentStr = ' '.repeat(continuationIndent);
-      result.push(`${continuationIndentStr}${lines[i]}`);
-    }
-
-    return result.join('\n');
-  }
-
-  /**
-   * Colorize message text with syntax highlighting using theme colors
-   */
-  private _colorizeMessageText(text: string): string {
-    let result = text;
-
-    // Color @ tags (like @alpha, @beta, @public, @internal) using theme
-    result = result.replace(/@(alpha|beta|public|internal|param|returns?|throws?|deprecated|see|link|example|remarks?|readonly|override|sealed|virtual|abstract|enum|interface|extends|implements|typeParam)/g,
-      (match) => WARNING_THEME.tag(match));
-
-    // Color quoted identifiers/strings using theme
-    result = result.replace(/"([^"]+)"/g, (_, match) => `"${WARNING_THEME.identifier(match)}"`);
-
-    return result;
-  }
-
-  /**
-   * Wrap text to fit within terminal width, preserving ANSI color codes
-   */
-  private _wrapText(text: string, maxWidth: number, firstLineIndent: number, continuationIndent: number): string {
-    // Remove ANSI codes for length calculation
-    const stripAnsi = (str: string): string => str.replace(/\x1b\[[0-9;]*m/g, '');
-
-    const plainText = stripAnsi(text);
-
-    // If text fits on one line, return as-is
-    if (plainText.length + firstLineIndent <= maxWidth) {
-      return text;
-    }
-
-    // Need to wrap - we'll do a simple word-based wrap
-    // This is a simplified version that works well enough for most messages
-    const words: string[] = [];
-    const coloredWords: string[] = [];
-
-    // Split by spaces while tracking positions to preserve colors
-    let currentWord = '';
-    let currentColoredWord = '';
-    let inAnsiCode = false;
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-
-      if (char === '\x1b') {
-        inAnsiCode = true;
-      }
-
-      currentColoredWord += char;
-
-      if (!inAnsiCode) {
-        currentWord += char;
-      }
-
-      if (char === 'm' && inAnsiCode) {
-        inAnsiCode = false;
-      }
-
-      if (char === ' ' && !inAnsiCode) {
-        if (currentWord.trim()) {
-          words.push(currentWord.trim());
-          coloredWords.push(currentColoredWord.trim());
-        }
-        currentWord = '';
-        currentColoredWord = '';
-      }
-    }
-
-    // Add last word
-    if (currentWord.trim()) {
-      words.push(currentWord.trim());
-      coloredWords.push(currentColoredWord.trim());
-    }
-
-    // Build wrapped lines
-    const lines: string[] = [];
-    let currentLine: string[] = [];
-    let currentLineLength = 0;
-    const firstLineMax = maxWidth - firstLineIndent;
-    const continuationMax = maxWidth - continuationIndent;
-
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const coloredWord = coloredWords[i];
-      const wordLength = word.length;
-      const isFirstLine = lines.length === 0;
-      const maxLength = isFirstLine ? firstLineMax : continuationMax;
-      const spaceLength = currentLine.length > 0 ? 1 : 0;
-
-      if (currentLineLength + spaceLength + wordLength <= maxLength) {
-        currentLine.push(coloredWord);
-        currentLineLength += spaceLength + wordLength;
-      } else {
-        // Start new line
-        if (currentLine.length > 0) {
-          lines.push(currentLine.join(' '));
-        }
-        currentLine = [coloredWord];
-        currentLineLength = wordLength;
-      }
-    }
-
-    // Add last line
-    if (currentLine.length > 0) {
-      lines.push(currentLine.join(' '));
-    }
-
-    return lines.join('\n');
   }
 
   /**
@@ -803,7 +589,9 @@ export class GenerateAction extends CommandLineAction {
           clack.log.info(`Reading ${safeFilename}`);
 
           const fileContent = FileSystem.readFile(filenamePath);
-          SecurityUtils.validateJsonContent(fileContent);
+          // API JSON files are generated by API Extractor from trusted source code
+          // They contain documentation that legitimately includes security-related terms
+          SecurityUtils.validateJsonContent(fileContent, { skipPatternCheck: true });
 
           apiModel.loadPackage(filenamePath);
           loadedCount++;
