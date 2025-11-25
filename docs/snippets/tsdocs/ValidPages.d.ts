@@ -268,6 +268,7 @@ export type ValidPageId =
   | "reference/mint-tsdocs/IMarkdownDocumenterOptions/readmeTitle"
   | "reference/mint-tsdocs/IMarkdownDocumenterOptions/tabName"
   | "reference/mint-tsdocs/IMarkdownDocumenterOptions/templates"
+  | "reference/mint-tsdocs/IMarkdownDocumenterOptions/verbose"
   | "reference/mint-tsdocs/IMarkdownEmitterContext"
   | "reference/mint-tsdocs/IMarkdownEmitterContext/boldRequested"
   | "reference/mint-tsdocs/IMarkdownEmitterContext/italicRequested"

@@ -781,7 +781,8 @@
                       "reference/mint-tsdocs/IMarkdownDocumenterOptions/outputFolder",
                       "reference/mint-tsdocs/IMarkdownDocumenterOptions/readmeTitle",
                       "reference/mint-tsdocs/IMarkdownDocumenterOptions/tabName",
-                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/templates"
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/templates",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/verbose"
                     ]
                   },
                   {

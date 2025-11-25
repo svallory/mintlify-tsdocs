@@ -81,6 +81,7 @@ export interface IMarkdownDocumenterOptions {
   enableMenu?: boolean;
   convertReadme?: boolean;
   readmeTitle?: string;
+  verbose?: boolean;
 
   /**
    * Template configuration for customizing output
@@ -154,6 +155,7 @@ export class MarkdownDocumenter {
   private readonly _templateDataConverter: TemplateDataConverter;
   private _convertReadme: boolean = false;
   private _readmeTitle: string = 'README';
+  private readonly _verbose: boolean = false;
   private readonly _renderingConfig: {
     hideStringEnumValues: boolean;
   };
@@ -194,6 +196,7 @@ export class MarkdownDocumenter {
     this._docsJsonPath = options.docsJsonPath;
     this._convertReadme = options.convertReadme || false;
     this._readmeTitle = options.readmeTitle || 'README';
+    this._verbose = options.verbose || false;
     this._tsdocConfiguration = CustomDocNodes.configuration;
 
     // Initialize resource tracking
@@ -2649,6 +2652,9 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
 
     clack.log.info('📦 Installing Mintlify components...');
 
+    let installedCount = 0;
+    let updatedCount = 0;
+
     for (const componentFile of componentFiles) {
       try {
         const sourcePath = path.join(componentsSource, componentFile);
@@ -2679,9 +2685,15 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
           }
 
           FileSystem.writeFile(targetPath, componentContent);
-          clack.log.success(`   ✓ Installed ${componentFile}`);
+          installedCount++;
+          if (this._verbose) {
+            clack.log.success(`   ✓ Installed ${componentFile}`);
+          }
         } else {
-          clack.log.info(`   ✓ ${componentFile} is up to date`);
+          updatedCount++;
+          if (this._verbose) {
+            clack.log.info(`   ✓ ${componentFile} is up to date`);
+          }
         }
       } catch (error) {
         if (error instanceof DocumentationError) {
@@ -2696,6 +2708,18 @@ export function isValidPage(pageId: string): pageId is ValidPageId;
             cause: error instanceof Error ? error : new Error(String(error))
           }
         );
+      }
+    }
+
+    // Show summary if not in verbose mode
+    if (!this._verbose) {
+      const totalComponents = installedCount + updatedCount;
+      if (installedCount > 0 && updatedCount > 0) {
+        clack.log.success(`   ✓ Installed ${installedCount} and updated ${updatedCount} of ${totalComponents} components`);
+      } else if (installedCount > 0) {
+        clack.log.success(`   ✓ Installed ${installedCount} component${installedCount === 1 ? '' : 's'}`);
+      } else if (updatedCount > 0) {
+        clack.log.success(`   ✓ All ${updatedCount} components up to date`);
       }
     }
   }

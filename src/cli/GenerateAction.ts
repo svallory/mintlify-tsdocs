@@ -36,8 +36,11 @@ export class GenerateAction extends CommandLineAction {
   /** Command-line flag to skip api-extractor execution */
   private readonly _skipExtractorParameter: CommandLineFlagParameter;
 
-  /** Command-line flag to disable all linting warnings */
-  private readonly _noLintParameter: CommandLineFlagParameter;
+  /** Command-line flag to enable linting warnings */
+  private readonly _lintParameter: CommandLineFlagParameter;
+
+  /** Command-line flag to show verbose output */
+  private readonly _verboseParameter: CommandLineFlagParameter;
 
   /** Project directory parameter (flag) */
   private readonly _projectDirParameter: CommandLineStringParameter;
@@ -80,9 +83,15 @@ export class GenerateAction extends CommandLineAction {
       description: 'Skip running api-extractor (use existing .api.json files in .tsdocs/)'
     });
 
-    this._noLintParameter = this.defineFlagParameter({
-      parameterLongName: '--no-lint',
-      description: 'Disable all API Extractor linting warnings (suppress all messages)'
+    this._lintParameter = this.defineFlagParameter({
+      parameterLongName: '--lint',
+      description: 'Show API Extractor linting warnings and suggestions'
+    });
+
+    this._verboseParameter = this.defineFlagParameter({
+      parameterLongName: '--verbose',
+      parameterShortName: '-v',
+      description: 'Show detailed output including component installation progress'
     });
 
     // Define remainder to accept positional project directory argument
@@ -220,17 +229,18 @@ export class GenerateAction extends CommandLineAction {
         inputFolder = path.dirname(extractorConfig.apiJsonFilePath);
       } else {
         // Generate api-extractor.json
+        // By default, suppress lint warnings unless --lint is passed
         const apiExtractorConfig = generateApiExtractorConfig(
           config,
           projectDir,
           tsdocsDir,
-          this._noLintParameter.value
+          !this._lintParameter.value // Invert: suppress when lint is NOT enabled
         );
         FileSystem.writeFile(apiExtractorConfigPath, JSON.stringify(apiExtractorConfig, null, 2));
         clack.log.info('Generated .tsdocs/api-extractor.json');
 
-        if (this._noLintParameter.value) {
-          clack.log.info('Linting disabled (--no-lint flag set)');
+        if (this._lintParameter.value) {
+          clack.log.info('Linting enabled (--lint flag set)');
         }
 
         inputFolder = tsdocsDir;
@@ -266,7 +276,8 @@ export class GenerateAction extends CommandLineAction {
         enableMenu: false,
         convertReadme: config.convertReadme,
         readmeTitle: config.readmeTitle,
-        templates: config.templates
+        templates: config.templates,
+        verbose: this._verboseParameter.value
       });
 
       markdownDocumenter.generateFiles();
@@ -489,6 +500,12 @@ export class GenerateAction extends CommandLineAction {
           messageCallback: (message: any) => {
             // Skip messages that have been suppressed (logLevel: 'none')
             if (message.logLevel === 'none') {
+              return;
+            }
+
+            // When lint is disabled (default), only show errors, not warnings
+            const isError = message.logLevel === 'error';
+            if (!this._lintParameter.value && !isError) {
               return;
             }
 

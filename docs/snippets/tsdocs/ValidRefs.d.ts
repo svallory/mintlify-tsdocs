@@ -240,6 +240,7 @@ export type ValidRefId =
   | "mint-tsdocs.IMarkdownDocumenterOptions.readmeTitle"
   | "mint-tsdocs.IMarkdownDocumenterOptions.tabName"
   | "mint-tsdocs.IMarkdownDocumenterOptions.templates"
+  | "mint-tsdocs.IMarkdownDocumenterOptions.verbose"
   | "mint-tsdocs.IMarkdownEmitterContext"
   | "mint-tsdocs.IMarkdownEmitterContext.boldRequested"
   | "mint-tsdocs.IMarkdownEmitterContext.italicRequested"
