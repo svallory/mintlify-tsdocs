@@ -436,7 +436,8 @@ export class GenerateAction extends CommandLineAction {
       interface MessageInfo {
         text: string;
         logLevel: string;
-        location?: string;
+        line?: number;
+        column?: number;
       }
       const messagesByFile = new Map<string, MessageInfo[]>();
       const messagesWithoutLocation: MessageInfo[] = [];
@@ -462,23 +463,14 @@ export class GenerateAction extends CommandLineAction {
             const text = message.text;
             const logLevel = message.logLevel;
 
-            // Build location string if available
-            let location: string | undefined;
-            if (message.sourceFilePath) {
-              const relativePath = path.relative(process.cwd(), message.sourceFilePath);
-              location = relativePath;
-              if (message.sourceFileLine !== undefined) {
-                location += `:${message.sourceFileLine}`;
-                if (message.sourceFileColumn !== undefined) {
-                  location += `:${message.sourceFileColumn}`;
-                }
-              }
-            }
+            // Extract line and column if available
+            const line = message.sourceFileLine;
+            const column = message.sourceFileColumn;
 
             // Group by file or collect without location
-            const messageInfo: MessageInfo = { text, logLevel, location };
+            const messageInfo: MessageInfo = { text, logLevel, line, column };
 
-            if (location) {
+            if (message.sourceFilePath) {
               const fileKey = message.sourceFilePath;
               if (!messagesByFile.has(fileKey)) {
                 messagesByFile.set(fileKey, []);
@@ -524,8 +516,8 @@ export class GenerateAction extends CommandLineAction {
    * Display grouped messages by file for cleaner output
    */
   private _displayGroupedMessages(
-    messagesByFile: Map<string, Array<{ text: string; logLevel: string; location?: string }>>,
-    messagesWithoutLocation: Array<{ text: string; logLevel: string; location?: string }>
+    messagesByFile: Map<string, Array<{ text: string; logLevel: string; line?: number; column?: number }>>,
+    messagesWithoutLocation: Array<{ text: string; logLevel: string; line?: number; column?: number }>
   ): void {
     const terminalWidth = this._getTerminalWidth();
 
@@ -542,32 +534,32 @@ export class GenerateAction extends CommandLineAction {
       // Display errors first
       if (errors.length > 0) {
         const errorMessages = errors.map(m =>
-          this._formatMessage(m.location!, m.text, terminalWidth)
-        ).join('\n');
+          this._formatMessage(m.line, m.column, m.text, terminalWidth)
+        ).join('\n│\n');
         clack.log.error(`${Colorize.cyan(relativePath)}\n${errorMessages}`);
       }
 
       // Then warnings
       if (warnings.length > 0) {
         const warningMessages = warnings.map(m =>
-          this._formatMessage(m.location!, m.text, terminalWidth)
-        ).join('\n');
+          this._formatMessage(m.line, m.column, m.text, terminalWidth)
+        ).join('\n│\n');
         clack.log.warn(`${Colorize.cyan(relativePath)}\n${warningMessages}`);
       }
 
       // Then info
       if (infos.length > 0) {
         const infoMessages = infos.map(m =>
-          this._formatMessage(m.location!, m.text, terminalWidth)
-        ).join('\n');
+          this._formatMessage(m.line, m.column, m.text, terminalWidth)
+        ).join('\n│\n');
         clack.log.info(`${Colorize.cyan(relativePath)}\n${infoMessages}`);
       }
 
       // Finally other messages
       if (others.length > 0) {
         const otherMessages = others.map(m =>
-          this._formatMessage(m.location!, m.text, terminalWidth)
-        ).join('\n');
+          this._formatMessage(m.line, m.column, m.text, terminalWidth)
+        ).join('\n│\n');
         clack.log.message(`${Colorize.dim(Colorize.cyan(relativePath))}\n${Colorize.dim(otherMessages)}`);
       }
     }
@@ -578,7 +570,7 @@ export class GenerateAction extends CommandLineAction {
       for (const line of lines) {
         if (!line.trim()) continue;
 
-        const wrapped = this._wrapText(line, terminalWidth, 0);
+        const wrapped = this._wrapText(line, terminalWidth, 0, 0);
 
         if (message.logLevel === 'error') {
           clack.log.error(wrapped);
@@ -606,25 +598,41 @@ export class GenerateAction extends CommandLineAction {
   /**
    * Format a message with location and colorized components
    */
-  private _formatMessage(location: string, text: string, maxWidth: number): string {
-    // Colorize location (dim gray)
-    const coloredLocation = Colorize.dim(location);
+  private _formatMessage(line: number | undefined, column: number | undefined, text: string, maxWidth: number): string {
+    // Build location string (just line:column, not full path)
+    let location = '';
+    if (line !== undefined) {
+      location = String(line);
+      if (column !== undefined) {
+        location += `:${column}`;
+      }
+    }
 
     // Colorize quoted strings in the message (yellow)
     const coloredText = this._colorizeQuotedStrings(text);
 
-    // Format: "  location: message"
-    const indent = '  ';
+    // Format: "│   line: message" or "│   line:col: message"
+    const prefix = '│   ';
     const separator = ': ';
+    const locationStr = location ? `${location}${separator}` : '';
 
     // Calculate lengths without ANSI codes for proper wrapping
-    const locationLength = location.length;
-    const prefixLength = indent.length + locationLength + separator.length;
+    const firstLineIndent = prefix.length + locationStr.length;
+    const continuationIndent = prefix.length + '       '; // Align with message start
 
     // Wrap the message text if needed
-    const wrappedText = this._wrapText(coloredText, maxWidth, prefixLength);
+    const wrappedLines = this._wrapText(coloredText, maxWidth, firstLineIndent, continuationIndent.length);
 
-    return `${indent}${coloredLocation}${separator}${wrappedText}`;
+    // Format first line
+    const lines = wrappedLines.split('\n');
+    const result = [`${prefix}${locationStr}${lines[0]}`];
+
+    // Add continuation lines with proper indentation
+    for (let i = 1; i < lines.length; i++) {
+      result.push(`${prefix}       ${lines[i]}`);
+    }
+
+    return result.join('\n');
   }
 
   /**
@@ -636,24 +644,96 @@ export class GenerateAction extends CommandLineAction {
   }
 
   /**
-   * Wrap text to fit within terminal width
+   * Wrap text to fit within terminal width, preserving ANSI color codes
    */
-  private _wrapText(text: string, maxWidth: number, indent: number): string {
+  private _wrapText(text: string, maxWidth: number, firstLineIndent: number, continuationIndent: number): string {
     // Remove ANSI codes for length calculation
     const stripAnsi = (str: string): string => str.replace(/\x1b\[[0-9;]*m/g, '');
 
     const plainText = stripAnsi(text);
 
     // If text fits on one line, return as-is
-    if (plainText.length + indent <= maxWidth) {
+    if (plainText.length + firstLineIndent <= maxWidth) {
       return text;
     }
 
-    // Need to wrap - this is complex with ANSI codes, so for now just return as-is
-    // A full implementation would need to preserve ANSI codes while wrapping
-    // For the common case where text contains ANSI codes, we'll just let it overflow
-    // since terminal will handle it gracefully
-    return text;
+    // Need to wrap - we'll do a simple word-based wrap
+    // This is a simplified version that works well enough for most messages
+    const words: string[] = [];
+    const coloredWords: string[] = [];
+
+    // Split by spaces while tracking positions to preserve colors
+    let currentWord = '';
+    let currentColoredWord = '';
+    let inAnsiCode = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      if (char === '\x1b') {
+        inAnsiCode = true;
+      }
+
+      currentColoredWord += char;
+
+      if (!inAnsiCode) {
+        currentWord += char;
+      }
+
+      if (char === 'm' && inAnsiCode) {
+        inAnsiCode = false;
+      }
+
+      if (char === ' ' && !inAnsiCode) {
+        if (currentWord.trim()) {
+          words.push(currentWord.trim());
+          coloredWords.push(currentColoredWord.trim());
+        }
+        currentWord = '';
+        currentColoredWord = '';
+      }
+    }
+
+    // Add last word
+    if (currentWord.trim()) {
+      words.push(currentWord.trim());
+      coloredWords.push(currentColoredWord.trim());
+    }
+
+    // Build wrapped lines
+    const lines: string[] = [];
+    let currentLine: string[] = [];
+    let currentLineLength = 0;
+    const firstLineMax = maxWidth - firstLineIndent;
+    const continuationMax = maxWidth - continuationIndent;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const coloredWord = coloredWords[i];
+      const wordLength = word.length;
+      const isFirstLine = lines.length === 0;
+      const maxLength = isFirstLine ? firstLineMax : continuationMax;
+      const spaceLength = currentLine.length > 0 ? 1 : 0;
+
+      if (currentLineLength + spaceLength + wordLength <= maxLength) {
+        currentLine.push(coloredWord);
+        currentLineLength += spaceLength + wordLength;
+      } else {
+        // Start new line
+        if (currentLine.length > 0) {
+          lines.push(currentLine.join(' '));
+        }
+        currentLine = [coloredWord];
+        currentLineLength = wordLength;
+      }
+    }
+
+    // Add last line
+    if (currentLine.length > 0) {
+      lines.push(currentLine.join(' '));
+    }
+
+    return lines.join('\n');
   }
 
   /**
