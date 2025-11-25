@@ -432,6 +432,15 @@ export class GenerateAction extends CommandLineAction {
       // Capture and format api-extractor messages
       const messages: string[] = [];
 
+      // Group warnings/errors by file for cleaner display
+      interface MessageInfo {
+        text: string;
+        logLevel: string;
+        location?: string;
+      }
+      const messagesByFile = new Map<string, MessageInfo[]>();
+      const messagesWithoutLocation: MessageInfo[] = [];
+
       // Intercept console.log/error to prevent duplicate output
       // while allowing clack output (which goes through a different path)
       const originalConsoleLog = console.log;
@@ -448,30 +457,43 @@ export class GenerateAction extends CommandLineAction {
         const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
           localBuild: true,
           showVerboseMessages: false,
-          messageCallback: (message) => {
+          messageCallback: (message: any) => {
             // Format message based on log level
             const text = message.text;
+            const logLevel = message.logLevel;
 
-            // Wrap each message line with clack formatting
-            const lines = text.split('\n');
-            for (const line of lines) {
-              if (!line.trim()) continue;
-
-              // Color code based on log level
-              if (message.logLevel === 'error') {
-                clack.log.error(line);
-              } else if (message.logLevel === 'warning') {
-                clack.log.warn(line);
-              } else if (message.logLevel === 'info') {
-                clack.log.info(line);
-              } else {
-                clack.log.message(Colorize.dim(line));
+            // Build location string if available
+            let location: string | undefined;
+            if (message.sourceFilePath) {
+              const relativePath = path.relative(process.cwd(), message.sourceFilePath);
+              location = relativePath;
+              if (message.sourceFileLine !== undefined) {
+                location += `:${message.sourceFileLine}`;
+                if (message.sourceFileColumn !== undefined) {
+                  location += `:${message.sourceFileColumn}`;
+                }
               }
+            }
+
+            // Group by file or collect without location
+            const messageInfo: MessageInfo = { text, logLevel, location };
+
+            if (location) {
+              const fileKey = message.sourceFilePath;
+              if (!messagesByFile.has(fileKey)) {
+                messagesByFile.set(fileKey, []);
+              }
+              messagesByFile.get(fileKey)!.push(messageInfo);
+            } else {
+              messagesWithoutLocation.push(messageInfo);
             }
 
             messages.push(text);
           }
         });
+
+        // Display grouped messages after extraction
+        this._displayGroupedMessages(messagesByFile, messagesWithoutLocation);
 
         if (extractorResult.succeeded) {
           clack.log.success('api-extractor completed successfully');
@@ -496,6 +518,142 @@ export class GenerateAction extends CommandLineAction {
         ErrorCode.COMMAND_FAILED
       );
     }
+  }
+
+  /**
+   * Display grouped messages by file for cleaner output
+   */
+  private _displayGroupedMessages(
+    messagesByFile: Map<string, Array<{ text: string; logLevel: string; location?: string }>>,
+    messagesWithoutLocation: Array<{ text: string; logLevel: string; location?: string }>
+  ): void {
+    const terminalWidth = this._getTerminalWidth();
+
+    // Display messages grouped by file
+    for (const [filePath, messages] of messagesByFile.entries()) {
+      const relativePath = path.relative(process.cwd(), filePath);
+
+      // Group messages by log level within this file
+      const errors = messages.filter(m => m.logLevel === 'error');
+      const warnings = messages.filter(m => m.logLevel === 'warning');
+      const infos = messages.filter(m => m.logLevel === 'info');
+      const others = messages.filter(m => !['error', 'warning', 'info'].includes(m.logLevel));
+
+      // Display errors first
+      if (errors.length > 0) {
+        const errorMessages = errors.map(m =>
+          this._formatMessage(m.location!, m.text, terminalWidth)
+        ).join('\n');
+        clack.log.error(`${Colorize.cyan(relativePath)}\n${errorMessages}`);
+      }
+
+      // Then warnings
+      if (warnings.length > 0) {
+        const warningMessages = warnings.map(m =>
+          this._formatMessage(m.location!, m.text, terminalWidth)
+        ).join('\n');
+        clack.log.warn(`${Colorize.cyan(relativePath)}\n${warningMessages}`);
+      }
+
+      // Then info
+      if (infos.length > 0) {
+        const infoMessages = infos.map(m =>
+          this._formatMessage(m.location!, m.text, terminalWidth)
+        ).join('\n');
+        clack.log.info(`${Colorize.cyan(relativePath)}\n${infoMessages}`);
+      }
+
+      // Finally other messages
+      if (others.length > 0) {
+        const otherMessages = others.map(m =>
+          this._formatMessage(m.location!, m.text, terminalWidth)
+        ).join('\n');
+        clack.log.message(`${Colorize.dim(Colorize.cyan(relativePath))}\n${Colorize.dim(otherMessages)}`);
+      }
+    }
+
+    // Display messages without location (ungrouped)
+    for (const message of messagesWithoutLocation) {
+      const lines = message.text.split('\n');
+      for (const line of lines) {
+        if (!line.trim()) continue;
+
+        const wrapped = this._wrapText(line, terminalWidth, 0);
+
+        if (message.logLevel === 'error') {
+          clack.log.error(wrapped);
+        } else if (message.logLevel === 'warning') {
+          clack.log.warn(wrapped);
+        } else if (message.logLevel === 'info') {
+          clack.log.info(wrapped);
+        } else {
+          clack.log.message(Colorize.dim(wrapped));
+        }
+      }
+    }
+  }
+
+  /**
+   * Get terminal width with margin
+   */
+  private _getTerminalWidth(): number {
+    const defaultWidth = 80;
+    const margin = 2;
+    const width = process.stdout.columns || defaultWidth;
+    return Math.max(40, width - margin); // Minimum 40 chars
+  }
+
+  /**
+   * Format a message with location and colorized components
+   */
+  private _formatMessage(location: string, text: string, maxWidth: number): string {
+    // Colorize location (dim gray)
+    const coloredLocation = Colorize.dim(location);
+
+    // Colorize quoted strings in the message (yellow)
+    const coloredText = this._colorizeQuotedStrings(text);
+
+    // Format: "  location: message"
+    const indent = '  ';
+    const separator = ': ';
+
+    // Calculate lengths without ANSI codes for proper wrapping
+    const locationLength = location.length;
+    const prefixLength = indent.length + locationLength + separator.length;
+
+    // Wrap the message text if needed
+    const wrappedText = this._wrapText(coloredText, maxWidth, prefixLength);
+
+    return `${indent}${coloredLocation}${separator}${wrappedText}`;
+  }
+
+  /**
+   * Colorize quoted strings in message text
+   */
+  private _colorizeQuotedStrings(text: string): string {
+    // Match quoted strings like "ApiResolutionCache" or 'foo'
+    return text.replace(/"([^"]+)"/g, (_, match) => `"${Colorize.yellow(match)}"`);
+  }
+
+  /**
+   * Wrap text to fit within terminal width
+   */
+  private _wrapText(text: string, maxWidth: number, indent: number): string {
+    // Remove ANSI codes for length calculation
+    const stripAnsi = (str: string): string => str.replace(/\x1b\[[0-9;]*m/g, '');
+
+    const plainText = stripAnsi(text);
+
+    // If text fits on one line, return as-is
+    if (plainText.length + indent <= maxWidth) {
+      return text;
+    }
+
+    // Need to wrap - this is complex with ANSI codes, so for now just return as-is
+    // A full implementation would need to preserve ANSI codes while wrapping
+    // For the common case where text contains ANSI codes, we'll just let it overflow
+    // since terminal will handle it gracefully
+    return text;
   }
 
   /**
