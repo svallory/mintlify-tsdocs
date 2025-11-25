@@ -599,26 +599,24 @@ export class GenerateAction extends CommandLineAction {
    * Format a message with location and colorized components
    */
   private _formatMessage(line: number | undefined, column: number | undefined, text: string, maxWidth: number): string {
-    // Build location string (just line:column, not full path)
+    // Build location string (just line number, not column)
     let location = '';
     if (line !== undefined) {
       location = String(line);
-      if (column !== undefined) {
-        location += `:${column}`;
-      }
     }
 
-    // Colorize quoted strings in the message (yellow)
-    const coloredText = this._colorizeQuotedStrings(text);
+    // Colorize message components
+    const coloredText = this._colorizeMessageText(text);
 
-    // Format: "│   line: message" or "│   line:col: message"
+    // Format: "│   line: message"
     const prefix = '│   ';
     const separator = ': ';
-    const locationStr = location ? `${location}${separator}` : '';
+    const coloredLocation = location ? this._colorLineNumber(location) : '';
+    const locationStr = location ? `${coloredLocation}${separator}` : '';
 
     // Calculate lengths without ANSI codes for proper wrapping
-    const firstLineIndent = prefix.length + locationStr.length;
-    const continuationIndent = prefix.length + '       '; // Align with message start
+    const firstLineIndent = prefix.length + location.length + separator.length;
+    const continuationIndent = prefix.length + '   '; // Align with message start (3 spaces less than before since no column)
 
     // Wrap the message text if needed
     const wrappedLines = this._wrapText(coloredText, maxWidth, firstLineIndent, continuationIndent.length);
@@ -629,18 +627,42 @@ export class GenerateAction extends CommandLineAction {
 
     // Add continuation lines with proper indentation
     for (let i = 1; i < lines.length; i++) {
-      result.push(`${prefix}       ${lines[i]}`);
+      result.push(`${prefix}   ${lines[i]}`);
     }
 
     return result.join('\n');
   }
 
   /**
-   * Colorize quoted strings in message text
+   * Color line number with custom color #DE5971 (fallback: magenta)
    */
-  private _colorizeQuotedStrings(text: string): string {
-    // Match quoted strings like "ApiResolutionCache" or 'foo'
-    return text.replace(/"([^"]+)"/g, (_, match) => `"${Colorize.yellow(match)}"`);
+  private _colorLineNumber(text: string): string {
+    // Use 24-bit RGB color if supported, otherwise fall back to magenta
+    return `\x1b[38;2;222;89;113m${text}\x1b[0m`;
+  }
+
+  /**
+   * Color identifier name with custom color #7AA2F7 (fallback: blue)
+   */
+  private _colorIdentifier(text: string): string {
+    // Use 24-bit RGB color if supported, otherwise fall back to blue
+    return `\x1b[38;2;122;162;247m${text}\x1b[0m`;
+  }
+
+  /**
+   * Colorize message text with syntax highlighting
+   */
+  private _colorizeMessageText(text: string): string {
+    let result = text;
+
+    // Color @ tags (like @alpha, @beta, @public, @internal) - yellow
+    result = result.replace(/@(alpha|beta|public|internal|param|returns?|throws?|deprecated|see|link|example|remarks?|readonly|override|sealed|virtual|abstract|enum|interface|extends|implements|typeParam)/g,
+      (match) => Colorize.yellow(match));
+
+    // Color quoted identifiers/strings - custom blue (#7AA2F7)
+    result = result.replace(/"([^"]+)"/g, (_, match) => `"${this._colorIdentifier(match)}"`);
+
+    return result;
   }
 
   /**
