@@ -3,7 +3,7 @@ import { FileSystem } from '@rushstack/node-core-library';
 import { Extractor, ExtractorConfig, type ExtractorResult } from '@microsoft/api-extractor';
 import { ApiModel } from '@microsoft/api-extractor-model';
 import * as clack from '@clack/prompts';
-import pc from 'picocolors';
+import chalk from 'chalk';
 
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
 import { CommandLineAction } from '@rushstack/ts-command-line';
@@ -18,20 +18,20 @@ import { showCliHeader } from './CliHelpers';
 import * as GenerateHelp from './help/GenerateHelp';
 
 /**
- * Color theme for warning messages - matches Clack's color scheme
+ * Color theme for warning messages - matches Clack's color scheme with true color support
  */
 const WARNING_THEME = {
   // File/location colors (informational - cyan like Clack)
-  filePath: pc.cyan,
-  lineNumber: pc.green,
+  filePath: chalk.cyan,
+  lineNumber: chalk.hex('#9ece6a'),   // Green with true color support
 
   // Content highlighting
-  identifier: pc.cyan,    // Code symbols/identifiers
-  tag: pc.yellow,         // @ tags like @alpha, @public
+  identifier: chalk.hex('#7aa2f7'),   // Blue with true color support
+  tag: chalk.yellow,                   // @ tags like @alpha, @public
 
   // Message text
-  message: (text: string) => text,  // Default/uncolored
-  dim: pc.dim,                      // Subtle text
+  message: (text: string) => text,    // Default/uncolored
+  dim: chalk.dim,                      // Subtle text
 } as const;
 
 /**
@@ -273,7 +273,7 @@ export class GenerateAction extends CommandLineAction {
 
     if (!FileSystem.exists(tsdocPath)) {
       clack.log.error('tsdoc.json not found at project root');
-      clack.log.info('Run ' + pc.cyan('mint-tsdocs init') + ' to create it');
+      clack.log.info('Run ' + chalk.cyan('mint-tsdocs init') + ' to create it');
       throw new DocumentationError(
         'tsdoc.json is required for API Extractor to recognize custom TSDoc tags',
         ErrorCode.CONFIG_NOT_FOUND
@@ -287,7 +287,7 @@ export class GenerateAction extends CommandLineAction {
       // Check for required base extension
       if (!config.extends || !config.extends.includes('@microsoft/api-extractor/extends/tsdoc-base.json')) {
         clack.log.warn('tsdoc.json must extend "@microsoft/api-extractor/extends/tsdoc-base.json"');
-        clack.log.info('Run ' + pc.cyan('mint-tsdocs init') + ' again to update it');
+        clack.log.info('Run ' + chalk.cyan('mint-tsdocs init') + ' again to update it');
       }
     } catch (error) {
       throw new DocumentationError(
