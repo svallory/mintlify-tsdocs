@@ -1,16 +1,16 @@
 import { showCommandHelp } from '../CliHelpers';
 
 /**
- * Display help for the show command
+ * Display help for the show command (deprecated)
  */
 export function showHelp(): void {
   showCommandHelp({
     commandName: 'show',
-    summary: 'Display configuration or statistics',
+    summary: '[DEPRECATED] Display configuration or statistics',
     description:
-      'Displays the current mint-tsdocs configuration or documentation statistics. ' +
-      'Use "config" to view configuration settings or "stats" to view API coverage and quality metrics. ' +
-      'Defaults to "config" if no target is specified.',
+      '[DEPRECATED] This command is deprecated and will be removed in a future version.\n\n' +
+      'Use "mint-tsdocs config" to view configuration settings.\n' +
+      'Use "mint-tsdocs coverage" to view API coverage statistics.',
     usage: 'mint-tsdocs show [TARGET]',
     options: [
       {
@@ -21,15 +21,11 @@ export function showHelp(): void {
     ],
     examples: [
       {
-        description: 'Show current configuration (default)',
-        command: 'mint-tsdocs show'
-      },
-      {
-        description: 'Show configuration explicitly',
+        description: 'Show configuration (deprecated - use "mint-tsdocs config")',
         command: 'mint-tsdocs show config'
       },
       {
-        description: 'Show documentation statistics',
+        description: 'Show statistics (deprecated - use "mint-tsdocs coverage")',
         command: 'mint-tsdocs show stats'
       }
     ]

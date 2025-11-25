@@ -5,6 +5,7 @@ import { InitAction } from './InitAction';
 import { HelpAction } from './HelpAction';
 import { VersionAction } from './VersionAction';
 import { ShowAction } from './ShowAction';
+import { ConfigAction } from './ConfigAction';
 import { LintAction } from './LintAction';
 import { CoverageAction } from './CoverageAction';
 
@@ -98,7 +99,7 @@ export class DocumenterCli extends CommandLineParser {
     const firstArg = actualArgs[0];
 
     // If first arg doesn't start with '-' and isn't a known action, treat it as a directory for generate
-    const knownActions = ['init', 'generate', 'customize', 'show', 'lint', 'coverage', 'help', 'version', '--help', '-h', '--version', '-v'];
+    const knownActions = ['init', 'generate', 'customize', 'show', 'config', 'lint', 'coverage', 'help', 'version', '--help', '-h', '--version', '-v'];
     if (!firstArg.startsWith('-') && !knownActions.includes(firstArg)) {
       // Treat as positional argument for generate
       // Insert 'generate' action and pass remaining args as remainder
@@ -119,6 +120,7 @@ export class DocumenterCli extends CommandLineParser {
     this.addAction(new GenerateAction(this));
     this.addAction(new CustomizeAction());
     this.addAction(new ShowAction());
+    this.addAction(new ConfigAction());
     this.addAction(new LintAction());
     this.addAction(new CoverageAction(this));
     this.addAction(new HelpAction(this));

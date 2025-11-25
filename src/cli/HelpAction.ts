@@ -7,6 +7,7 @@ import * as CustomizeHelp from './help/CustomizeHelp';
 import * as InitHelp from './help/InitHelp';
 import * as GenerateHelp from './help/GenerateHelp';
 import * as ShowHelp from './help/ShowHelp';
+import * as ConfigHelp from './help/ConfigHelp';
 import * as LintHelp from './help/LintHelp';
 
 /**
@@ -53,6 +54,9 @@ export class HelpAction extends CommandLineAction {
         case 'show':
           ShowHelp.showHelp();
           return;
+        case 'config':
+          ConfigHelp.showHelp();
+          return;
         case 'lint':
           LintHelp.showHelp();
           return;
@@ -85,7 +89,7 @@ export class HelpAction extends CommandLineAction {
         default:
           showPlainHeader();
           clack.log.warn(`Unknown command: ${Colorize.yellow(commandName)}`);
-          console.log(`\nValid commands: init, generate, customize, show, lint, coverage, version\n`);
+          console.log(`\nValid commands: init, generate, customize, config, show (deprecated), lint, coverage, version\n`);
           console.log('Run ' + Colorize.cyan('mint-tsdocs help') + ' to see all commands');
           return;
       }
@@ -120,9 +124,13 @@ export class HelpAction extends CommandLineAction {
     console.log('               Copies default Liquid templates for customization');
     console.log('               Usage: mint-tsdocs customize -t ./templates\n');
 
-    console.log('  ' + Colorize.cyan('show') + '         Display configuration or statistics');
-    console.log('               Options: --target config|stats (default: config)');
-    console.log('               Usage: mint-tsdocs show --target config\n');
+    console.log('  ' + Colorize.cyan('config') + '       Display current configuration');
+    console.log('               Shows project settings, navigation, templates, and API Extractor config');
+    console.log('               Usage: mint-tsdocs config\n');
+
+    console.log('  ' + Colorize.cyan('show') + '         ' + Colorize.dim('[DEPRECATED]') + ' Display configuration or statistics');
+    console.log('               Use "config" or "coverage" instead');
+    console.log('               Usage: mint-tsdocs show config|stats\n');
 
     console.log('  ' + Colorize.cyan('lint') + '         Check documentation quality and find issues');
     console.log('               Reports undocumented APIs and missing descriptions');
@@ -156,7 +164,10 @@ export class HelpAction extends CommandLineAction {
     console.log('  $ mint-tsdocs customize -t ./my-templates\n');
 
     console.log('  ' + Colorize.gray('# View current configuration'));
-    console.log('  $ mint-tsdocs show --target config\n');
+    console.log('  $ mint-tsdocs config\n');
+
+    console.log('  ' + Colorize.gray('# Check coverage'));
+    console.log('  $ mint-tsdocs coverage\n');
 
     console.log(Colorize.bold('DOCUMENTATION'));
     console.log('  https://mint-tsdocs.saulo.engineer/\n');
