@@ -63,6 +63,7 @@
     "ejs": "^3.1.10",
     "liquidjs": "^10.24.0",
     "minimatch": "^10.1.1",
+    "picocolors": "^1.1.1",
     "react": "18",
     "resolve": "~1.22.11"
   },
@@ -73,7 +74,7 @@
     "@types/node": "^18.19.130",
     "@types/react": "18",
     "@types/resolve": "1.20.2",
-    "@typescript-eslint/parser": "^8.47.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "@vitest/coverage-v8": "^4.0.13",
     "@vitest/ui": "^4.0.13",
     "eslint": "^9.39.1",

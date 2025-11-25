@@ -1,9 +1,9 @@
 import * as path from 'path';
 import { FileSystem } from '@rushstack/node-core-library';
-import { Colorize } from '@rushstack/terminal';
 import { Extractor, ExtractorConfig, type ExtractorResult } from '@microsoft/api-extractor';
 import { ApiModel } from '@microsoft/api-extractor-model';
 import * as clack from '@clack/prompts';
+import pc from 'picocolors';
 
 import type { DocumenterCli } from './ApiDocumenterCommandLine';
 import { CommandLineAction } from '@rushstack/ts-command-line';
@@ -16,6 +16,23 @@ import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { TsConfigValidator } from '../utils/TsConfigValidator';
 import { showCliHeader } from './CliHelpers';
 import * as GenerateHelp from './help/GenerateHelp';
+
+/**
+ * Color theme for warning messages - matches Clack's color scheme
+ */
+const WARNING_THEME = {
+  // File/location colors (informational - cyan like Clack)
+  filePath: pc.cyan,
+  lineNumber: pc.green,
+
+  // Content highlighting
+  identifier: pc.cyan,    // Code symbols/identifiers
+  tag: pc.yellow,         // @ tags like @alpha, @public
+
+  // Message text
+  message: (text: string) => text,  // Default/uncolored
+  dim: pc.dim,                      // Subtle text
+} as const;
 
 /**
  * CLI action for generating Mintlify-compatible MDX documentation.
@@ -256,7 +273,7 @@ export class GenerateAction extends CommandLineAction {
 
     if (!FileSystem.exists(tsdocPath)) {
       clack.log.error('tsdoc.json not found at project root');
-      clack.log.info('Run ' + Colorize.cyan('mint-tsdocs init') + ' to create it');
+      clack.log.info('Run ' + pc.cyan('mint-tsdocs init') + ' to create it');
       throw new DocumentationError(
         'tsdoc.json is required for API Extractor to recognize custom TSDoc tags',
         ErrorCode.CONFIG_NOT_FOUND
@@ -270,7 +287,7 @@ export class GenerateAction extends CommandLineAction {
       // Check for required base extension
       if (!config.extends || !config.extends.includes('@microsoft/api-extractor/extends/tsdoc-base.json')) {
         clack.log.warn('tsdoc.json must extend "@microsoft/api-extractor/extends/tsdoc-base.json"');
-        clack.log.info('Run ' + Colorize.cyan('mint-tsdocs init') + ' again to update it');
+        clack.log.info('Run ' + pc.cyan('mint-tsdocs init') + ' again to update it');
       }
     } catch (error) {
       throw new DocumentationError(
@@ -536,7 +553,7 @@ export class GenerateAction extends CommandLineAction {
         const errorMessages = errors.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
         ).join('\n│\n');
-        clack.log.error(`${Colorize.cyan(relativePath)}\n${errorMessages}`);
+        clack.log.error(`${WARNING_THEME.filePath(relativePath)}\n${errorMessages}`);
       }
 
       // Then warnings
@@ -544,7 +561,7 @@ export class GenerateAction extends CommandLineAction {
         const warningMessages = warnings.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
         ).join('\n│\n');
-        clack.log.warn(`${Colorize.cyan(relativePath)}\n${warningMessages}`);
+        clack.log.warn(`${WARNING_THEME.filePath(relativePath)}\n${warningMessages}`);
       }
 
       // Then info
@@ -552,7 +569,7 @@ export class GenerateAction extends CommandLineAction {
         const infoMessages = infos.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
         ).join('\n│\n');
-        clack.log.info(`${Colorize.cyan(relativePath)}\n${infoMessages}`);
+        clack.log.info(`${WARNING_THEME.filePath(relativePath)}\n${infoMessages}`);
       }
 
       // Finally other messages
@@ -560,7 +577,7 @@ export class GenerateAction extends CommandLineAction {
         const otherMessages = others.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
         ).join('\n│\n');
-        clack.log.message(`${Colorize.dim(Colorize.cyan(relativePath))}\n${Colorize.dim(otherMessages)}`);
+        clack.log.message(`${WARNING_THEME.dim(WARNING_THEME.filePath(relativePath))}\n${WARNING_THEME.dim(otherMessages)}`);
       }
     }
 
@@ -579,7 +596,7 @@ export class GenerateAction extends CommandLineAction {
         } else if (message.logLevel === 'info') {
           clack.log.info(wrapped);
         } else {
-          clack.log.message(Colorize.dim(wrapped));
+          clack.log.message(WARNING_THEME.dim(wrapped));
         }
       }
     }
@@ -611,7 +628,7 @@ export class GenerateAction extends CommandLineAction {
     // Format: "│   line: message"
     const prefix = '│   ';
     const separator = ': ';
-    const coloredLocation = location ? this._colorLineNumber(location) : '';
+    const coloredLocation = location ? WARNING_THEME.lineNumber(location) : '';
     const locationStr = location ? `${coloredLocation}${separator}` : '';
 
     // Calculate lengths without ANSI codes for proper wrapping
@@ -634,33 +651,17 @@ export class GenerateAction extends CommandLineAction {
   }
 
   /**
-   * Color line number with custom color #DE5971 (fallback: magenta)
-   */
-  private _colorLineNumber(text: string): string {
-    // Use 24-bit RGB color if supported, otherwise fall back to magenta
-    return `\x1b[38;2;222;89;113m${text}\x1b[0m`;
-  }
-
-  /**
-   * Color identifier name with custom color #7AA2F7 (fallback: blue)
-   */
-  private _colorIdentifier(text: string): string {
-    // Use 24-bit RGB color if supported, otherwise fall back to blue
-    return `\x1b[38;2;122;162;247m${text}\x1b[0m`;
-  }
-
-  /**
-   * Colorize message text with syntax highlighting
+   * Colorize message text with syntax highlighting using theme colors
    */
   private _colorizeMessageText(text: string): string {
     let result = text;
 
-    // Color @ tags (like @alpha, @beta, @public, @internal) - yellow
+    // Color @ tags (like @alpha, @beta, @public, @internal) using theme
     result = result.replace(/@(alpha|beta|public|internal|param|returns?|throws?|deprecated|see|link|example|remarks?|readonly|override|sealed|virtual|abstract|enum|interface|extends|implements|typeParam)/g,
-      (match) => Colorize.yellow(match));
+      (match) => WARNING_THEME.tag(match));
 
-    // Color quoted identifiers/strings - custom blue (#7AA2F7)
-    result = result.replace(/"([^"]+)"/g, (_, match) => `"${this._colorIdentifier(match)}"`);
+    // Color quoted identifiers/strings using theme
+    result = result.replace(/"([^"]+)"/g, (_, match) => `"${WARNING_THEME.identifier(match)}"`);
 
     return result;
   }
