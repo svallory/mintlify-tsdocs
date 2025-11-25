@@ -552,7 +552,7 @@ export class GenerateAction extends CommandLineAction {
       if (errors.length > 0) {
         const errorMessages = errors.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n│\n');
+        ).join('\n\n');
         clack.log.error(`${WARNING_THEME.filePath(relativePath)}\n${errorMessages}`);
       }
 
@@ -560,7 +560,7 @@ export class GenerateAction extends CommandLineAction {
       if (warnings.length > 0) {
         const warningMessages = warnings.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n│\n');
+        ).join('\n\n');
         clack.log.warn(`${WARNING_THEME.filePath(relativePath)}\n${warningMessages}`);
       }
 
@@ -568,7 +568,7 @@ export class GenerateAction extends CommandLineAction {
       if (infos.length > 0) {
         const infoMessages = infos.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n│\n');
+        ).join('\n\n');
         clack.log.info(`${WARNING_THEME.filePath(relativePath)}\n${infoMessages}`);
       }
 
@@ -576,7 +576,7 @@ export class GenerateAction extends CommandLineAction {
       if (others.length > 0) {
         const otherMessages = others.map(m =>
           this._formatMessage(m.line, m.column, m.text, terminalWidth)
-        ).join('\n│\n');
+        ).join('\n\n');
         clack.log.message(`${WARNING_THEME.dim(WARNING_THEME.filePath(relativePath))}\n${WARNING_THEME.dim(otherMessages)}`);
       }
     }
@@ -607,7 +607,7 @@ export class GenerateAction extends CommandLineAction {
    */
   private _getTerminalWidth(): number {
     const defaultWidth = 80;
-    const margin = 2;
+    const margin = 4; // Extra safety margin to prevent incorrect line breaks
     const width = process.stdout.columns || defaultWidth;
     return Math.max(40, width - margin); // Minimum 40 chars
   }
@@ -625,26 +625,28 @@ export class GenerateAction extends CommandLineAction {
     // Colorize message components
     const coloredText = this._colorizeMessageText(text);
 
-    // Format: "│   line: message"
-    const prefix = '│   ';
+    // Format: "  line: message" (clack provides the left border)
+    const indent = '  ';
     const separator = ': ';
     const coloredLocation = location ? WARNING_THEME.lineNumber(location) : '';
     const locationStr = location ? `${coloredLocation}${separator}` : '';
 
     // Calculate lengths without ANSI codes for proper wrapping
-    const firstLineIndent = prefix.length + location.length + separator.length;
-    const continuationIndent = prefix.length + '   '; // Align with message start (3 spaces less than before since no column)
+    const firstLineIndent = indent.length + location.length + separator.length;
+    const continuationIndent = indent.length + location.length + separator.length;
 
     // Wrap the message text if needed
-    const wrappedLines = this._wrapText(coloredText, maxWidth, firstLineIndent, continuationIndent.length);
+    const wrappedLines = this._wrapText(coloredText, maxWidth, firstLineIndent, continuationIndent);
 
     // Format first line
     const lines = wrappedLines.split('\n');
-    const result = [`${prefix}${locationStr}${lines[0]}`];
+    const result = [`${indent}${locationStr}${lines[0]}`];
 
     // Add continuation lines with proper indentation
     for (let i = 1; i < lines.length; i++) {
-      result.push(`${prefix}   ${lines[i]}`);
+      // Align continuation with the start of the message text
+      const continuationIndentStr = ' '.repeat(continuationIndent);
+      result.push(`${continuationIndentStr}${lines[i]}`);
     }
 
     return result.join('\n');
