@@ -3,7 +3,7 @@
  * Runs before all tests
  */
 
-import { beforeEach, afterEach } from 'vitest';
+import { beforeEach, afterEach } from 'bun:test';
 import { resetGlobalCacheManager } from '../src/cache/CacheManager';
 
 // Reset cache manager before each test to ensure test isolation

@@ -4,7 +4,7 @@
  * Tests basic CLI functionality and validation
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { SecurityUtils } from '../../src/utils/SecurityUtils';
 
 describe('CLI Path Validation', () => {

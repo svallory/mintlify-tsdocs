@@ -4,8 +4,8 @@ icon: "box"
 description: "Template manager that uses LiquidJS with template merging"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # LiquidTemplateManager
 
@@ -28,7 +28,7 @@ Constructs a new instance of the class
 
 ### liquidEngine
 **Modifiers**: readonly
-**Type**:<Link kind="ref" target="mint-tsdocs.LiquidTemplateEngine">`get liquidEngine(): LiquidTemplateEngine;`</Link>
+**Type**:<RefLink target="mint-tsdocs.LiquidTemplateEngine">`get liquidEngine(): LiquidTemplateEngine;`</RefLink>
 **Default**: ``
 
 Get the Liquid engine for direct access
@@ -42,7 +42,7 @@ Get the current merged template directory (for debugging)
 
 ### templateDataConverter
 **Modifiers**: readonly
-**Type**:<Link kind="ref" target="mint-tsdocs.TemplateDataConverter">`get templateDataConverter(): TemplateDataConverter;`</Link>
+**Type**:<RefLink target="mint-tsdocs.TemplateDataConverter">`get templateDataConverter(): TemplateDataConverter;`</RefLink>
 **Default**: ``
 
 Get template data converter

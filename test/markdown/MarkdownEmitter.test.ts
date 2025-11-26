@@ -8,7 +8,7 @@
  * - Formatting state management (bold, italic)
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { StringBuilder, DocPlainText, DocCodeSpan, DocParagraph, DocFencedCode, DocSection } from '@microsoft/tsdoc';
 import { MarkdownEmitter } from '../../src/markdown/MarkdownEmitter';
 import { IndentedWriter } from '../../src/utils/IndentedWriter';

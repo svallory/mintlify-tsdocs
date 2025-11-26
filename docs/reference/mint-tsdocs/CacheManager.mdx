@@ -4,8 +4,8 @@ icon: "box"
 description: "Centralized cache manager for coordinating all caching operations This class manages all caching operations in mint-tsdocs. To understand how caching fits into the overall architecture, check the documentation. The cache system includes and ."
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # CacheManager
 
@@ -28,14 +28,14 @@ Constructs a new instance of the class
 
 ### apiResolution
 **Modifiers**: readonly
-**Type**:<Link kind="ref" target="mint-tsdocs.ApiResolutionCache">`get apiResolution(): ApiResolutionCache;`</Link>
+**Type**:<RefLink target="mint-tsdocs.ApiResolutionCache">`get apiResolution(): ApiResolutionCache;`</RefLink>
 **Default**: ``
 
 Get the API resolution cache
 
 ### typeAnalysis
 **Modifiers**: readonly
-**Type**:<Link kind="ref" target="mint-tsdocs.TypeAnalysisCache">`get typeAnalysis(): TypeAnalysisCache;`</Link>
+**Type**:<RefLink target="mint-tsdocs.TypeAnalysisCache">`get typeAnalysis(): TypeAnalysisCache;`</RefLink>
 **Default**: ``
 
 Get the type analysis cache

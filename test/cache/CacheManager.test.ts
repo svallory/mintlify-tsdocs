@@ -5,7 +5,7 @@
  * including the global singleton pattern fix and cache coordination.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import {
   CacheManager,
   getGlobalCacheManager,

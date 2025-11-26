@@ -5,7 +5,7 @@
  * including LRU eviction, statistics tracking, and the cached function wrapper.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { TypeAnalysisCache } from '../../src/cache/TypeAnalysisCache';
 import { assertValidCacheStats } from '../helpers/assertions';
 

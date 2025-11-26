@@ -18,3 +18,10 @@ export type { RefLinkProps } from './RefLink';
 // Preview component and types
 export { Preview } from './Preview';
 export type { PreviewProps } from './Preview';
+
+// Feature component and types
+export { Feature } from './Feature';
+export type { FeatureProps } from './Feature';
+
+// Carousel component
+export { default as Carousel } from './Carousel';

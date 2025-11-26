@@ -2,7 +2,7 @@
  * Custom assertions and test helpers
  */
 
-import { expect } from 'vitest';
+import { expect } from 'bun:test';
 
 /**
  * Assert that a string is valid MDX content

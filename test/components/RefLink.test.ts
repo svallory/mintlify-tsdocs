@@ -6,7 +6,7 @@
  * double dots and empty segments.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 
 /**
  * Helper: Extract path construction logic from RefLink component

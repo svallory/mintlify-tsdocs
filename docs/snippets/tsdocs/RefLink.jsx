@@ -30,11 +30,11 @@ export const RefLink = ({ target, children }) => {
 
   const linkText = children || target;
 
-  // Generate path from RefId with proper handling of empty segments
-  // Format: mint-tsdocs.MarkdownDocumenter.generateFiles -> ./mint-tsdocs/MarkdownDocumenter/generateFiles
-  // Filter out empty segments to avoid double slashes from patterns like "api..item"
-  const segments = target.split('.').filter(segment => segment.length > 0);
-  const path = segments.length > 0 ? `./${segments.join('/')}` : './invalid';
+  // Generate absolute path from RefId using global config (loaded via custom script)
+  // Format: mint-tsdocs.MarkdownDocumenter.generateFiles -> /reference/mint-tsdocs/MarkdownDocumenter/generateFiles
+  const path = typeof window !== 'undefined' && window.getRefPath
+    ? window.getRefPath(target)
+    : `./${target.split('.').filter(s => s.length > 0).join('/')}`; // Fallback for SSR
 
   // Runtime validation - only runs client-side
   // Gracefully handles SSR where VALID_REFS might not be available

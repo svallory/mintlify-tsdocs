@@ -4,8 +4,8 @@ icon: "box"
 description: "Base class for rendering TSDoc nodes to Markdown/MDX format This emitter traverses a TSDoc abstract syntax tree and converts it to markdown text. It handles standard markdown constructs (bold, italic, code, links) and provides extension points for subclasses to customize behavior. \\#\\# Key Features - \\\\TSDoc Node Processing\\\\: Converts all standard TSDoc nodes to markdown - \\\\Text Escaping\\\\: Ensures special markdown characters are properly escaped - \\\\Formatting Tracking\\\\: Maintains state for bold/italic formatting - \\\\Extension Points\\\\: Virtual methods for subclass customization \\#\\# Extension Points Subclasses can override these virtual methods: - writeNode() - Customize handling for specific node types - writeLinkTagWithCodeDestination() - Handle links to code symbols (e.g., ) - writeLinkTagWithUrlDestination() - Handle external URL links \\#\\# Usage Example ``typescript const emitter = new MarkdownEmitter(); const markdown = emitter.emit(stringBuilder, docNode, options); ``"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # MarkdownEmitter
 

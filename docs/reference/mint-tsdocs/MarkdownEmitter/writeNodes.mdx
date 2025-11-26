@@ -4,8 +4,8 @@ icon: "function"
 description: "Writes multiple TSDoc nodes sequentially"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # writeNodes
 
@@ -26,7 +26,7 @@ protected writeNodes(docNodes: ReadonlyArray<DocNode>, context: IMarkdownEmitter
 Array of nodes to write
 
 ### context
-**Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</Link>
+**Type**:<RefLink target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</RefLink>
 
 Emission context
 

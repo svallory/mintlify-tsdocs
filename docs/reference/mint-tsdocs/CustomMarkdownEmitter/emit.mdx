@@ -4,8 +4,8 @@ icon: "function"
 description: "Emits markdown content from a DocNode tree. Entry point for the emission process. Delegates to parent class implementation which handles the recursive node traversal via writeNode()."
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # emit
 
@@ -31,7 +31,7 @@ StringBuilder to accumulate output
 Root DocNode to emit
 
 ### options
-**Type**:<Link kind="ref" target="mint-tsdocs.ICustomMarkdownEmitterOptions">`ICustomMarkdownEmitterOptions`</Link>
+**Type**:<RefLink target="mint-tsdocs.ICustomMarkdownEmitterOptions">`ICustomMarkdownEmitterOptions`</RefLink>
 
 Emission options including context API item and filename resolver
 

@@ -4,8 +4,8 @@ icon: "function"
 description: "Writes a single TSDoc node to the output"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # writeNode
 
@@ -26,7 +26,7 @@ protected writeNode(docNode: DocNode, context: IMarkdownEmitterContext, docNodeS
 The TSDoc node to write
 
 ### context
-**Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</Link>
+**Type**:<RefLink target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</RefLink>
 
 Emission context (writer, formatting state)
 

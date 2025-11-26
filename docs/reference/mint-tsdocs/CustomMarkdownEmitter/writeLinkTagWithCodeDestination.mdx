@@ -4,8 +4,8 @@ icon: "function"
 description: "Writes a link tag that references code entities (API items). Overrides parent implementation to: 1. Resolve API references via ApiModel with caching 2. Generate markdown links to resolved items' documentation pages 3. Use scoped names as link text when not explicitly provided"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # writeLinkTagWithCodeDestination
 
@@ -26,7 +26,7 @@ protected writeLinkTagWithCodeDestination(docLinkTag: DocLinkTag, context: IMark
 The link tag to write
 
 ### context
-**Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>`</Link>
+**Type**:<RefLink target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext<ICustomMarkdownEmitterOptions>`</RefLink>
 
 Emission context with options containing contextApiItem and filename resolver
 

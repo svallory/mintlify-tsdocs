@@ -5,7 +5,7 @@
  * stack overflow crashes when rendering deeply nested or circular structures.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import type { TypeTreeProperty } from '../../src/components/TypeTree';
 
 /**

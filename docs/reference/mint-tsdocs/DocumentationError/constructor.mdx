@@ -4,8 +4,8 @@ icon: "function"
 description: "Creates an instance of DocumentationError."
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # constructor
 
@@ -26,13 +26,13 @@ constructor(message: string, code?: ErrorCode, context?: ErrorContext, isUserErr
 The primary, human-readable error message.
 
 ### code
-- **Type**:<Link kind="ref" target="mint-tsdocs.ErrorCode">`ErrorCode`</Link>
+- **Type**:<RefLink target="mint-tsdocs.ErrorCode">`ErrorCode`</RefLink>
 - **Optional**: Yes
 
 The standardized error code.
 
 ### context
-- **Type**:<Link kind="ref" target="mint-tsdocs.ErrorContext">`ErrorContext`</Link>
+- **Type**:<RefLink target="mint-tsdocs.ErrorContext">`ErrorContext`</RefLink>
 - **Optional**: Yes
 
 Additional structured context about the error.

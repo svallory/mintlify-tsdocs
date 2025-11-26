@@ -30,6 +30,7 @@ export const VALID_PAGES = new Set([
   "changelog",
   "cheat-sheet",
   "cli-reference",
+  "components/custom-styles",
   "components/preview",
   "components/type-info",
   "components/type-tree",

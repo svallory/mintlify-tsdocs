@@ -5,7 +5,7 @@
  * page identifiers to proper paths with leading slashes.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 
 /**
  * Helper: Extract path construction logic from PageLink component

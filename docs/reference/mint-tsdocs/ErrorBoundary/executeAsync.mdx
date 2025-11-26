@@ -4,8 +4,8 @@ icon: "function"
 description: "Execute a function with error boundary protection."
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # executeAsync
 
@@ -26,7 +26,7 @@ executeAsync<T>(operation: () => Promise<T>, context?: ErrorContext, fallback?: 
 The function to execute
 
 ### context
-**Type**:<Link kind="ref" target="mint-tsdocs.ErrorContext">`ErrorContext`</Link>
+**Type**:<RefLink target="mint-tsdocs.ErrorContext">`ErrorContext`</RefLink>
 **Optional**: Yes
 
 Context information for error reporting
@@ -39,6 +39,6 @@ Optional fallback function to try on error
 
 ## Returns
 
-**Type**:<Link kind="ref" target="mint-tsdocs.ErrorResult">`Promise<ErrorResult<T>>`</Link>
+**Type**:<RefLink target="mint-tsdocs.ErrorResult">`Promise<ErrorResult<T>>`</RefLink>
 
 Execute a function with error boundary protection.

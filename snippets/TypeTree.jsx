@@ -34,6 +34,27 @@ export const TypeTree = ({
   if (level >= maxDepth) {
     console.warn(`TypeTree: Maximum depth (${maxDepth}) exceeded for ${name}. Preventing infinite recursion.`);
     return (
+      <div data-component="tsdocs-typetree">
+        <ResponseField
+          name={name}
+          type={type}
+          required={required}
+          deprecated={deprecated}
+          default={defaultValue}
+        >
+          {description}
+          <div style={{ fontStyle: 'italic', opacity: 0.7 }}>
+            (Maximum nesting depth reached)
+          </div>
+        </ResponseField>
+      </div>
+    );
+  }
+
+  const hasNested = properties && properties.length > 0;
+
+  return (
+    <div data-component="tsdocs-typetree">
       <ResponseField
         name={name}
         type={type}
@@ -42,48 +63,31 @@ export const TypeTree = ({
         default={defaultValue}
       >
         {description}
-        <div style={{ fontStyle: 'italic', opacity: 0.7 }}>
-          (Maximum nesting depth reached)
-        </div>
+        {hasNested && (
+          <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
+            {properties.map((prop, idx) => {
+              // Use stable key: combine name with index for uniqueness
+              // Better than pure index, though ideally each prop would have a unique ID
+              const key = prop.name ? `${prop.name}-${idx}` : `prop-${idx}`;
+              return (
+                <TypeTree
+                  key={key}
+                  name={prop.name}
+                  type={prop.type}
+                  description={prop.description}
+                  required={prop.required}
+                  deprecated={prop.deprecated}
+                  properties={prop.properties}
+                  defaultValue={prop.defaultValue}
+                  level={level + 1}
+                  maxDepth={maxDepth}
+                />
+              );
+            })}
+          </Expandable>
+        )}
       </ResponseField>
-    );
-  }
-
-  const hasNested = properties && properties.length > 0;
-
-  return (
-    <ResponseField
-      name={name}
-      type={type}
-      required={required}
-      deprecated={deprecated}
-      default={defaultValue}
-    >
-      {description}
-      {hasNested && (
-        <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
-          {properties.map((prop, idx) => {
-            // Use stable key: combine name with index for uniqueness
-            // Better than pure index, though ideally each prop would have a unique ID
-            const key = prop.name ? `${prop.name}-${idx}` : `prop-${idx}`;
-            return (
-              <TypeTree
-                key={key}
-                name={prop.name}
-                type={prop.type}
-                description={prop.description}
-                required={prop.required}
-                deprecated={prop.deprecated}
-                properties={prop.properties}
-                defaultValue={prop.defaultValue}
-                level={level + 1}
-                maxDepth={maxDepth}
-              />
-            );
-          })}
-        </Expandable>
-      )}
-    </ResponseField>
+    </div>
   );
 };
 

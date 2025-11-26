@@ -6,6 +6,7 @@
 import { FileSystem } from '@rushstack/node-core-library';
 import { ApiItemKind } from '@microsoft/api-extractor-model';
 import * as path from 'path';
+import * as clack from '@clack/prompts';
 import { SecurityUtils } from '../utils/SecurityUtils';
 import { DocumentationError, ErrorCode, ValidationError } from '../errors/DocumentationError';
 import { createDebugger, type Debugger } from '../utils/debug';
@@ -211,6 +212,12 @@ export class NavigationManager {
       // Generate navigation structure
       this._updateDocsJsonNavigation(docsJson);
 
+      // Ensure scripts section exists for link validation
+      this._ensureScriptsSection(docsJson);
+
+      // Ensure styles section exists for TSDocs styles
+      this._ensureStylesSection(docsJson);
+
       // Validate docs.json structure
       this._validateDocsJsonStructure(docsJson);
 
@@ -244,6 +251,7 @@ export class NavigationManager {
       FileSystem.writeFile(validatedDocsJsonPath, jsonString);
 
       debug.info(`   ✓ Generated navigation for ${this._navigationItems.length} pages`);
+      clack.log.success('Mintlify docs.json updated');
     } catch (error) {
       if (error instanceof DocumentationError) {
         throw error;
@@ -443,6 +451,80 @@ export class NavigationManager {
     } else {
       docsJson.navigation.push(groupEntry);
       debug.info(`   ✓ Added new "${this._groupName}" group`);
+    }
+  }
+
+  /**
+   * Ensure scripts section exists in docs.json for TSDocs runtime components
+   * Adds tsdocs-config.js, ValidRefs.js, and ValidPages.js if not already present
+   */
+  private _ensureScriptsSection(docsJson: DocsJsonStructure): void {
+    const requiredScripts = [
+      '/.tsdocs/client/tsdocs-config.js',
+      '/.tsdocs/client/ValidRefs.js',
+      '/.tsdocs/client/ValidPages.js'
+    ];
+
+    // Initialize scripts array if it doesn't exist
+    if (!docsJson.scripts) {
+      docsJson.scripts = [];
+      debug.info('   ✓ Created scripts section in docs.json');
+    }
+
+    if (!Array.isArray(docsJson.scripts)) {
+      debug.warn('   ⚠️  scripts field exists but is not an array, replacing with array');
+      docsJson.scripts = [];
+    }
+
+    // Add each required script if not already present
+    let addedCount = 0;
+    for (const script of requiredScripts) {
+      if (!docsJson.scripts.includes(script)) {
+        docsJson.scripts.push(script);
+        addedCount++;
+      }
+    }
+
+    if (addedCount > 0) {
+      debug.info(`   ✓ Added ${addedCount} TSDocs scripts to docs.json`);
+    } else {
+      debug.info('   ✓ All TSDocs scripts already present in docs.json');
+    }
+  }
+
+  /**
+   * Ensure styles section exists in docs.json for TSDocs CSS
+   * Adds tsdocs-styles.css if not already present
+   */
+  private _ensureStylesSection(docsJson: DocsJsonStructure): void {
+    const requiredStyles = [
+      '/.tsdocs/client/tsdocs-styles.css'
+    ];
+
+    // Initialize styles array if it doesn't exist
+    if (!docsJson.styles) {
+      docsJson.styles = [];
+      debug.info('   ✓ Created styles section in docs.json');
+    }
+
+    if (!Array.isArray(docsJson.styles)) {
+      debug.warn('   ⚠️  styles field exists but is not an array, replacing with array');
+      docsJson.styles = [];
+    }
+
+    // Add each required style if not already present
+    let addedCount = 0;
+    for (const style of requiredStyles) {
+      if (!docsJson.styles.includes(style)) {
+        docsJson.styles.push(style);
+        addedCount++;
+      }
+    }
+
+    if (addedCount > 0) {
+      debug.info(`   ✓ Added ${addedCount} TSDocs styles to docs.json`);
+    } else {
+      debug.info('   ✓ All TSDocs styles already present in docs.json');
     }
   }
 

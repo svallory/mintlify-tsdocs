@@ -17,7 +17,7 @@
 ### {{ parameter.title }}
 
 {% if parameter.type %}
-**Type**: {% if parameter.typeRef and autolink != false %}<Link kind="ref" target="{{ parameter.typeRef }}">`{{ parameter.type }}`</Link>{% elsif parameter.typePath %}[{{ parameter.type }}]({{ parameter.typePath }}){% else %}{{ parameter.type }}{% endif %}
+**Type**: {% if parameter.typeRef and autolink != false %}<RefLink target="{{ parameter.typeRef }}">`{{ parameter.type }}`</RefLink>{% elsif parameter.typePath %}[{{ parameter.type }}]({{ parameter.typePath }}){% else %}{{ parameter.type }}{% endif %}
 {% endif %}
 
 {% if parameter.isOptional %}
@@ -41,7 +41,7 @@
 
 {% if returnType %}
 {% if returnType.type %}
-**Type**: {% if returnType.typeRef and autolink != false %}<Link kind="ref" target="{{ returnType.typeRef }}">`{{ returnType.type }}`</Link>{% elsif returnType.typePath %}[{{ returnType.type }}]({{ returnType.typePath }}){% else %}{{ returnType.type }}{% endif %}
+**Type**: {% if returnType.typeRef and autolink != false %}<RefLink target="{{ returnType.typeRef }}">`{{ returnType.type }}`</RefLink>{% elsif returnType.typePath %}[{{ returnType.type }}]({{ returnType.typePath }}){% else %}{{ returnType.type }}{% endif %}
 {% endif %}
 
 {% if returnType.description %}

@@ -4,8 +4,8 @@ icon: "function"
 description: "Writes a link tag that references a code symbol"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # writeLinkTagWithCodeDestination
 
@@ -26,7 +26,7 @@ protected writeLinkTagWithCodeDestination(docLinkTag: DocLinkTag, context: IMark
 The link tag node with a code destination
 
 ### context
-**Type**:<Link kind="ref" target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</Link>
+**Type**:<RefLink target="mint-tsdocs.IMarkdownEmitterContext">`IMarkdownEmitterContext`</RefLink>
 
 Emission context
 

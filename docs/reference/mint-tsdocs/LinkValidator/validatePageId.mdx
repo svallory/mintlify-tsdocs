@@ -4,8 +4,8 @@ icon: "function"
 description: "Validate a PageId (documentation page path) For now, we just validate the format - actual file existence would be checked at runtime"
 ---
 
-import { Link } from '/snippets/tsdocs/Link.jsx';
 import { PageLink } from '/snippets/tsdocs/PageLink.jsx';
+import { RefLink } from '/snippets/tsdocs/RefLink.jsx';
 
 # validatePageId
 
@@ -27,6 +27,6 @@ validatePageId(pageId: string): LinkValidation;
 
 ## Returns
 
-**Type**:<Link kind="ref" target="mint-tsdocs.LinkValidation">`LinkValidation`</Link>
+**Type**:<RefLink target="mint-tsdocs.LinkValidation">`LinkValidation`</RefLink>
 
 Validate a PageId (documentation page path) For now, we just validate the format - actual file existence would be checked at runtime

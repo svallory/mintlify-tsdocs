@@ -9,7 +9,7 @@
  * - Security sanitization
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'bun:test';
 import { StringBuilder, DocPlainText, DocSection, DocParagraph } from '@microsoft/tsdoc';
 import { ApiModel, ApiItem } from '@microsoft/api-extractor-model';
 import { CustomMarkdownEmitter } from '../../src/markdown/CustomMarkdownEmitter';

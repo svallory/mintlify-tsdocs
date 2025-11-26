@@ -57,7 +57,8 @@
             "pages": [
               "components/type-info",
               "components/type-tree",
-              "components/preview"
+              "components/preview",
+              "components/custom-styles"
             ]
           },
           {

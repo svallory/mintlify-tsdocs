@@ -7,14 +7,8 @@
  * Type safety is provided at compile-time via TypeScript.
  * Runtime validation highlights broken links with "broken-link" CSS class.
  *
- * @version 1.2.0
+ * @version 1.2.1
  */
-
-import { VALID_REFS } from '/snippets/tsdocs/ValidRefs.jsx';
-
-// ============================================================================
-// RefLink Component
-// ============================================================================
 
 /**
  * RefLink - Link component specifically for API references
@@ -25,25 +19,25 @@ export const RefLink = ({ target, children }) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('RefLink: Invalid target prop. Expected non-empty string.');
-    return <span className="tsdocs-reflink broken-link" title="Invalid RefLink target">Invalid Link</span>;
+    return <span className="tsdocs-reflink broken-link" title="Invalid RefLink target" data-component="tsdocs-reflink">Invalid Link</span>;
   }
 
   const linkText = children || target;
 
-  // Generate path from RefId with proper handling of empty segments
-  // Format: mint-tsdocs.MarkdownDocumenter.generateFiles -> ./mint-tsdocs/MarkdownDocumenter/generateFiles
-  // Filter out empty segments to avoid double slashes from patterns like "api..item"
-  const segments = target.split('.').filter(segment => segment.length > 0);
-  const path = segments.length > 0 ? `./${segments.join('/')}` : './invalid';
+  // Generate absolute path from RefId using global config (loaded via custom script)
+  // Format: mint-tsdocs.MarkdownDocumenter.generateFiles -> /reference/mint-tsdocs/MarkdownDocumenter/generateFiles
+  const path = typeof window !== 'undefined' && window.getRefPath
+    ? window.getRefPath(target)
+    : `./${target.split('.').filter(s => s.length > 0).join('/')}`; // Fallback for SSR
 
   // Runtime validation - only runs client-side
-  // Gracefully handles SSR where VALID_REFS might not be available
-  const isValid = typeof VALID_REFS !== 'undefined' && VALID_REFS.has(target);
+  // VALID_REFS is set globally by ValidRefs.jsx on window object
+  const isValid = typeof window !== 'undefined' && window.VALID_REFS && window.VALID_REFS.has(target);
   const className = !isValid ? 'tsdocs-reflink broken-link' : 'tsdocs-reflink';
   const title = !isValid ? `Broken API reference: ${target}` : undefined;
 
   return (
-    <a href={path} className={className} title={title}>
+    <a href={path} className={className} title={title} data-component="tsdocs-reflink">
       {linkText}
     </a>
   );

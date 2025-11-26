@@ -38,10 +38,9 @@
     "docs": "node ./bin/mint-tsdocs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "postpublish": "bash scripts/publish-alias.sh"
   },
   "bin": {

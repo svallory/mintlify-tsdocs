@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { GenerateAction } from '../../src/cli/GenerateAction';
 import { BaseAction } from '../../src/cli/BaseAction';
 

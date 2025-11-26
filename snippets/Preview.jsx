@@ -26,7 +26,7 @@ export const Preview = ({ children, title = "Preview", className }) => {
   ].filter(Boolean).join(" ");
 
   return (
-    <div className={outerClasses}>
+    <div className={outerClasses} data-component="tsdocs-preview">
       {/* Header */}
       <div className="flex text-gray-400 text-xs rounded-t-[14px] leading-6 font-medium pl-4 pr-2.5 py-1">
         <div className="flex-none flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
@@ -35,7 +35,7 @@ export const Preview = ({ children, title = "Preview", className }) => {
       </div>
 
       {/* Content */}
-      <div className="w-0 min-w-full max-w-full py-3.5 px-4 rounded-b-2xl bg-white dark:bg-codeblock overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25">
+      <div className="prose prose-sm dark:prose-invert w-0 min-w-full max-w-full py-3.5 px-4 rounded-b-2xl bg-white dark:bg-codeblock overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-black/15 hover:scrollbar-thumb-black/20 dark:scrollbar-thumb-white/20 dark:hover:scrollbar-thumb-white/25">
         {children}
       </div>
     </div>

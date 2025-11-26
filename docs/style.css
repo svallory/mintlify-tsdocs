@@ -1,0 +1,4 @@
+.prose a.broken-link,
+.prose span.broken-link {
+  border-bottom-color: red;
+}

@@ -5,7 +5,7 @@
  * See: agent/reports/review/PERFORMANCE_REVIEW.md for known issues
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { ApiResolutionCache } from '../../src/cache/ApiResolutionCache';
 import {
   createMockDeclarationReference,

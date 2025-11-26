@@ -2,7 +2,7 @@
  * Mock utilities for testing
  */
 
-import { vi } from 'vitest';
+import { vi } from 'bun:test';
 import type { ApiItem } from '@microsoft/api-extractor-model';
 
 /**
