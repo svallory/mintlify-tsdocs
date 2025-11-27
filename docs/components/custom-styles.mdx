@@ -9,7 +9,7 @@ icon: "palette"
 All Mint TSDocs components come with default styling that integrates seamlessly with Mintlify's design system. You can easily customize these styles to match your documentation's look and feel.
 
 <Tip>
-Mint TSDocs uses CSS `@layer` for default styles, making them easy to override without `!important`.
+Mint TSDocs provides default styles that can be customized in your `style.css` file.
 </Tip>
 
 ## Available Components
@@ -17,13 +17,13 @@ Mint TSDocs uses CSS `@layer` for default styles, making them easy to override w
 Mint TSDocs provides the following components with customizable styles:
 
 <CardGroup cols={2}>
-  <Card title="RefLink" icon="link" href="/components/type-info#reflink">
+  <Card title="RefLink" icon="link" href="/components/reflink">
     Type-safe links to API reference pages
   </Card>
-  <Card title="PageLink" icon="file" href="/components/type-info#pagelink">
+  <Card title="PageLink" icon="link" href="/components/pagelink">
     Type-safe links to documentation pages
   </Card>
-  <Card title="TypeTree" icon="tree" href="/components/type-tree">
+  <Card title="TypeTree" icon="diagram-project" href="/components/type-tree">
     Recursive type structure visualization
   </Card>
   <Card title="Preview" icon="eye" href="/components/preview">
@@ -97,31 +97,37 @@ TypeTree uses Mintlify's native `ResponseField` and `Expandable` components inte
 }
 ```
 
-## Using CSS Layers for Easy Overrides
+## Customizing Component Styles
 
-Mint TSDocs default styles are defined in the `tsdocs-defaults` CSS layer. This means your custom styles will automatically take precedence without needing `!important`.
+Mint TSDocs includes a `tsdocs-styles.css` file that is automatically imported via `docs/style.css`. You can override these defaults by adding more specific selectors or using `!important`.
 
 <Steps>
-  <Step title="Create your style.css file">
-    Create a `style.css` file in your docs root directory (e.g., `/docs/style.css`).
+  <Step title="Locate your style.css file">
+    Your `docs/style.css` file already imports the tsdocs styles:
+
+    ```css docs/style.css
+    @import url('./snippets/tsdocs/tsdocs-styles.css');
+    ```
 
     <Note>
-    Mintlify automatically loads any `.css` file from your docs directory - no configuration needed!
+    Mintlify automatically loads `style.css` from your docs directory - no configuration needed!
     </Note>
   </Step>
 
   <Step title="Add your custom styles">
-    Write your styles using the component selectors above. They will automatically override the defaults.
+    Add your overrides below the import statement. Use `!important` to ensure they take precedence:
 
     ```css docs/style.css
+    @import url('./snippets/tsdocs/tsdocs-styles.css');
+
     /* Override broken link styling */
-    .tsdocs-reflink.broken-link {
-      border-bottom: 3px solid orange;
+    .prose .tsdocs-reflink.broken-link {
+      border-bottom: 3px solid orange !important;
       background-color: rgba(255, 165, 0, 0.1);
     }
 
     /* Customize PageLink hover effect */
-    .tsdocs-pagelink:hover {
+    .prose .tsdocs-pagelink:hover {
       text-decoration: underline;
     }
 
@@ -155,19 +161,19 @@ By default, broken reference and page links are styled with:
 - Hover tooltip showing the error
 
 ```css
-/* Default broken link styles (in @layer tsdocs-defaults) */
-.prose a.tsdocs-reflink.broken-link,
-.prose a.tsdocs-pagelink.broken-link {
-  border-bottom: 2px dotted #ef4444;
-  color: #ef4444;
-  text-decoration: wavy underline;
+/* Default broken link styles */
+.prose .tsdocs-reflink.broken-link,
+.prose .tsdocs-pagelink.broken-link {
+  border-bottom: 2px dotted #ef4444 !important;
+  color: #ef4444 !important;
+  text-decoration: wavy underline !important;
 }
 
 /* Dark mode variant */
-.dark .prose a.tsdocs-reflink.broken-link,
-.dark .prose a.tsdocs-pagelink.broken-link {
-  border-bottom-color: #f87171;
-  color: #f87171;
+.dark .prose .tsdocs-reflink.broken-link,
+.dark .prose .tsdocs-pagelink.broken-link {
+  border-bottom-color: #f87171 !important;
+  color: #f87171 !important;
 }
 ```
 
@@ -178,11 +184,11 @@ By default, broken reference and page links are styled with:
     Make broken links less prominent for production sites:
 
     ```css
-    .tsdocs-reflink.broken-link,
-    .tsdocs-pagelink.broken-link {
-      border-bottom: 1px dashed #94a3b8;
-      color: inherit;
-      text-decoration: none;
+    .prose .tsdocs-reflink.broken-link,
+    .prose .tsdocs-pagelink.broken-link {
+      border-bottom: 1px dashed #94a3b8 !important;
+      color: inherit !important;
+      text-decoration: none !important;
     }
     ```
   </Accordion>
@@ -191,8 +197,8 @@ By default, broken reference and page links are styled with:
     Add hover effects to all Mint TSDocs links:
 
     ```css
-    .tsdocs-reflink:hover,
-    .tsdocs-pagelink:hover {
+    .prose .tsdocs-reflink:hover,
+    .prose .tsdocs-pagelink:hover {
       text-decoration: underline;
       opacity: 0.8;
       transition: opacity 0.2s ease;
@@ -299,23 +305,26 @@ Mintlify supports CSS variables for consistent theming. You can reference these 
 **Maintain accessibility** - Ensure sufficient color contrast (use browser DevTools to check)
 </Check>
 
-<Warning>
-Don't use `!important` unless absolutely necessary - the CSS layers system makes it unnecessary
-</Warning>
+<Tip>
+Use `!important` when overriding broken link styles to ensure your customizations take precedence
+</Tip>
 
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Learn about TypeInfo" icon="info-circle" href="/components/type-info">
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    Type-safe API reference links
+  </Card>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Type-safe documentation page links
+  </Card>
+  <Card title="TypeInfo" icon="info-circle" href="/components/type-info">
     Auto-generated type information components
   </Card>
-  <Card title="Explore TypeTree" icon="sitemap" href="/components/type-tree">
+  <Card title="TypeTree" icon="diagram-project" href="/components/type-tree">
     Recursive type structure visualization
   </Card>
   <Card title="Mintlify Custom CSS" icon="paintbrush" href="https://mintlify.com/docs/customize/custom-scripts">
     Complete Mintlify CSS customization guide
-  </Card>
-  <Card title="CSS Layers Guide" icon="layer-group" href="https://developer.mozilla.org/en-US/docs/Web/CSS/@layer">
-    Learn more about CSS @layer at MDN
   </Card>
 </CardGroup>

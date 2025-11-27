@@ -7,14 +7,8 @@
  * Type safety is provided at compile-time via TypeScript.
  * Runtime validation highlights broken links with "broken-link" CSS class.
  *
- * @version 1.2.0
+ * @version 1.2.1
  */
-
-import { VALID_REFS } from '/snippets/tsdocs/ValidRefs.jsx';
-
-// ============================================================================
-// RefLink Component
-// ============================================================================
 
 /**
  * RefLink - Link component specifically for API references
@@ -25,7 +19,7 @@ export const RefLink = ({ target, children }) => {
   // Validate target prop
   if (!target || typeof target !== 'string') {
     console.error('RefLink: Invalid target prop. Expected non-empty string.');
-    return <span className="tsdocs-reflink broken-link" title="Invalid RefLink target">Invalid Link</span>;
+    return <span className="tsdocs-reflink broken-link" title="Invalid RefLink target" data-component="tsdocs-reflink">Invalid Link</span>;
   }
 
   const linkText = children || target;
@@ -37,13 +31,13 @@ export const RefLink = ({ target, children }) => {
     : `./${target.split('.').filter(s => s.length > 0).join('/')}`; // Fallback for SSR
 
   // Runtime validation - only runs client-side
-  // Gracefully handles SSR where VALID_REFS might not be available
-  const isValid = typeof VALID_REFS !== 'undefined' && VALID_REFS.has(target);
+  // VALID_REFS is set globally by ValidRefs.jsx on window object
+  const isValid = typeof window !== 'undefined' && window.VALID_REFS && window.VALID_REFS.has(target);
   const className = !isValid ? 'tsdocs-reflink broken-link' : 'tsdocs-reflink';
   const title = !isValid ? `Broken API reference: ${target}` : undefined;
 
   return (
-    <a href={path} className={className} title={title}>
+    <a href={path} className={className} title={title} data-component="tsdocs-reflink">
       {linkText}
     </a>
   );

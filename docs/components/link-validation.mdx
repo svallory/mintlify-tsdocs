@@ -1,0 +1,212 @@
+---
+title: Link Validation
+description: How compile-time and runtime link validation works
+icon: "shield-check"
+---
+
+Dual-layer link validation system using TypeScript (compile-time) and runtime Set checks to prevent broken documentation links.
+
+## Why It Matters
+
+- Catch broken links during development (TypeScript errors)
+- Visual feedback in browser (red underline)
+- Maintain documentation quality as your API evolves
+- Build confidence in your docs
+
+## Two Validation Layers
+
+### Compile-Time (TypeScript)
+
+TypeScript validates link targets before build:
+
+```typescript
+<RefLink target="mint-tsdocs.MarkdownDocumenter" /> // ✅ Valid
+<RefLink target="mint-tsdocs.NonExistent" />        // ❌ Type error in IDE
+
+<PageLink target="quickstart" />      // ✅ Valid
+<PageLink target="fake-page" />       // ❌ Type error in IDE
+```
+
+**Benefits**: Instant IDE feedback, prevents bad commits, autocomplete suggestions
+
+### Runtime (Set Membership)
+
+Browser checks if targets exist in auto-generated Sets:
+
+```javascript
+// RefLink check
+const isValid = VALID_REFS.has('mint-tsdocs.MarkdownDocumenter');
+
+// PageLink check
+const isValid = VALID_PAGES.has('quickstart');
+```
+
+**Benefits**: Works without TypeScript, visual broken-link styling, graceful degradation
+
+## Auto-Generated Files
+
+Running `mint-tsdocs generate` creates three validation file pairs:
+
+### ValidRefs (API References)
+
+```javascript ValidRefs.jsx
+export const VALID_REFS = new Set([
+  'mint-tsdocs.MarkdownDocumenter',
+  'mint-tsdocs.MarkdownDocumenter.generateFiles',
+  'mint-tsdocs.CacheManager',
+  // ... all API items
+]);
+```
+
+```typescript ValidRefs.d.ts
+export type RefId =
+  | 'mint-tsdocs.MarkdownDocumenter'
+  | 'mint-tsdocs.CacheManager'
+  // ... all API items
+
+export const VALID_REFS: Set<RefId>;
+```
+
+**Used by**: [RefLink](/components/reflink)
+**Location**: `docs/snippets/tsdocs/ValidRefs.*`
+
+### ValidPages (Documentation)
+
+```javascript ValidPages.jsx
+export const VALID_PAGES = new Set([
+  'introduction',
+  'quickstart',
+  'guides/setup-guide',
+  'concepts/coverage',
+  // ... all pages from docs.json
+]);
+```
+
+```typescript ValidPages.d.ts
+export type PageId =
+  | 'introduction'
+  | 'quickstart'
+  // ... all pages
+
+export const VALID_PAGES: Set<PageId>;
+```
+
+**Used by**: [PageLink](/components/pagelink)
+**Location**: `docs/snippets/tsdocs/ValidPages.*`
+
+## Validation Flow
+
+<Steps>
+  <Step title="Write link in MDX">
+    ```jsx
+    <RefLink target="mint-tsdocs.MarkdownDocumenter" />
+    ```
+  </Step>
+
+  <Step title="TypeScript validates (edit time)">
+    IDE checks target against type definitions, shows errors immediately
+  </Step>
+
+  <Step title="Component renders (runtime)">
+    Browser checks Set membership: `VALID_REFS.has(target)`
+  </Step>
+
+  <Step title="Visual feedback">
+    - Valid: normal link
+    - Invalid: red underline + "broken-link" CSS class
+  </Step>
+</Steps>
+
+## Broken Link Styling
+
+Default CSS (customizable via `docs/style.css`):
+
+```css
+.prose .tsdocs-reflink.broken-link,
+.prose .tsdocs-pagelink.broken-link {
+  border-bottom: 2px dotted #ef4444 !important;
+  color: #ef4444 !important;
+  text-decoration: wavy underline !important;
+}
+```
+
+Visual indicators:
+- Red color: `#ef4444` (light mode), `#f87171` (dark mode)
+- Red dotted underline: 2px
+- Red wavy text decoration
+- Tooltip: "Broken API reference: {target}" or "Broken page link: {target}"
+
+See [Custom Styles](/components/custom-styles) for customization.
+
+## When Links Break
+
+| Component | Common Causes |
+|-----------|--------------|
+| **RefLink** | API item renamed, deleted, not exported, typo in RefId |
+| **PageLink** | Page removed from docs.json, renamed, moved, typo in path |
+
+## Fixing Broken Links
+
+<Tabs>
+  <Tab title="RefLink">
+    1. Check TypeScript error
+    2. Find correct RefId in API reference
+    3. Update target prop
+    4. Run `mint-tsdocs generate` if source changed
+  </Tab>
+
+  <Tab title="PageLink">
+    1. Check TypeScript error
+    2. Find correct path in `docs.json`
+    3. Update target prop
+    4. Run `mint-tsdocs generate` if navigation changed
+  </Tab>
+</Tabs>
+
+## Performance
+
+The validation system is designed for minimal impact:
+
+**Compile-time**: Zero runtime cost, instant IDE feedback
+**Runtime**: O(1) Set lookups, small payload (few KB), no network requests
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Validation files not found">
+    Run `mint-tsdocs generate` to create files in `docs/snippets/tsdocs/`
+  </Accordion>
+
+  <Accordion title="TypeScript not detecting errors">
+    1. Check `.d.ts` files exist
+    2. Restart TypeScript server (VS Code: Cmd+Shift+P → "Restart TS Server")
+    3. Verify `tsconfig.json` includes snippets folder
+  </Accordion>
+
+  <Accordion title="All links showing broken">
+    1. Check browser console for import errors
+    2. Clear cache and hard refresh
+    3. Run `mint-tsdocs generate` to sync validation files
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Check>Run `mint-tsdocs generate` after API or navigation changes</Check>
+<Check>Enable TypeScript in MDX for compile-time validation</Check>
+<Check>Test locally with `mint dev` before publishing</Check>
+<Check>Fix broken links before committing</Check>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    Uses ValidRefs
+  </Card>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Uses ValidPages
+  </Card>
+  <Card title="TypeInfo" icon="info-circle" href="/components/type-info">
+    Auto-generated types
+  </Card>
+</CardGroup>

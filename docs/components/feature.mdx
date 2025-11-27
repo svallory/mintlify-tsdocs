@@ -1,0 +1,289 @@
+---
+title: "Feature"
+description: "Showcase product features with a header and custom content layout."
+icon: "gem"
+---
+
+import { Feature } from "/snippets/tsdocs/Feature.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+The `Feature` component provides a simple, flexible way to showcase features with a consistent header design. It renders a header with an icon, title, and subtitle, then displays whatever children you provide.
+
+## Basic Usage
+
+The component accepts a header configuration and renders any children below it.
+
+```jsx
+import { Feature } from "/snippets/tsdocs/Feature.jsx"
+
+<Feature
+  icon="pocket-knife"
+  title="My Tool"
+  subtitle="A brief description of this amazing tool."
+>
+  <p>Any content you want goes here.</p>
+  <p>You have complete control over the layout.</p>
+</Feature>
+```
+<Icon icon="flag" />
+
+<Preview title="Basic Feature Example">
+  <Feature
+    icon="pocket-knife"
+    title="My Tool"
+    subtitle="A brief description of this amazing tool."
+  >
+    <p>This feature provides a flexible container for showcasing your product capabilities.</p>
+    <p>You can include any content: text, lists, cards, or custom components.</p>
+  </Feature>
+</Preview>
+
+## Properties
+
+<ResponseField name="icon" type="string">
+  Icon name for the feature header (e.g., "pocket-knife", "rocket"). Uses Mintlify's Icon component. Optional.
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  The title of the feature. It will be rendered inside a `<code>` tag.
+</ResponseField>
+
+<ResponseField name="subtitle" type="string" required>
+  A short description that appears below the main title.
+</ResponseField>
+
+<ResponseField name="children" type="ReactNode">
+  Any React content to display below the header. This gives you complete flexibility in how you structure your feature content.
+</ResponseField>
+
+## Using with Cards
+
+The Feature component works great with Mintlify's Card components for creating highlight grids.
+
+```jsx
+<Feature
+  icon="pocket-knife"
+  title="hyper gen"
+  subtitle="Code generation engine for the age of AI."
+>
+  <p>
+    Beyond anything you can do with Yeoman and similar tools, hyper templates
+    support <strong>prompt placeholders</strong> that integrate rule-based
+    generation with AI-driven generation.
+  </p>
+
+  <CardGroup cols={4}>
+    <Card title="Starter Kits" icon="box">
+      Project Starter Kits that set your agent up for success.
+    </Card>
+    <Card title="Code Templates" icon="code">
+      Tailor made templates for consistent AI-generated code.
+    </Card>
+    <Card title="Starter Kits" icon="box">
+      Project Starter Kits that set your agent up for success.
+    </Card>
+    <Card title="Code Templates" icon="code">
+      Tailor made templates for consistent AI-generated code.
+    </Card>
+  </CardGroup>
+
+  <p>
+    Beyond anything you can do with Yeoman and similar tools, hyper templates
+    support <strong>prompt placeholders</strong> that integrate rule-based
+    generation with AI-driven generation.
+  </p>
+</Feature>
+```
+
+<Preview title="Feature with Card Grid">
+
+<Feature
+  icon="pocket-knife"
+  title="hyper gen"
+  subtitle="Code generation engine for the age of AI."
+>
+  <p>
+    Beyond anything you can do with Yeoman and similar tools, hyper templates
+    support <strong>prompt placeholders</strong> that integrate rule-based
+    generation with AI-driven generation.
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="Starter Kits" icon="box">
+      Project Starter Kits that set your agent up for success.
+    </Card>
+    <Card title="Code Templates" icon="code">
+      Tailor made templates for consistent AI-generated code.
+    </Card>
+    <Card title="Starter Kits" icon="box">
+      Project Starter Kits that set your agent up for success.
+    </Card>
+    <Card title="Code Templates" icon="code">
+      Tailor made templates for consistent AI-generated code.
+    </Card>
+  </CardGroup>
+
+  <p>
+    Beyond anything you can do with Yeoman and similar tools, hyper templates
+    support <strong>prompt placeholders</strong> that integrate rule-based
+    generation with AI-driven generation.
+  </p>
+</Feature>
+</Preview>
+
+## Advanced Example
+
+Create complex layouts by composing the Feature component with any Mintlify components.
+
+```jsx
+<Feature
+  icon="pocket-knife"
+  title="hyper tools"
+  subtitle="Swiss army knife for your Agent."
+>
+  <p>
+    Takes care of setting up and configuring all the tools for your project.
+    Here's a non-exhaustive list of tools you can configure:
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="AI" icon="bot">
+      <ul>
+        <li>MCP servers</li>
+        <li>Agent Definitions</li>
+        <li>Claude Code commands</li>
+      </ul>
+    </Card>
+    <Card title="Security" icon="shield-check">
+      <ul>
+        <li>Dependency Scanners</li>
+        <li>Secret Scanners</li>
+        <li>SAST tools</li>
+      </ul>
+    </Card>
+    <Card title="Code" icon="scan-text">
+      <ul>
+        <li>Linters</li>
+        <li>Formatter</li>
+        <li>Type Checkers</li>
+        <li>Tests & Coverage</li>
+        <li>CI/CD Pipelines</li>
+      </ul>
+    </Card>
+    <Card title="Architecture" icon="send-to-back">
+      <ul>
+        <li>Complexity Scanners</li>
+        <li>PyTestArch, TSArch, etc</li>
+        <li>Plan-adherence Monitor Agent</li>
+        <li>ADR Tools</li>
+      </ul>
+    </Card>
+  </CardGroup>
+</Feature>
+```
+
+<Preview title="Advanced Feature Layout">
+  <Feature
+    icon="pocket-knife"
+    title="hyper tools"
+    subtitle="Swiss army knife for your Agent."
+  >
+    <p>
+      Takes care of setting up and configuring all the tools for your project.
+      Here's a non-exhaustive list of tools you can configure:
+    </p>
+
+    <CardGroup cols={2}>
+      <Card title="AI" icon="bot">
+        <ul>
+          <li>MCP servers</li>
+          <li>Agent Definitions</li>
+          <li>Claude Code commands</li>
+        </ul>
+      </Card>
+      <Card title="Security" icon="shield-check">
+        <ul>
+          <li>Dependency Scanners</li>
+          <li>Secret Scanners</li>
+          <li>SAST tools</li>
+        </ul>
+      </Card>
+      <Card title="Code" icon="scan-text">
+        <ul>
+          <li>Linters</li>
+          <li>Formatter</li>
+          <li>Type Checkers</li>
+          <li>Tests & Coverage</li>
+          <li>CI/CD Pipelines</li>
+        </ul>
+      </Card>
+      <Card title="Architecture" icon="send-to-back">
+        <ul>
+          <li>Complexity Scanners</li>
+          <li>PyTestArch, TSArch, etc</li>
+          <li>Plan-adherence Monitor Agent</li>
+          <li>ADR Tools</li>
+        </ul>
+      </Card>
+    </CardGroup>
+  </Feature>
+</Preview>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Consistent Icons" icon="image">
+    Use icons from a single library and style to maintain visual consistency across your features.
+  </Accordion>
+  <Accordion title="Keep Titles Concise" icon="heading">
+    Feature titles should be short and memorable - ideally 1-3 words that quickly communicate the value.
+  </Accordion>
+  <Accordion title="Compose with Cards" icon="layout-grid">
+    Leverage Mintlify's Card and CardGroup components within Feature children for professional layouts.
+  </Accordion>
+  <Accordion title="Structure Your Content" icon="sitemap">
+    Start with a brief introduction paragraph, then present details using cards, lists, or other structured content.
+  </Accordion>
+</AccordionGroup>
+
+## Styling
+
+The Feature component uses minimal, semantic CSS classes:
+
+- `.feature-article` - Main container with dark background
+- `.feature-header` - Header section wrapper
+- `.feature-title` - Title with icon
+- `.feature-subtitle` - Subtitle text
+- `.feature-content` - Content wrapper for children
+
+The component automatically adapts to light and dark modes. You can override styles in your `docs/style.css`.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Component not found" icon="triangle-exclamation">
+    Ensure the Feature.jsx file exists in `docs/snippets/tsdocs/` and your import path is correct: `/snippets/tsdocs/Feature.jsx`
+  </Accordion>
+  <Accordion title="Styling looks wrong" icon="paintbrush">
+    The Feature component relies on `tsdocs-styles.css`. Verify:
+    1. The CSS file is properly imported in your Mintlify configuration
+    2. Custom styles in `docs/style.css` aren't overriding defaults unintentionally
+  </Accordion>
+  <Accordion title="Cards not displaying in grid" icon="layout-grid">
+    Make sure you're using Mintlify's CardGroup component to wrap your Card components, and set the `cols` prop to control the grid layout.
+  </Accordion>
+</AccordionGroup>
+
+## Related Components
+
+<CardGroup cols={3}>
+  <Card title="Card" icon="rectangle-horizontal" href="https://mintlify.com/docs/components/cards">
+    Build highlight cards within your features.
+  </Card>
+  <Card title="CardGroup" icon="layout-grid" href="https://mintlify.com/docs/components/cards#card-group">
+    Create responsive grids for your cards.
+  </Card>
+  <Card title="Preview" icon="eye" href="/components/preview">
+    Showcase live component examples.
+  </Card>
+</CardGroup>

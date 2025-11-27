@@ -1,7 +1,7 @@
 ---
 title: TypeInfo
 description: Auto-generated type information for easy documentation with autocomplete
-icon: code
+icon: receipt-text
 ---
 
 ## What is TypeInfo?
@@ -162,6 +162,16 @@ Detailed template configuration options:
 <TypeTree {...TypeInfo.MintTsdocs.ResolvedTemplateConfig} />
 ```
 
+## Relationship to Link Validation
+
+TypeInfo is part of a family of auto-generated files that make mint-tsdocs documentation more reliable:
+
+- **TypeInfo** (this page) - Provides structured type information for documenting types
+- **ValidRefs** - Contains all valid API reference IDs for link validation
+- **ValidPages** - Contains all valid documentation page paths
+
+All three are generated during `mint-tsdocs generate` and work together to provide type safety and validation throughout your documentation. Learn more in the [Link Validation](/components/link-validation) documentation.
+
 ## Best Practices
 
 1. **Always regenerate after API changes**: Run `mint-tsdocs generate` whenever your TypeScript API changes to keep TypeInfo in sync
@@ -174,7 +184,25 @@ Detailed template configuration options:
 
 5. **Add to .gitignore**: Consider adding `docs/snippets/tsdocs/` to your `.gitignore` if you regenerate docs in CI/CD
 
-## Related
+## Related Components
 
-- [TypeTree Component](/snippets/type-tree) - Learn about the TypeTree component that renders TypeInfo
-- [TypeInfo Generation Architecture](/architecture/typeinfo-generation) - Deep dive into how TypeInfo is generated
+<CardGroup cols={3}>
+  <Card title="TypeTree" icon="diagram-project" href="/components/type-tree">
+    Component that renders TypeInfo structures
+  </Card>
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    Type-safe API reference links
+  </Card>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Type-safe documentation page links
+  </Card>
+  <Card title="Link Validation" icon="shield-check" href="/components/link-validation">
+    How auto-generated validation works
+  </Card>
+  <Card title="TypeInfo Generation" icon="cogs" href="/architecture/typeinfo-generation">
+    Deep dive into how TypeInfo is generated
+  </Card>
+  <Card title="Preview" icon="eye" href="/components/preview">
+    Styled wrapper for displaying examples
+  </Card>
+</CardGroup>

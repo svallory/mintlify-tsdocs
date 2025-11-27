@@ -1,7 +1,7 @@
 ---
 title: TypeTree
 description: Display recursive type structures with expandable nested properties
-icon: "diagram-project"
+icon: "network"
 ---
 
 import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
@@ -76,7 +76,7 @@ import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 When you run `mint-tsdocs generate`, it automatically creates a `TypeInfo.jsx` file containing structured type information for all documented API items. This makes it incredibly easy to document your types with full IDE autocomplete support.
 
 <Info>
-  Learn more about TypeInfo in the [comprehensive TypeInfo guide](/snippets/type-info), including how to explore available types, access nested properties, and best practices.
+  Learn more about TypeInfo in the [comprehensive TypeInfo guide](/components/type-info), including how to explore available types, access nested properties, and best practices.
 </Info>
 
 ### Quick Start
@@ -683,6 +683,15 @@ This means you get clean, maintainable documentation without manual work!
 ## Related Components
 
 <CardGroup cols={3}>
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    Type-safe API reference links
+  </Card>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Type-safe documentation page links
+  </Card>
+  <Card title="Preview" icon="eye" href="/components/preview">
+    Styled wrapper for examples
+  </Card>
   <Card title="ParamField" icon="square-dashed" href="https://mintlify.com/docs/components/fields">
     Standard Mintlify component for parameters
   </Card>

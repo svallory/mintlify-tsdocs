@@ -1,0 +1,245 @@
+---
+title: "Features"
+description: "TypeScript API documentation generator with Mintlify integration, type-safe links, and interactive components."
+icon: "sparkles"
+---
+
+import { Feature } from "/snippets/tsdocs/Feature.jsx"
+
+# Features
+
+mint-tsdocs generates Mintlify documentation from your TypeScript code with type-safe links and interactive components.
+
+---
+
+## What You Get
+
+<Feature
+  icon="file-code"
+  title="generate"
+  subtitle="Auto-generate Mintlify docs from TypeScript."
+>
+  Extracts types, interfaces, classes, and functions from your TypeScript declarations and generates Mintlify MDX files with proper frontmatter, navigation, and components.
+
+  <CardGroup cols={2}>
+    <Card title="Auto-Linking" icon="link">
+      Automatically links referenced types and pages
+    </Card>
+    <Card title="Mintlify Components" icon="puzzle">
+      Uses `<ParamField>`, `<ResponseField>`, `<Expandable>`
+    </Card>
+    <Card title="Navigation Sync" icon="workflow">
+      Updates docs.json with generated pages
+    </Card>
+    <Card title="Supporting Snippets" icon="code">
+      Exports TypeInfo data and component helpers
+    </Card>
+  </CardGroup>
+
+  ```bash
+  mint-tsdocs generate
+  ```
+</Feature>
+
+---
+
+<Feature
+  icon="link"
+  title="RefLink & PageLink"
+  subtitle="Type-checked links with IDE autocomplete."
+>
+  Auto-generates TypeScript union types for all API references and documentation pages. Get autocomplete as you type, compile errors for broken links.
+
+  <CardGroup cols={2}>
+    <Card title="IDE Autocomplete" icon="code">
+      `<RefLink target="MyClass.method" />` with suggestions
+    </Card>
+    <Card title="Build-Time Errors" icon="circle-x">
+      Invalid links fail at compile, not in production
+    </Card>
+    <Card title="Runtime Validation" icon="shield-check">
+      Visual indicators for broken links during development
+    </Card>
+    <Card title="Auto-Generated Types" icon="file-code">
+      ValidRefs.d.ts and ValidPages.d.ts created automatically
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+<Feature
+  icon="network"
+  title="TypeTree Component"
+  subtitle="Interactive type hierarchies for complex types."
+>
+  Displays nested object properties as an expandable tree with Mintlify-native components that match your project theme.
+
+  <CardGroup cols={2}>
+    <Card title="Nested Properties" icon="workflow">
+      Extracts and displays deeply nested type structures
+    </Card>
+    <Card title="TypeInfo Export" icon="database">
+      Auto-generated TypeInfo.jsx with data for every type
+    </Card>
+    <Card title="Type Declarations" icon="shield-check">
+      TypeInfo.d.ts for IDE IntelliSense
+    </Card>
+    <Card title="Mintlify Styled" icon="palette">
+      Uses native Mintlify components for consistent theming
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+## Quality Assurance
+
+<Feature
+  icon="spell-check"
+  title="lint"
+  subtitle="Find TSDoc issues before generating."
+>
+  Validates TSDoc comments for common mistakes, missing descriptions, and broken references.
+
+  ```bash
+  mint-tsdocs lint
+  ```
+
+  <CardGroup cols={2}>
+    <Card title="Comment Validation" icon="message-circle">
+      Checks for malformed or incomplete TSDoc
+    </Card>
+    <Card title="Reference Checking" icon="link">
+      Finds broken @link and @see tags
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+<Feature
+  icon="chart-pie"
+  title="coverage"
+  subtitle="Know what's documented and what's missing."
+>
+  Reports documentation coverage by file, module, and API kind with configurable thresholds.
+
+  ```bash
+  mint-tsdocs coverage
+  ```
+
+  <CardGroup cols={2}>
+    <Card title="By File" icon="file">
+      See coverage for each source file
+    </Card>
+    <Card title="By Module" icon="folder">
+      Group by package or namespace
+    </Card>
+    <Card title="By Kind" icon="box">
+      Filter by class, interface, function, etc.
+    </Card>
+    <Card title="Thresholds" icon="gauge">
+      Set minimum coverage requirements
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+## Customization
+
+<Feature
+  icon="palette"
+  title="customize"
+  subtitle="Full template control and custom styling."
+>
+  Export Liquid templates for complete control over generated MDX, or just override styles with custom CSS.
+
+  ```bash
+  mint-tsdocs customize -t ./templates
+  ```
+
+  <CardGroup cols={2}>
+    <Card title="Liquid Templates" icon="file-code">
+      Full control over MDX structure and layout
+    </Card>
+    <Card title="Layout Inheritance" icon="workflow">
+      Extend default templates with blocks and overrides
+    </Card>
+    <Card title="Custom CSS" icon="paintbrush">
+      Override component styles without touching templates
+    </Card>
+    <Card title="Rich Data" icon="braces">
+      Access all properties, methods, parameters, examples
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+<Feature
+  icon="puzzle"
+  title="Utility Components"
+  subtitle="Ready-to-use components for richer docs."
+>
+  Additional Mintlify-compatible React components for enhanced documentation.
+
+  <CardGroup cols={2}>
+    <Card title="Preview" icon="eye">
+      Bordered container with dark mode for code examples
+    </Card>
+    <Card title="Feature" icon="sparkles">
+      Highlight features with icons, cards, and flexible layout
+    </Card>
+  </CardGroup>
+
+  All components include TypeScript declarations for IDE support.
+</Feature>
+
+---
+
+## Setup
+
+<Feature
+  icon="rocket"
+  title="init"
+  subtitle="Zero-config project setup."
+>
+  Auto-detects TypeScript entry points, docs folder, and Mintlify configuration. Creates mint-tsdocs.config.json with sensible defaults.
+
+  ```bash
+  mint-tsdocs init
+  ```
+
+  <CardGroup cols={2}>
+    <Card title="Auto-Detection" icon="search">
+      Finds TypeScript entry, docs.json, output folder
+    </Card>
+    <Card title="Mintlify Setup" icon="box">
+      Optionally initializes Mintlify if not present
+    </Card>
+    <Card title="Config Generation" icon="file">
+      Creates mint-tsdocs.config.json with detected values
+    </Card>
+    <Card title="Script Injection" icon="code">
+      Adds "mint-tsdocs" script to package.json
+    </Card>
+  </CardGroup>
+</Feature>
+
+---
+
+## Ready to Try It?
+
+<CardGroup cols={3}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    5 minutes to first docs
+  </Card>
+  <Card title="See Examples" icon="eye" href="/components/preview">
+    Browse generated components
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/svallory/mintlify-tsdocs">
+    Star us on GitHub
+  </Card>
+</CardGroup>

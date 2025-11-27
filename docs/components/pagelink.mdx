@@ -1,0 +1,152 @@
+---
+title: PageLink
+description: Type-safe links to documentation pages with validation
+icon: "link"
+---
+
+import { PageLink } from "/snippets/tsdocs/PageLink.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+Type-safe links to documentation pages with compile-time TypeScript validation and runtime checking.
+
+## Basic Usage
+
+```jsx
+import { PageLink } from "/snippets/tsdocs/PageLink.jsx"
+
+<PageLink target="quickstart" />
+```
+
+<Preview title="Default link text">
+  <PageLink target="quickstart" />
+</Preview>
+
+With custom text:
+
+```jsx
+<PageLink target="guides/setup-guide">Setup Guide</PageLink>
+```
+
+<Preview title="Custom link text">
+  Check the <PageLink target="concepts/coverage">coverage docs</PageLink> for details.
+</Preview>
+
+## Properties
+
+<ParamField path="target" type="string" required>
+  Page path from `docs.json`. Must match navigation entries exactly.
+
+  Examples: `quickstart`, `guides/setup-guide`, `components/type-tree`
+</ParamField>
+
+<ParamField path="children" type="ReactNode">
+  Link text. Defaults to the page path if omitted.
+</ParamField>
+
+## Type Safety
+
+PageLink validates links in two ways:
+
+**Compile-time** - TypeScript checks against `ValidPages.d.ts`:
+```typescript
+<PageLink target="quickstart" />        // ✅ Valid
+<PageLink target="nonexistent-page" />  // ❌ Type error
+```
+
+**Runtime** - Browser checks against `ValidPages` Set and applies styling:
+
+<Preview title="Valid vs broken links">
+  <div className="space-y-2">
+    <div>✅ Valid: <PageLink target="introduction">Introduction</PageLink></div>
+    <div>❌ Broken: <PageLink target="fake-page">Fake Page</PageLink></div>
+  </div>
+</Preview>
+
+Broken links get:
+- Red color (#ef4444)
+- Red dotted underline (2px)
+- Red wavy text decoration
+- Tooltip showing the error
+
+Learn more: [Link Validation](/components/link-validation)
+
+## Examples
+
+<Preview title="Linking to different page types">
+  <div className="space-y-2">
+    <div>Root: <PageLink target="introduction" /></div>
+    <div>Guide: <PageLink target="guides/setup-guide" /></div>
+    <div>Concept: <PageLink target="concepts/coverage" /></div>
+    <div>Component: <PageLink target="components/type-tree" /></div>
+  </div>
+</Preview>
+
+## Page Paths
+
+Page paths must match `docs.json` navigation entries:
+
+```json
+{
+  "pages": [
+    "introduction",        // ← use "introduction"
+    "guides/setup-guide"   // ← use "guides/setup-guide"
+  ]
+}
+```
+
+Path normalization: leading `/` is added automatically if missing.
+
+## Fixing Broken Links
+
+Links break when pages are removed from `docs.json`, renamed, or moved.
+
+1. Check TypeScript error in IDE
+2. Verify page exists in `docs.json` navigation
+3. Update target to match exact path
+4. Run `mint-tsdocs generate` if navigation changed
+
+## Best Practices
+
+<Check>Use PageLink for guides/concepts, RefLink for API references</Check>
+<Check>Use exact paths from docs.json</Check>
+<Check>Avoid hardcoded absolute paths</Check>
+<Check>Fix broken links before committing</Check>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Component not found">
+    Run `mint-tsdocs generate` to copy components to `docs/snippets/tsdocs/`
+  </Accordion>
+
+  <Accordion title="All links broken">
+    1. Check `ValidPages.jsx` exists in `docs/snippets/tsdocs/`
+    2. Run `mint-tsdocs generate`
+    3. Refresh browser
+  </Accordion>
+
+  <Accordion title="Page exists but link broken">
+    Verify the page is listed in `docs.json` navigation and path matches exactly (case-sensitive).
+  </Accordion>
+
+  <Accordion title="No IDE autocomplete">
+    Due to an [MDX extension bug](https://github.com/mdx-js/mdx-analyzer/issues/522), try:
+    1. Use relative path while editing: `"../snippets/tsdocs/PageLink.jsx"`
+    2. Get autocomplete
+    3. Change back to absolute: `"/snippets/tsdocs/PageLink.jsx"`
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    API reference links
+  </Card>
+  <Card title="Link Validation" icon="shield-check" href="/components/link-validation">
+    How validation works
+  </Card>
+  <Card title="Custom Styles" icon="palette" href="/components/custom-styles">
+    Style broken links
+  </Card>
+</CardGroup>

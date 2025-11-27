@@ -13,12 +13,14 @@ Testing infrastructure has been successfully established for mint-tsdocs. The te
 ### 1. Test Framework: Vitest
 
 **Dependencies Installed:**
+
 - `vitest@4.0.13` - Fast, Vite-powered test framework
 - `@vitest/ui@4.0.13` - Interactive test UI
 - `@vitest/coverage-v8@4.0.13` - Code coverage reporting
 - `happy-dom@20.0.10` - DOM environment for tests
 
 **Rationale:**
+
 - Native TypeScript support (no transpilation needed)
 - Fast execution with Vite
 - Compatible with Jest API (easy migration)
@@ -28,10 +30,12 @@ Testing infrastructure has been successfully established for mint-tsdocs. The te
 ### 2. Configuration
 
 **Files Created:**
+
 - `vitest.config.ts` - Vitest configuration with coverage thresholds
 - `test/setup.ts` - Global test setup (cache reset, etc.)
 
 **Test Scripts Added to package.json:**
+
 ```json
 {
   "test": "vitest run",
@@ -61,6 +65,7 @@ test/
 ### 4. Test Utilities
 
 **fixtures.ts** - Reusable test data:
+
 - Sample configurations
 - Sample API items
 - Sample type strings
@@ -69,6 +74,7 @@ test/
 - Sample YAML/JSX/JSON content
 
 **mocks.ts** - Mock utilities:
+
 - `createMockApiItem()` - Mock API items
 - `createMockDeclarationReference()` - Mock declaration references
 - `createMockFileSystem()` - Mock file operations
@@ -77,6 +83,7 @@ test/
 - `createObjectWithToString()` - Create objects with specific toString()
 
 **assertions.ts** - Custom assertions:
+
 - `assertValidMdx()` - Validate MDX content
 - `assertValidDocsJson()` - Validate docs.json structure
 - `assertSafePath()` - Verify path safety
@@ -88,21 +95,23 @@ test/
 ### 5. Test Coverage
 
 **Total Tests Written: 101**
+
 - ✅ **95 passing** (94%)
 - ⚠️ **6 failing** (6% - intentionally documenting bugs)
 
 #### Tests by Module
 
-| Module | Tests | Pass | Fail | Coverage |
-|--------|-------|------|------|----------|
-| ApiResolutionCache | 20 | 18 | 2 | Cache operations, LRU, statistics |
-| SecurityUtils | 63 | 60 | 3 | Path validation, sanitization, injection prevention |
-| CLI Validation | 18 | 17 | 1 | Path handling, input validation |
-| **Total** | **101** | **95** | **6** | - |
+| Module             | Tests   | Pass   | Fail  | Coverage                                            |
+| ------------------ | ------- | ------ | ----- | --------------------------------------------------- |
+| ApiResolutionCache | 20      | 18     | 2     | Cache operations, LRU, statistics                   |
+| SecurityUtils      | 63      | 60     | 3     | Path validation, sanitization, injection prevention |
+| CLI Validation     | 18      | 17     | 1     | Path handling, input validation                     |
+| **Total**          | **101** | **95** | **6** | -                                                   |
 
 #### What's Tested
 
 **Cache System (`test/cache/`):**
+
 - ✅ Basic caching (store, retrieve, clear)
 - ✅ LRU eviction behavior
 - ✅ Statistics tracking (hits, misses, hit rate)
@@ -112,6 +121,7 @@ test/
 - ⚠️ Context differentiation (bug documented)
 
 **Security Utilities (`test/utils/`):**
+
 - ✅ Path traversal prevention (validateFilePath)
 - ✅ Reserved filename detection
 - ✅ Command injection prevention (CLI inputs)
@@ -122,6 +132,7 @@ test/
 - ⚠️ Missing validation patterns (documented for fixes)
 
 **CLI Validation (`test/cli/`):**
+
 - ✅ Safe path validation
 - ✅ Command pattern detection
 - ✅ Path normalization
@@ -164,7 +175,7 @@ FAIL: should reject file names with path traversal
 
 **Impact:** Potential path traversal if filenames contain `..` or `/`.
 
-**Fix Required:** Validate patterns *before* using basename(), or add explicit checks for dangerous patterns.
+**Fix Required:** Validate patterns _before_ using basename(), or add explicit checks for dangerous patterns.
 
 ### 3. Missing Redirection Pattern (1 failure)
 
@@ -221,6 +232,7 @@ bun test --grep "cache collision"
 **Current Coverage:** Not measured yet (tests just written)
 
 **Target Coverage (v1.0):**
+
 - **Overall:** 60%
 - **Critical modules:** 80%+
   - Cache system: 90%
@@ -231,11 +243,13 @@ bun test --grep "cache collision"
 ## Documentation
 
 **Files Created:**
+
 1. `docs/testing/TEST_PLAN.md` - Comprehensive testing strategy
 2. `docs/testing/TEST_SETUP_SUMMARY.md` - This file
 3. `test/` directory - All test files and utilities
 
 **CLAUDE.md Updated:**
+
 - Removed incorrect test information
 - Added correct test commands
 - Added test structure documentation
@@ -259,6 +273,7 @@ bun test --grep "cache collision"
 ### Phase 1: Fix Documented Bugs (Priority: HIGH)
 
 1. **Fix cache key collision bug**
+
    - Replace toString() with proper object hashing
    - All cache tests should pass after fix
 
@@ -270,11 +285,13 @@ bun test --grep "cache collision"
 ### Phase 2: Expand Test Coverage (Priority: MEDIUM)
 
 3. **Template System Tests**
+
    - LiquidTemplateEngine rendering
    - TemplateDataConverter
    - TemplateMerger (including temp directory cleanup bug)
 
 4. **Type Analysis Tests**
+
    - ObjectTypeAnalyzer
    - Complex type parsing
    - Cache integration
@@ -314,12 +331,13 @@ bun test --grep "cache collision"
 ### Writing New Tests
 
 1. **Follow the pattern:**
-   ```typescript
-   import { describe, it, expect } from 'vitest';
-   import { YourModule } from '../../src/path/to/module';
 
-   describe('YourModule', () => {
-     it('should do something specific', () => {
+   ```typescript
+   import { describe, it, expect } from "bun:test";
+   import { YourModule } from "../../src/path/to/module";
+
+   describe("YourModule", () => {
+     it("should do something specific", () => {
        // Arrange
        const input = createTestInput();
 
@@ -333,14 +351,16 @@ bun test --grep "cache collision"
    ```
 
 2. **Use test utilities:**
+
    - Import fixtures from `test/helpers/fixtures`
    - Import mocks from `test/helpers/mocks`
    - Import assertions from `test/helpers/assertions`
 
 3. **Document known bugs:**
+
    ```typescript
    // EXPECTED TO FAIL - Documents current bug
-   it('should handle edge case correctly', () => {
+   it("should handle edge case correctly", () => {
      // This test documents the bug
      // It will pass once the bug is fixed
    });

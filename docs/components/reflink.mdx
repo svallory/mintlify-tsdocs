@@ -1,0 +1,146 @@
+---
+title: RefLink
+description: Type-safe links to API reference pages with validation
+icon: "link"
+---
+
+import { RefLink } from "/snippets/tsdocs/RefLink.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+Type-safe links to API reference pages with compile-time TypeScript validation and runtime checking.
+
+## Basic Usage
+
+```jsx
+import { RefLink } from "/snippets/tsdocs/RefLink.jsx"
+
+<RefLink target="mint-tsdocs.MarkdownDocumenter" />
+```
+
+<RefLink target="mint-tsdocs.MarkdownDocumenter" />
+
+<Preview title="Default link text">
+  <RefLink target="mint-tsdocs.MarkdownDocumenter" />
+</Preview>
+
+With custom text:
+
+```jsx
+<RefLink target="mint-tsdocs.CacheManager">caching system</RefLink>
+```
+
+<Preview title="Custom link text">
+  Learn more about the <RefLink target="mint-tsdocs.CacheManager">caching system</RefLink>.
+</Preview>
+
+## Properties
+
+<ParamField path="target" type="string" required>
+  API reference ID: `PackageName.ClassName.MemberName`
+
+  Examples: `mint-tsdocs.MarkdownDocumenter`, `mint-tsdocs.loadConfig`, `mint-tsdocs.CacheManager.typeAnalysis`
+</ParamField>
+
+<ParamField path="children" type="ReactNode">
+  Link text. Defaults to the API item name if omitted.
+</ParamField>
+
+## Type Safety
+
+RefLink validates links in two ways:
+
+**Compile-time** - TypeScript checks against `ValidRefs.d.ts`:
+```typescript
+<RefLink target="mint-tsdocs.MarkdownDocumenter" /> // ✅ Valid
+<RefLink target="mint-tsdocs.NonExistent" />        // ❌ Type error
+```
+
+**Runtime** - Browser checks against `ValidRefs` Set and applies styling:
+
+<Preview title="Valid vs broken links">
+  <div className="space-y-2">
+    <div>✅ Valid: <RefLink target="mint-tsdocs.MarkdownDocumenter">MarkdownDocumenter</RefLink></div>
+    <div>❌ Broken: <RefLink target="mint-tsdocs.NonExistentClass">NonExistentClass</RefLink></div>
+  </div>
+</Preview>
+
+Broken links get:
+- Red color (#ef4444)
+- Red dotted underline (2px)
+- Red wavy text decoration
+- Tooltip showing the error
+
+Learn more: [Link Validation](/components/link-validation)
+
+## Examples
+
+<Preview title="Linking to different API items">
+  <div className="space-y-2">
+    <div>Interface: <RefLink target="mint-tsdocs.MintlifyTsDocsConfig" /></div>
+    <div>Class: <RefLink target="mint-tsdocs.MarkdownDocumenter" /></div>
+    <div>Method: <RefLink target="mint-tsdocs.CacheManager.getStats" /></div>
+    <div>Function: <RefLink target="mint-tsdocs.loadConfig" /></div>
+  </div>
+</Preview>
+
+## RefId Format
+
+API reference IDs follow: `PackageName.ClassName.MemberName`
+
+Examples:
+- Class: `mint-tsdocs.MarkdownDocumenter`
+- Method: `mint-tsdocs.MarkdownDocumenter.generateFiles`
+- Interface property: `mint-tsdocs.MintlifyTsDocsConfig.entryPoint`
+
+Path generation: `mint-tsdocs.MarkdownDocumenter` → `/reference/mint-tsdocs/MarkdownDocumenter`
+
+## Fixing Broken Links
+
+Links break when API items are renamed, deleted, or not exported.
+
+1. Check TypeScript error in IDE
+2. Verify item exists in API reference navigation
+3. Update target to correct RefId
+4. Run `mint-tsdocs generate` if source changed
+
+## Best Practices
+
+<Check>Use RefLink for API references, PageLink for guides/concepts</Check>
+<Check>Keep link text concise</Check>
+<Check>Let TypeScript autocomplete guide you</Check>
+<Check>Fix broken links before committing</Check>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Component not found">
+    Run `mint-tsdocs generate` to copy components to `docs/snippets/tsdocs/`
+  </Accordion>
+
+  <Accordion title="All links broken">
+    1. Check `ValidRefs.jsx` exists in `docs/snippets/tsdocs/`
+    2. Run `mint-tsdocs generate`
+    3. Refresh browser
+  </Accordion>
+
+  <Accordion title="No IDE autocomplete">
+    Due to an [MDX extension bug](https://github.com/mdx-js/mdx-analyzer/issues/522), try:
+    1. Use relative path while editing: `"../snippets/tsdocs/RefLink.jsx"`
+    2. Get autocomplete
+    3. Change back to absolute: `"/snippets/tsdocs/RefLink.jsx"`
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Documentation page links
+  </Card>
+  <Card title="Link Validation" icon="shield-check" href="/components/link-validation">
+    How validation works
+  </Card>
+  <Card title="Custom Styles" icon="palette" href="/components/custom-styles">
+    Style broken links
+  </Card>
+</CardGroup>

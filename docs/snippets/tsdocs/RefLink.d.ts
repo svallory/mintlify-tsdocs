@@ -6,7 +6,7 @@
  */
 
 import type * as React from 'react';
-import type { ValidRefId } from './ValidRefs';
+import type { ValidRefId } from '../../.tsdocs/global';
 
 /**
  * RefId represents an API reference identifier from the API model

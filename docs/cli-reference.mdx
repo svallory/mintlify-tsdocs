@@ -163,44 +163,18 @@ mint-tsdocs customize -t ./templates --force
 
 ### show
 
-Display configuration or documentation statistics.
+**[DEPRECATED]** This command is deprecated and will be removed in a future version.
 
 **Usage:**
 ```bash
 mint-tsdocs show [TARGET]
 ```
 
-**Targets:**
-- `config` - Display current configuration (default)
-- `stats` - Display documentation statistics
+**Migration:**
+- Use `mint-tsdocs config` instead of `mint-tsdocs show config`
+- Use `mint-tsdocs coverage` instead of `mint-tsdocs show stats`
 
-**Examples:**
-```bash
-# Show current configuration
-mint-tsdocs show
-mint-tsdocs show config
-
-# Show documentation statistics
-mint-tsdocs show stats
-```
-
-**Config Output:**
-Shows all settings from `mint-tsdocs.config.json`:
-- Project settings (entry point, output folder)
-- Navigation settings (tab name, group name)
-- README conversion settings
-- Template configuration
-- API Extractor configuration
-- TSDoc configuration
-
-**Stats Output:**
-Shows comprehensive documentation metrics:
-- **Project**: Package name
-- **API Surface Area**: Counts of classes, interfaces, functions, type aliases, enums, namespaces, variables, methods, and properties
-- **Documentation Coverage**: Documented vs undocumented items, items with examples/remarks, and overall coverage percentage (color-coded)
-- **Generated Files**: Number of MDX files, total size, average size, and output location
-
-The stats command requires that documentation has been generated at least once.
+The `show` command currently redirects to the new commands automatically, but you should update your scripts to use the new commands directly.
 
 ---
 
@@ -395,7 +369,7 @@ No installation required when using npx:
 npx mint-tsdocs
 npx mint-tsdocs generate
 npx mint-tsdocs ./packages/my-lib
-npx mint-tsdocs show stats
+npx mint-tsdocs coverage
 ```
 
 **package.json Scripts:**
@@ -501,10 +475,10 @@ npx mintlify dev
 ### Debugging Issues
 ```bash
 # Check current configuration
-mint-tsdocs show config
+mint-tsdocs config
 
-# View documentation statistics
-mint-tsdocs show stats
+# View documentation coverage
+mint-tsdocs coverage
 
 # Generate with debug output
 mint-tsdocs generate --debug
@@ -558,13 +532,13 @@ mint-tsdocs generate --debug
 ls -la lib/*.d.ts
 
 # Verify entry point exists
-mint-tsdocs show config
+mint-tsdocs config
 ```
 
 ### Documentation Issues
 ```bash
-# View documentation statistics and coverage
-mint-tsdocs show stats
+# View documentation coverage
+mint-tsdocs coverage
 
 # Clear cache by deleting .tsdocs/ directory
 rm -rf docs/.tsdocs

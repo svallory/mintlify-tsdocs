@@ -1,0 +1,1079 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "mint-tsdocs",
+  "theme": "mint",
+  "description": "TypeScript documentation generator with Mintlify integration",
+  "logo": {
+    "dark": "/img/logo-dark.png",
+    "light": "/img/logo-light.png"
+  },
+  "favicon": "/img/favicon.png",
+  "icons": {
+    "library": "lucide"
+  },
+  "colors": {
+    "primary": "#0D9373"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/svallory/mintlify-tsdocs"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://github.com/microsoft/rushstack/tree/main/README.md"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart",
+              "features",
+              "changelog"
+            ]
+          },
+          {
+            "group": "Usage",
+            "icon": "terminal",
+            "pages": [
+              "cli-reference",
+              "config-reference",
+              "tsdoc-reference",
+              "cheat-sheet"
+            ]
+          },
+          {
+            "group": "Components & Snippets",
+            "icon": "puzzle",
+            "pages": [
+              "components/type-info",
+              "components/type-tree",
+              "components/preview",
+              "components/feature",
+              {
+                "group": "Links",
+                "icon": "link",
+                "pages": [
+                  "components/reflink",
+                  "components/pagelink",
+                  "components/link-validation"
+                ]
+              },
+              "components/custom-styles"
+            ]
+          },
+          {
+            "group": "AI Tools",
+            "icon": "robot",
+            "pages": [
+              "ai-tools/mcp-integration",
+              "ai-tools/contextual-menu",
+              "ai-tools/llms-txt",
+              "ai-tools/claude-code",
+              "ai-tools/cursor",
+              "ai-tools/windsurf"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Deep Dive",
+        "groups": [
+          {
+            "group": "Concepts",
+            "icon": "lightbulb",
+            "pages": [
+              "concepts/coverage"
+            ]
+          },
+          {
+            "group": "Guides",
+            "icon": "book",
+            "pages": [
+              "guides/setup-guide"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "icon": "sitemap",
+            "pages": [
+              "architecture/overview",
+              "architecture/cli-layer",
+              "architecture/generation-layer",
+              "architecture/emission-layer",
+              "architecture/navigation-layer",
+              "architecture/typeinfo-generation",
+              "architecture/caching-layer",
+              "architecture/utils-layer",
+              "architecture/ast-nodes-layer"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "mint-tsdocs",
+            "pages": [
+              {
+                "group": "Classes",
+                "icon": "box",
+                "pages": [
+                  {
+                    "group": "ApiModelError",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiModelError",
+                      "reference/mint-tsdocs/ApiModelError/constructor"
+                    ]
+                  },
+                  {
+                    "group": "ApiResolutionCache",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiResolutionCache",
+                      "reference/mint-tsdocs/ApiResolutionCache/clear",
+                      "reference/mint-tsdocs/ApiResolutionCache/constructor",
+                      "reference/mint-tsdocs/ApiResolutionCache/createCachedResolver",
+                      "reference/mint-tsdocs/ApiResolutionCache/get",
+                      "reference/mint-tsdocs/ApiResolutionCache/getStats",
+                      "reference/mint-tsdocs/ApiResolutionCache/set"
+                    ]
+                  },
+                  {
+                    "group": "CacheManager",
+                    "pages": [
+                      "reference/mint-tsdocs/CacheManager",
+                      "reference/mint-tsdocs/CacheManager/apiResolution",
+                      "reference/mint-tsdocs/CacheManager/clearAll",
+                      "reference/mint-tsdocs/CacheManager/constructor",
+                      "reference/mint-tsdocs/CacheManager/createDefault",
+                      "reference/mint-tsdocs/CacheManager/createDevelopment",
+                      "reference/mint-tsdocs/CacheManager/createProduction",
+                      "reference/mint-tsdocs/CacheManager/getStats",
+                      "reference/mint-tsdocs/CacheManager/printStats",
+                      "reference/mint-tsdocs/CacheManager/typeAnalysis"
+                    ]
+                  },
+                  {
+                    "group": "CustomDocNodes",
+                    "pages": [
+                      "reference/mint-tsdocs/CustomDocNodes",
+                      "reference/mint-tsdocs/CustomDocNodes/configuration"
+                    ]
+                  },
+                  {
+                    "group": "CustomMarkdownEmitter",
+                    "pages": [
+                      "reference/mint-tsdocs/CustomMarkdownEmitter",
+                      "reference/mint-tsdocs/CustomMarkdownEmitter/constructor",
+                      "reference/mint-tsdocs/CustomMarkdownEmitter/emit",
+                      "reference/mint-tsdocs/CustomMarkdownEmitter/writeLinkTagWithCodeDestination",
+                      "reference/mint-tsdocs/CustomMarkdownEmitter/writeNode"
+                    ]
+                  },
+                  {
+                    "group": "DocEmphasisSpan",
+                    "pages": [
+                      "reference/mint-tsdocs/DocEmphasisSpan",
+                      "reference/mint-tsdocs/DocEmphasisSpan/bold",
+                      "reference/mint-tsdocs/DocEmphasisSpan/constructor",
+                      "reference/mint-tsdocs/DocEmphasisSpan/italic",
+                      "reference/mint-tsdocs/DocEmphasisSpan/kind"
+                    ]
+                  },
+                  {
+                    "group": "DocExpandable",
+                    "pages": [
+                      "reference/mint-tsdocs/DocExpandable",
+                      "reference/mint-tsdocs/DocExpandable/constructor",
+                      "reference/mint-tsdocs/DocExpandable/content",
+                      "reference/mint-tsdocs/DocExpandable/getChildNodes",
+                      "reference/mint-tsdocs/DocExpandable/kind",
+                      "reference/mint-tsdocs/DocExpandable/title"
+                    ]
+                  },
+                  {
+                    "group": "DocHeading",
+                    "pages": [
+                      "reference/mint-tsdocs/DocHeading",
+                      "reference/mint-tsdocs/DocHeading/constructor",
+                      "reference/mint-tsdocs/DocHeading/kind",
+                      "reference/mint-tsdocs/DocHeading/level",
+                      "reference/mint-tsdocs/DocHeading/title"
+                    ]
+                  },
+                  {
+                    "group": "DocNoteBox",
+                    "pages": [
+                      "reference/mint-tsdocs/DocNoteBox",
+                      "reference/mint-tsdocs/DocNoteBox/constructor",
+                      "reference/mint-tsdocs/DocNoteBox/content",
+                      "reference/mint-tsdocs/DocNoteBox/kind",
+                      "reference/mint-tsdocs/DocNoteBox/onGetChildNodes"
+                    ]
+                  },
+                  {
+                    "group": "DocTable",
+                    "pages": [
+                      "reference/mint-tsdocs/DocTable",
+                      "reference/mint-tsdocs/DocTable/addRow",
+                      "reference/mint-tsdocs/DocTable/constructor",
+                      "reference/mint-tsdocs/DocTable/createAndAddRow",
+                      "reference/mint-tsdocs/DocTable/header",
+                      "reference/mint-tsdocs/DocTable/kind",
+                      "reference/mint-tsdocs/DocTable/onGetChildNodes",
+                      "reference/mint-tsdocs/DocTable/rows"
+                    ]
+                  },
+                  {
+                    "group": "DocTableCell",
+                    "pages": [
+                      "reference/mint-tsdocs/DocTableCell",
+                      "reference/mint-tsdocs/DocTableCell/constructor",
+                      "reference/mint-tsdocs/DocTableCell/content",
+                      "reference/mint-tsdocs/DocTableCell/kind"
+                    ]
+                  },
+                  {
+                    "group": "DocTableRow",
+                    "pages": [
+                      "reference/mint-tsdocs/DocTableRow",
+                      "reference/mint-tsdocs/DocTableRow/addCell",
+                      "reference/mint-tsdocs/DocTableRow/addPlainTextCell",
+                      "reference/mint-tsdocs/DocTableRow/cells",
+                      "reference/mint-tsdocs/DocTableRow/constructor",
+                      "reference/mint-tsdocs/DocTableRow/createAndAddCell",
+                      "reference/mint-tsdocs/DocTableRow/kind",
+                      "reference/mint-tsdocs/DocTableRow/onGetChildNodes"
+                    ]
+                  },
+                  {
+                    "group": "DocumentationError",
+                    "pages": [
+                      "reference/mint-tsdocs/DocumentationError",
+                      "reference/mint-tsdocs/DocumentationError/code",
+                      "reference/mint-tsdocs/DocumentationError/constructor",
+                      "reference/mint-tsdocs/DocumentationError/context",
+                      "reference/mint-tsdocs/DocumentationError/getDetailedMessage",
+                      "reference/mint-tsdocs/DocumentationError/isUserError",
+                      "reference/mint-tsdocs/DocumentationError/timestamp",
+                      "reference/mint-tsdocs/DocumentationError/toJSON"
+                    ]
+                  },
+                  {
+                    "group": "DocumentationHelper",
+                    "pages": [
+                      "reference/mint-tsdocs/DocumentationHelper",
+                      "reference/mint-tsdocs/DocumentationHelper/analyzeTypeProperties",
+                      "reference/mint-tsdocs/DocumentationHelper/constructor",
+                      "reference/mint-tsdocs/DocumentationHelper/extractNestedProperties",
+                      "reference/mint-tsdocs/DocumentationHelper/isObjectLiteral"
+                    ]
+                  },
+                  {
+                    "group": "DocumentationStats",
+                    "pages": [
+                      "reference/mint-tsdocs/DocumentationStats",
+                      "reference/mint-tsdocs/DocumentationStats/collectFromApiModel",
+                      "reference/mint-tsdocs/DocumentationStats/collectGeneratedFilesStats",
+                      "reference/mint-tsdocs/DocumentationStats/collectStats",
+                      "reference/mint-tsdocs/DocumentationStats/formatFileSize",
+                      "reference/mint-tsdocs/DocumentationStats/getTotalStats"
+                    ]
+                  },
+                  {
+                    "group": "ErrorBoundary",
+                    "pages": [
+                      "reference/mint-tsdocs/ErrorBoundary",
+                      "reference/mint-tsdocs/ErrorBoundary/constructor",
+                      "reference/mint-tsdocs/ErrorBoundary/executeAsync",
+                      "reference/mint-tsdocs/ErrorBoundary/executeSync",
+                      "reference/mint-tsdocs/ErrorBoundary/generateErrorReport",
+                      "reference/mint-tsdocs/ErrorBoundary/getStats",
+                      "reference/mint-tsdocs/ErrorBoundary/reset"
+                    ]
+                  },
+                  {
+                    "group": "FileSystemError",
+                    "pages": [
+                      "reference/mint-tsdocs/FileSystemError",
+                      "reference/mint-tsdocs/FileSystemError/constructor"
+                    ]
+                  },
+                  {
+                    "group": "GlobalErrorBoundary",
+                    "pages": [
+                      "reference/mint-tsdocs/GlobalErrorBoundary",
+                      "reference/mint-tsdocs/GlobalErrorBoundary/getInstance",
+                      "reference/mint-tsdocs/GlobalErrorBoundary/reset"
+                    ]
+                  },
+                  {
+                    "group": "IndentedWriter",
+                    "pages": [
+                      "reference/mint-tsdocs/IndentedWriter",
+                      "reference/mint-tsdocs/IndentedWriter/constructor",
+                      "reference/mint-tsdocs/IndentedWriter/decreaseIndent",
+                      "reference/mint-tsdocs/IndentedWriter/defaultIndentPrefix",
+                      "reference/mint-tsdocs/IndentedWriter/ensureNewLine",
+                      "reference/mint-tsdocs/IndentedWriter/ensureSkippedLine",
+                      "reference/mint-tsdocs/IndentedWriter/getText",
+                      "reference/mint-tsdocs/IndentedWriter/increaseIndent",
+                      "reference/mint-tsdocs/IndentedWriter/indentScope",
+                      "reference/mint-tsdocs/IndentedWriter/peekLastCharacter",
+                      "reference/mint-tsdocs/IndentedWriter/peekSecondLastCharacter",
+                      "reference/mint-tsdocs/IndentedWriter/toString",
+                      "reference/mint-tsdocs/IndentedWriter/write",
+                      "reference/mint-tsdocs/IndentedWriter/writeLine",
+                      "reference/mint-tsdocs/IndentedWriter/writeTentative"
+                    ]
+                  },
+                  {
+                    "group": "LinkValidator",
+                    "pages": [
+                      "reference/mint-tsdocs/LinkValidator",
+                      "reference/mint-tsdocs/LinkValidator/clearCache",
+                      "reference/mint-tsdocs/LinkValidator/constructor",
+                      "reference/mint-tsdocs/LinkValidator/getRefId",
+                      "reference/mint-tsdocs/LinkValidator/validatePageId",
+                      "reference/mint-tsdocs/LinkValidator/validateRefId"
+                    ]
+                  },
+                  {
+                    "group": "LiquidTemplateEngine",
+                    "pages": [
+                      "reference/mint-tsdocs/LiquidTemplateEngine",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/clearCache",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/constructor",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/getAvailableTemplates",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/hasTemplate",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/liquid",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/postProcessOutput",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/render",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/templateDir",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/validateAllTemplates",
+                      "reference/mint-tsdocs/LiquidTemplateEngine/validateTemplate"
+                    ]
+                  },
+                  {
+                    "group": "LiquidTemplateManager",
+                    "pages": [
+                      "reference/mint-tsdocs/LiquidTemplateManager",
+                      "reference/mint-tsdocs/LiquidTemplateManager/cleanup",
+                      "reference/mint-tsdocs/LiquidTemplateManager/clearCache",
+                      "reference/mint-tsdocs/LiquidTemplateManager/constructor",
+                      "reference/mint-tsdocs/LiquidTemplateManager/getAvailableTemplates",
+                      "reference/mint-tsdocs/LiquidTemplateManager/getTemplateMapping",
+                      "reference/mint-tsdocs/LiquidTemplateManager/getTemplateStats",
+                      "reference/mint-tsdocs/LiquidTemplateManager/hasTemplate",
+                      "reference/mint-tsdocs/LiquidTemplateManager/initialize",
+                      "reference/mint-tsdocs/LiquidTemplateManager/liquidEngine",
+                      "reference/mint-tsdocs/LiquidTemplateManager/mergedTemplateDir",
+                      "reference/mint-tsdocs/LiquidTemplateManager/renderApiItem",
+                      "reference/mint-tsdocs/LiquidTemplateManager/renderLayout",
+                      "reference/mint-tsdocs/LiquidTemplateManager/renderTemplate",
+                      "reference/mint-tsdocs/LiquidTemplateManager/templateDataConverter"
+                    ]
+                  },
+                  {
+                    "group": "MarkdownDocumenter",
+                    "pages": [
+                      "reference/mint-tsdocs/MarkdownDocumenter",
+                      "reference/mint-tsdocs/MarkdownDocumenter/constructor",
+                      "reference/mint-tsdocs/MarkdownDocumenter/generateFiles",
+                      "reference/mint-tsdocs/MarkdownDocumenter/generateNavigation"
+                    ]
+                  },
+                  {
+                    "group": "MarkdownEmitter",
+                    "pages": [
+                      "reference/mint-tsdocs/MarkdownEmitter",
+                      "reference/mint-tsdocs/MarkdownEmitter/emit",
+                      "reference/mint-tsdocs/MarkdownEmitter/getEscapedText",
+                      "reference/mint-tsdocs/MarkdownEmitter/getTableEscapedText",
+                      "reference/mint-tsdocs/MarkdownEmitter/writeLinkTagWithCodeDestination",
+                      "reference/mint-tsdocs/MarkdownEmitter/writeLinkTagWithUrlDestination",
+                      "reference/mint-tsdocs/MarkdownEmitter/writeNode",
+                      "reference/mint-tsdocs/MarkdownEmitter/writeNodes",
+                      "reference/mint-tsdocs/MarkdownEmitter/writePlainText"
+                    ]
+                  },
+                  {
+                    "group": "NavigationManager",
+                    "pages": [
+                      "reference/mint-tsdocs/NavigationManager",
+                      "reference/mint-tsdocs/NavigationManager/addApiItem",
+                      "reference/mint-tsdocs/NavigationManager/addNavigationItem",
+                      "reference/mint-tsdocs/NavigationManager/clear",
+                      "reference/mint-tsdocs/NavigationManager/constructor",
+                      "reference/mint-tsdocs/NavigationManager/generateHierarchicalNavigation",
+                      "reference/mint-tsdocs/NavigationManager/generateNavigation",
+                      "reference/mint-tsdocs/NavigationManager/getStats"
+                    ]
+                  },
+                  {
+                    "group": "ObjectTypeAnalyzer",
+                    "pages": [
+                      "reference/mint-tsdocs/ObjectTypeAnalyzer",
+                      "reference/mint-tsdocs/ObjectTypeAnalyzer/analyzeType",
+                      "reference/mint-tsdocs/ObjectTypeAnalyzer/constructor"
+                    ]
+                  },
+                  {
+                    "group": "SecurityError",
+                    "pages": [
+                      "reference/mint-tsdocs/SecurityError",
+                      "reference/mint-tsdocs/SecurityError/constructor"
+                    ]
+                  },
+                  {
+                    "group": "SecurityUtils",
+                    "pages": [
+                      "reference/mint-tsdocs/SecurityUtils",
+                      "reference/mint-tsdocs/SecurityUtils/parseJsonSafe",
+                      "reference/mint-tsdocs/SecurityUtils/sanitizeJsonForJsx",
+                      "reference/mint-tsdocs/SecurityUtils/sanitizeJsxAttribute",
+                      "reference/mint-tsdocs/SecurityUtils/sanitizeYamlText",
+                      "reference/mint-tsdocs/SecurityUtils/validateCliInput",
+                      "reference/mint-tsdocs/SecurityUtils/validateFilename",
+                      "reference/mint-tsdocs/SecurityUtils/validateFilePath",
+                      "reference/mint-tsdocs/SecurityUtils/validateJsonContent"
+                    ]
+                  },
+                  {
+                    "group": "TemplateDataConverter",
+                    "pages": [
+                      "reference/mint-tsdocs/TemplateDataConverter",
+                      "reference/mint-tsdocs/TemplateDataConverter/constructor",
+                      "reference/mint-tsdocs/TemplateDataConverter/convertApiItem"
+                    ]
+                  },
+                  {
+                    "group": "TemplateEngine",
+                    "pages": [
+                      "reference/mint-tsdocs/TemplateEngine",
+                      "reference/mint-tsdocs/TemplateEngine/clearCache",
+                      "reference/mint-tsdocs/TemplateEngine/constructor",
+                      "reference/mint-tsdocs/TemplateEngine/getAvailableTemplates",
+                      "reference/mint-tsdocs/TemplateEngine/hasTemplate",
+                      "reference/mint-tsdocs/TemplateEngine/render"
+                    ]
+                  },
+                  {
+                    "group": "TemplateManager",
+                    "pages": [
+                      "reference/mint-tsdocs/TemplateManager",
+                      "reference/mint-tsdocs/TemplateManager/clearCache",
+                      "reference/mint-tsdocs/TemplateManager/constructor",
+                      "reference/mint-tsdocs/TemplateManager/getAvailableTemplates",
+                      "reference/mint-tsdocs/TemplateManager/getTemplateMapping",
+                      "reference/mint-tsdocs/TemplateManager/getTemplateStats",
+                      "reference/mint-tsdocs/TemplateManager/hasUserTemplate",
+                      "reference/mint-tsdocs/TemplateManager/renderApiItem",
+                      "reference/mint-tsdocs/TemplateManager/renderLayout",
+                      "reference/mint-tsdocs/TemplateManager/renderTemplate"
+                    ]
+                  },
+                  {
+                    "group": "TypeAnalysisCache",
+                    "pages": [
+                      "reference/mint-tsdocs/TypeAnalysisCache",
+                      "reference/mint-tsdocs/TypeAnalysisCache/clear",
+                      "reference/mint-tsdocs/TypeAnalysisCache/constructor",
+                      "reference/mint-tsdocs/TypeAnalysisCache/createCachedFunction",
+                      "reference/mint-tsdocs/TypeAnalysisCache/get",
+                      "reference/mint-tsdocs/TypeAnalysisCache/getStats",
+                      "reference/mint-tsdocs/TypeAnalysisCache/set"
+                    ]
+                  },
+                  {
+                    "group": "TypeInfoGenerator",
+                    "pages": [
+                      "reference/mint-tsdocs/TypeInfoGenerator",
+                      "reference/mint-tsdocs/TypeInfoGenerator/constructor",
+                      "reference/mint-tsdocs/TypeInfoGenerator/generateTypeInfoDeclaration",
+                      "reference/mint-tsdocs/TypeInfoGenerator/generateTypeInfoModule"
+                    ]
+                  },
+                  {
+                    "group": "Utilities",
+                    "pages": [
+                      "reference/mint-tsdocs/Utilities",
+                      "reference/mint-tsdocs/Utilities/getConciseSignature",
+                      "reference/mint-tsdocs/Utilities/getSafeFilenameForName",
+                      "reference/mint-tsdocs/Utilities/getSafeFilenamePreservingCase",
+                      "reference/mint-tsdocs/Utilities/normalizeDisplayName"
+                    ]
+                  },
+                  {
+                    "group": "ValidationError",
+                    "pages": [
+                      "reference/mint-tsdocs/ValidationError",
+                      "reference/mint-tsdocs/ValidationError/constructor"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Enums",
+                "icon": "list",
+                "pages": [
+                  "reference/mint-tsdocs/CustomDocNodeKind",
+                  "reference/mint-tsdocs/ErrorCode"
+                ]
+              },
+              {
+                "group": "Functions",
+                "icon": "function",
+                "pages": [
+                  "reference/mint-tsdocs/createDebugger",
+                  "reference/mint-tsdocs/createScopedDebugger",
+                  "reference/mint-tsdocs/disableDebug",
+                  "reference/mint-tsdocs/enableDebug",
+                  "reference/mint-tsdocs/findConfigPath",
+                  "reference/mint-tsdocs/generateApiExtractorConfig",
+                  "reference/mint-tsdocs/getEnabledNamespaces",
+                  "reference/mint-tsdocs/getGlobalCacheManager",
+                  "reference/mint-tsdocs/loadConfig",
+                  "reference/mint-tsdocs/resetGlobalCacheManager",
+                  "reference/mint-tsdocs/resolveConfig",
+                  "reference/mint-tsdocs/withErrorBoundary"
+                ]
+              },
+              {
+                "group": "Interfaces",
+                "icon": "plug",
+                "pages": [
+                  {
+                    "group": "ApiExtractorApiReportConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorApiReportConfig",
+                      "reference/mint-tsdocs/ApiExtractorApiReportConfig/enabled",
+                      "reference/mint-tsdocs/ApiExtractorApiReportConfig/reportFileName",
+                      "reference/mint-tsdocs/ApiExtractorApiReportConfig/reportFolder",
+                      "reference/mint-tsdocs/ApiExtractorApiReportConfig/reportTempFolder"
+                    ]
+                  },
+                  {
+                    "group": "ApiExtractorCompilerConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorCompilerConfig",
+                      "reference/mint-tsdocs/ApiExtractorCompilerConfig/skipLibCheck",
+                      "reference/mint-tsdocs/ApiExtractorCompilerConfig/tsconfigFilePath"
+                    ]
+                  },
+                  {
+                    "group": "ApiExtractorConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorConfig",
+                      "reference/mint-tsdocs/ApiExtractorConfig/apiReport",
+                      "reference/mint-tsdocs/ApiExtractorConfig/bundledPackages",
+                      "reference/mint-tsdocs/ApiExtractorConfig/compiler",
+                      "reference/mint-tsdocs/ApiExtractorConfig/configPath",
+                      "reference/mint-tsdocs/ApiExtractorConfig/docModel",
+                      "reference/mint-tsdocs/ApiExtractorConfig/dtsRollup",
+                      "reference/mint-tsdocs/ApiExtractorConfig/messages"
+                    ]
+                  },
+                  {
+                    "group": "ApiExtractorDocModelConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorDocModelConfig",
+                      "reference/mint-tsdocs/ApiExtractorDocModelConfig/enabled",
+                      "reference/mint-tsdocs/ApiExtractorDocModelConfig/projectFolderUrl"
+                    ]
+                  },
+                  {
+                    "group": "ApiExtractorDtsRollupConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig",
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig/alphaTrimmedFilePath",
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig/betaTrimmedFilePath",
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig/enabled",
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig/publicTrimmedFilePath",
+                      "reference/mint-tsdocs/ApiExtractorDtsRollupConfig/untrimmedFilePath"
+                    ]
+                  },
+                  {
+                    "group": "ApiExtractorMessagesConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiExtractorMessagesConfig",
+                      "reference/mint-tsdocs/ApiExtractorMessagesConfig/compilerMessageReporting",
+                      "reference/mint-tsdocs/ApiExtractorMessagesConfig/extractorMessageReporting",
+                      "reference/mint-tsdocs/ApiExtractorMessagesConfig/tsdocMessageReporting"
+                    ]
+                  },
+                  {
+                    "group": "ApiResolutionCacheOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiResolutionCacheOptions",
+                      "reference/mint-tsdocs/ApiResolutionCacheOptions/enabled",
+                      "reference/mint-tsdocs/ApiResolutionCacheOptions/maxSize"
+                    ]
+                  },
+                  {
+                    "group": "ApiSurfaceStats",
+                    "pages": [
+                      "reference/mint-tsdocs/ApiSurfaceStats",
+                      "reference/mint-tsdocs/ApiSurfaceStats/classes",
+                      "reference/mint-tsdocs/ApiSurfaceStats/enums",
+                      "reference/mint-tsdocs/ApiSurfaceStats/functions",
+                      "reference/mint-tsdocs/ApiSurfaceStats/interfaces",
+                      "reference/mint-tsdocs/ApiSurfaceStats/methods",
+                      "reference/mint-tsdocs/ApiSurfaceStats/namespaces",
+                      "reference/mint-tsdocs/ApiSurfaceStats/properties",
+                      "reference/mint-tsdocs/ApiSurfaceStats/typeAliases",
+                      "reference/mint-tsdocs/ApiSurfaceStats/variables"
+                    ]
+                  },
+                  {
+                    "group": "CacheManagerOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/CacheManagerOptions",
+                      "reference/mint-tsdocs/CacheManagerOptions/apiResolution",
+                      "reference/mint-tsdocs/CacheManagerOptions/enabled",
+                      "reference/mint-tsdocs/CacheManagerOptions/enableStats",
+                      "reference/mint-tsdocs/CacheManagerOptions/typeAnalysis"
+                    ]
+                  },
+                  {
+                    "group": "CoverageConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/CoverageConfig",
+                      "reference/mint-tsdocs/CoverageConfig/exclude",
+                      "reference/mint-tsdocs/CoverageConfig/groupBy",
+                      "reference/mint-tsdocs/CoverageConfig/include",
+                      "reference/mint-tsdocs/CoverageConfig/includeInternal",
+                      "reference/mint-tsdocs/CoverageConfig/rules",
+                      "reference/mint-tsdocs/CoverageConfig/threshold"
+                    ]
+                  },
+                  {
+                    "group": "CoverageRule",
+                    "pages": [
+                      "reference/mint-tsdocs/CoverageRule",
+                      "reference/mint-tsdocs/CoverageRule/kind",
+                      "reference/mint-tsdocs/CoverageRule/level",
+                      "reference/mint-tsdocs/CoverageRule/releaseTag",
+                      "reference/mint-tsdocs/CoverageRule/visibility"
+                    ]
+                  },
+                  {
+                    "group": "Debugger",
+                    "pages": [
+                      "reference/mint-tsdocs/Debugger",
+                      "reference/mint-tsdocs/Debugger/debug",
+                      "reference/mint-tsdocs/Debugger/error",
+                      "reference/mint-tsdocs/Debugger/info",
+                      "reference/mint-tsdocs/Debugger/isEnabled",
+                      "reference/mint-tsdocs/Debugger/namespace",
+                      "reference/mint-tsdocs/Debugger/trace",
+                      "reference/mint-tsdocs/Debugger/warn"
+                    ]
+                  },
+                  {
+                    "group": "DocumentationCoverageStats",
+                    "pages": [
+                      "reference/mint-tsdocs/DocumentationCoverageStats",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/coveragePercent",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/documented",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/total",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/undocumented",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/withExamples",
+                      "reference/mint-tsdocs/DocumentationCoverageStats/withRemarks"
+                    ]
+                  },
+                  {
+                    "group": "DocumentationStatistics",
+                    "pages": [
+                      "reference/mint-tsdocs/DocumentationStatistics",
+                      "reference/mint-tsdocs/DocumentationStatistics/apiSurface",
+                      "reference/mint-tsdocs/DocumentationStatistics/coverage",
+                      "reference/mint-tsdocs/DocumentationStatistics/generatedFiles",
+                      "reference/mint-tsdocs/DocumentationStatistics/projectName"
+                    ]
+                  },
+                  {
+                    "group": "ErrorBoundaryOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/ErrorBoundaryOptions",
+                      "reference/mint-tsdocs/ErrorBoundaryOptions/continueOnError",
+                      "reference/mint-tsdocs/ErrorBoundaryOptions/errorLogPath",
+                      "reference/mint-tsdocs/ErrorBoundaryOptions/includeStackTraces",
+                      "reference/mint-tsdocs/ErrorBoundaryOptions/logErrors",
+                      "reference/mint-tsdocs/ErrorBoundaryOptions/maxErrors"
+                    ]
+                  },
+                  {
+                    "group": "ErrorContext",
+                    "pages": [
+                      "reference/mint-tsdocs/ErrorContext",
+                      "reference/mint-tsdocs/ErrorContext/cause",
+                      "reference/mint-tsdocs/ErrorContext/command",
+                      "reference/mint-tsdocs/ErrorContext/data",
+                      "reference/mint-tsdocs/ErrorContext/exitCode",
+                      "reference/mint-tsdocs/ErrorContext/operation",
+                      "reference/mint-tsdocs/ErrorContext/resource",
+                      "reference/mint-tsdocs/ErrorContext/suggestion"
+                    ]
+                  },
+                  {
+                    "group": "ErrorResult",
+                    "pages": [
+                      "reference/mint-tsdocs/ErrorResult",
+                      "reference/mint-tsdocs/ErrorResult/data",
+                      "reference/mint-tsdocs/ErrorResult/error",
+                      "reference/mint-tsdocs/ErrorResult/recovered",
+                      "reference/mint-tsdocs/ErrorResult/success"
+                    ]
+                  },
+                  {
+                    "group": "GeneratedFilesStats",
+                    "pages": [
+                      "reference/mint-tsdocs/GeneratedFilesStats",
+                      "reference/mint-tsdocs/GeneratedFilesStats/averageSize",
+                      "reference/mint-tsdocs/GeneratedFilesStats/mdxFiles",
+                      "reference/mint-tsdocs/GeneratedFilesStats/totalSize"
+                    ]
+                  },
+                  {
+                    "group": "ICustomMarkdownEmitterOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/ICustomMarkdownEmitterOptions",
+                      "reference/mint-tsdocs/ICustomMarkdownEmitterOptions/contextApiItem",
+                      "reference/mint-tsdocs/ICustomMarkdownEmitterOptions/onGetFilenameForApiItem"
+                    ]
+                  },
+                  {
+                    "group": "IDocEmphasisSpanParameters",
+                    "pages": [
+                      "reference/mint-tsdocs/IDocEmphasisSpanParameters",
+                      "reference/mint-tsdocs/IDocEmphasisSpanParameters/bold",
+                      "reference/mint-tsdocs/IDocEmphasisSpanParameters/italic"
+                    ]
+                  },
+                  {
+                    "group": "IDocHeadingParameters",
+                    "pages": [
+                      "reference/mint-tsdocs/IDocHeadingParameters",
+                      "reference/mint-tsdocs/IDocHeadingParameters/level",
+                      "reference/mint-tsdocs/IDocHeadingParameters/title"
+                    ]
+                  },
+                  "reference/mint-tsdocs/IDocNoteBoxParameters",
+                  "reference/mint-tsdocs/IDocTableCellParameters",
+                  {
+                    "group": "IDocTableParameters",
+                    "pages": [
+                      "reference/mint-tsdocs/IDocTableParameters",
+                      "reference/mint-tsdocs/IDocTableParameters/headerCells",
+                      "reference/mint-tsdocs/IDocTableParameters/headerTitles"
+                    ]
+                  },
+                  "reference/mint-tsdocs/IDocTableRowParameters",
+                  {
+                    "group": "IMarkdownDocumenterOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/apiModel",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/convertReadme",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/docsJsonPath",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/enableMenu",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/groupName",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/outputFolder",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/readmeTitle",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/tabName",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/templates",
+                      "reference/mint-tsdocs/IMarkdownDocumenterOptions/verbose"
+                    ]
+                  },
+                  {
+                    "group": "IMarkdownEmitterContext",
+                    "pages": [
+                      "reference/mint-tsdocs/IMarkdownEmitterContext",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/boldRequested",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/italicRequested",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/options",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/writer",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/writingBold",
+                      "reference/mint-tsdocs/IMarkdownEmitterContext/writingItalic"
+                    ]
+                  },
+                  "reference/mint-tsdocs/IMarkdownEmitterOptions",
+                  {
+                    "group": "IReturnData",
+                    "pages": [
+                      "reference/mint-tsdocs/IReturnData",
+                      "reference/mint-tsdocs/IReturnData/description",
+                      "reference/mint-tsdocs/IReturnData/type",
+                      "reference/mint-tsdocs/IReturnData/typePath",
+                      "reference/mint-tsdocs/IReturnData/typeRef"
+                    ]
+                  },
+                  {
+                    "group": "ITableData",
+                    "pages": [
+                      "reference/mint-tsdocs/ITableData",
+                      "reference/mint-tsdocs/ITableData/headers",
+                      "reference/mint-tsdocs/ITableData/rows",
+                      "reference/mint-tsdocs/ITableData/title"
+                    ]
+                  },
+                  {
+                    "group": "ITableRow",
+                    "pages": [
+                      "reference/mint-tsdocs/ITableRow",
+                      "reference/mint-tsdocs/ITableRow/defaultValue",
+                      "reference/mint-tsdocs/ITableRow/description",
+                      "reference/mint-tsdocs/ITableRow/isDeprecated",
+                      "reference/mint-tsdocs/ITableRow/isInherited",
+                      "reference/mint-tsdocs/ITableRow/isOptional",
+                      "reference/mint-tsdocs/ITableRow/modifiers",
+                      "reference/mint-tsdocs/ITableRow/title",
+                      "reference/mint-tsdocs/ITableRow/titlePath",
+                      "reference/mint-tsdocs/ITableRow/type",
+                      "reference/mint-tsdocs/ITableRow/typePath",
+                      "reference/mint-tsdocs/ITableRow/typeRef"
+                    ]
+                  },
+                  {
+                    "group": "ITemplateData",
+                    "pages": [
+                      "reference/mint-tsdocs/ITemplateData",
+                      "reference/mint-tsdocs/ITemplateData/abstractClasses",
+                      "reference/mint-tsdocs/ITemplateData/apiItem",
+                      "reference/mint-tsdocs/ITemplateData/classes",
+                      "reference/mint-tsdocs/ITemplateData/constructors",
+                      "reference/mint-tsdocs/ITemplateData/enumerations",
+                      "reference/mint-tsdocs/ITemplateData/events",
+                      "reference/mint-tsdocs/ITemplateData/examples",
+                      "reference/mint-tsdocs/ITemplateData/functions",
+                      "reference/mint-tsdocs/ITemplateData/guides",
+                      "reference/mint-tsdocs/ITemplateData/heritageTypes",
+                      "reference/mint-tsdocs/ITemplateData/interfaces",
+                      "reference/mint-tsdocs/ITemplateData/members",
+                      "reference/mint-tsdocs/ITemplateData/methods",
+                      "reference/mint-tsdocs/ITemplateData/namespaces",
+                      "reference/mint-tsdocs/ITemplateData/navigation",
+                      "reference/mint-tsdocs/ITemplateData/page",
+                      "reference/mint-tsdocs/ITemplateData/parameters",
+                      "reference/mint-tsdocs/ITemplateData/properties",
+                      "reference/mint-tsdocs/ITemplateData/rendering",
+                      "reference/mint-tsdocs/ITemplateData/returnType",
+                      "reference/mint-tsdocs/ITemplateData/typeAliases",
+                      "reference/mint-tsdocs/ITemplateData/variables"
+                    ]
+                  },
+                  {
+                    "group": "ITemplateEngineOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/ITemplateEngineOptions",
+                      "reference/mint-tsdocs/ITemplateEngineOptions/cache",
+                      "reference/mint-tsdocs/ITemplateEngineOptions/strict",
+                      "reference/mint-tsdocs/ITemplateEngineOptions/templateDir"
+                    ]
+                  },
+                  {
+                    "group": "ITemplateManagerOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/ITemplateManagerOptions",
+                      "reference/mint-tsdocs/ITemplateManagerOptions/defaultTemplateDir",
+                      "reference/mint-tsdocs/ITemplateManagerOptions/overrides",
+                      "reference/mint-tsdocs/ITemplateManagerOptions/userTemplateDir"
+                    ]
+                  },
+                  {
+                    "group": "LinkValidation",
+                    "pages": [
+                      "reference/mint-tsdocs/LinkValidation",
+                      "reference/mint-tsdocs/LinkValidation/error",
+                      "reference/mint-tsdocs/LinkValidation/isValid",
+                      "reference/mint-tsdocs/LinkValidation/path"
+                    ]
+                  },
+                  {
+                    "group": "LintConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/LintConfig",
+                      "reference/mint-tsdocs/LintConfig/eslint",
+                      "reference/mint-tsdocs/LintConfig/failOnError"
+                    ]
+                  },
+                  {
+                    "group": "MessageReportingItem",
+                    "pages": [
+                      "reference/mint-tsdocs/MessageReportingItem",
+                      "reference/mint-tsdocs/MessageReportingItem/addToApiReportFile",
+                      "reference/mint-tsdocs/MessageReportingItem/logLevel"
+                    ]
+                  },
+                  {
+                    "group": "MintlifyTsDocsConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/_schema",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/apiExtractor",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/convertReadme",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/coverage",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/docsJson",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/entryPoint",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/groupName",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/lint",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/outputFolder",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/readmeTitle",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/tabName",
+                      "reference/mint-tsdocs/MintlifyTsDocsConfig/templates"
+                    ]
+                  },
+                  {
+                    "group": "NavigationItem",
+                    "pages": [
+                      "reference/mint-tsdocs/NavigationItem",
+                      "reference/mint-tsdocs/NavigationItem/apiKind",
+                      "reference/mint-tsdocs/NavigationItem/displayName",
+                      "reference/mint-tsdocs/NavigationItem/group",
+                      "reference/mint-tsdocs/NavigationItem/icon",
+                      "reference/mint-tsdocs/NavigationItem/page",
+                      "reference/mint-tsdocs/NavigationItem/pages",
+                      "reference/mint-tsdocs/NavigationItem/parentPage"
+                    ]
+                  },
+                  {
+                    "group": "NavigationManagerOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/NavigationManagerOptions",
+                      "reference/mint-tsdocs/NavigationManagerOptions/customIcons",
+                      "reference/mint-tsdocs/NavigationManagerOptions/docsJsonPath",
+                      "reference/mint-tsdocs/NavigationManagerOptions/enableMenu",
+                      "reference/mint-tsdocs/NavigationManagerOptions/groupName",
+                      "reference/mint-tsdocs/NavigationManagerOptions/maxDocsJsonSize",
+                      "reference/mint-tsdocs/NavigationManagerOptions/outputFolder",
+                      "reference/mint-tsdocs/NavigationManagerOptions/tabName"
+                    ]
+                  },
+                  {
+                    "group": "RenderingConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/RenderingConfig",
+                      "reference/mint-tsdocs/RenderingConfig/hideStringEnumValues"
+                    ]
+                  },
+                  {
+                    "group": "ResolvedConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ResolvedConfig",
+                      "reference/mint-tsdocs/ResolvedConfig/apiExtractor",
+                      "reference/mint-tsdocs/ResolvedConfig/convertReadme",
+                      "reference/mint-tsdocs/ResolvedConfig/coverage",
+                      "reference/mint-tsdocs/ResolvedConfig/docsJson",
+                      "reference/mint-tsdocs/ResolvedConfig/entryPoint",
+                      "reference/mint-tsdocs/ResolvedConfig/groupName",
+                      "reference/mint-tsdocs/ResolvedConfig/lint",
+                      "reference/mint-tsdocs/ResolvedConfig/outputFolder",
+                      "reference/mint-tsdocs/ResolvedConfig/readmeTitle",
+                      "reference/mint-tsdocs/ResolvedConfig/tabName",
+                      "reference/mint-tsdocs/ResolvedConfig/templates"
+                    ]
+                  },
+                  {
+                    "group": "ResolvedRenderingConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ResolvedRenderingConfig",
+                      "reference/mint-tsdocs/ResolvedRenderingConfig/hideStringEnumValues"
+                    ]
+                  },
+                  {
+                    "group": "ResolvedTemplateConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/ResolvedTemplateConfig",
+                      "reference/mint-tsdocs/ResolvedTemplateConfig/cache",
+                      "reference/mint-tsdocs/ResolvedTemplateConfig/rendering",
+                      "reference/mint-tsdocs/ResolvedTemplateConfig/strict",
+                      "reference/mint-tsdocs/ResolvedTemplateConfig/userTemplateDir"
+                    ]
+                  },
+                  {
+                    "group": "TemplateConfig",
+                    "pages": [
+                      "reference/mint-tsdocs/TemplateConfig",
+                      "reference/mint-tsdocs/TemplateConfig/cache",
+                      "reference/mint-tsdocs/TemplateConfig/rendering",
+                      "reference/mint-tsdocs/TemplateConfig/strict",
+                      "reference/mint-tsdocs/TemplateConfig/userTemplateDir"
+                    ]
+                  },
+                  {
+                    "group": "TypeAnalysisCacheOptions",
+                    "pages": [
+                      "reference/mint-tsdocs/TypeAnalysisCacheOptions",
+                      "reference/mint-tsdocs/TypeAnalysisCacheOptions/enabled",
+                      "reference/mint-tsdocs/TypeAnalysisCacheOptions/maxSize"
+                    ]
+                  },
+                  {
+                    "group": "TypeCoverageStats",
+                    "pages": [
+                      "reference/mint-tsdocs/TypeCoverageStats",
+                      "reference/mint-tsdocs/TypeCoverageStats/coveragePercent",
+                      "reference/mint-tsdocs/TypeCoverageStats/documented",
+                      "reference/mint-tsdocs/TypeCoverageStats/total",
+                      "reference/mint-tsdocs/TypeCoverageStats/undocumented"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Miscellaneous",
+                "icon": "file-text",
+                "pages": [
+                  {
+                    "group": "(model)",
+                    "pages": [
+                      "reference/index",
+                      "reference/mint-tsdocs"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Types",
+                "icon": "file-code",
+                "pages": [
+                  "reference/mint-tsdocs/CoverageLevel",
+                  "reference/mint-tsdocs/DebugFunction",
+                  "reference/mint-tsdocs/DebugLevel"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": [
+    "/.tsdocs/client/tsdocs-config.js",
+    "/.tsdocs/client/ValidRefs.js",
+    "/.tsdocs/client/ValidPages.js"
+  ],
+  "styles": [
+    "/.tsdocs/client/tsdocs-styles.css"
+  ],
+  "footer": {
+    "socials": {
+      "github": "https://github.com/svallory/mintlify-tsdocs"
+    }
+  }
+}

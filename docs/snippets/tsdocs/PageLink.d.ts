@@ -6,7 +6,7 @@
  */
 
 import type * as React from 'react';
-import type { ValidPageId } from './ValidPages';
+import type { ValidPageId } from '../../.tsdocs/global';
 
 /**
  * PageId represents a documentation page identifier

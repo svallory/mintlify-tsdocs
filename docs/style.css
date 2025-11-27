@@ -1,4 +1,8 @@
-.prose a.broken-link,
-.prose span.broken-link {
-  border-bottom-color: red;
-}
+/**
+ * Mintlify Custom Styles
+ *
+ * This file is automatically loaded by Mintlify.
+ * Import tsdocs-styles.css to enable default component styling.
+ */
+
+@import url('./.tsdocs/client/tsdocs-styles.css');

@@ -1,7 +1,7 @@
 ---
 title: Preview
 description: Display content with a labeled border, similar to code blocks
-icon: "eye"
+icon: scan-eye
 ---
 
 import { Preview } from "/snippets/tsdocs/Preview.jsx"
@@ -219,12 +219,15 @@ import { MyComponent } from "/snippets/MyComponent.jsx"
 
 ## Related Components
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="TypeTree" icon="diagram-project" href="/components/type-tree">
     Display type structures
   </Card>
-  <Card title="CodeBlock" icon="code" href="https://mintlify.com/docs/content/code">
-    Code syntax highlighting
+  <Card title="RefLink" icon="link" href="/components/reflink">
+    API reference links
+  </Card>
+  <Card title="PageLink" icon="link" href="/components/pagelink">
+    Documentation page links
   </Card>
 </CardGroup>
 
