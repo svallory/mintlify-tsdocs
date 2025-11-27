@@ -1,6 +1,6 @@
 {
   "name": "mintlify-tsdocs",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "A wrapper for the mint-tsdocs package.",
   "main": "index.js",
   "repository": {
@@ -9,6 +9,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "mint-tsdocs": "0.0.1"
+    "mint-tsdocs": "0.0.4"
   }
 }

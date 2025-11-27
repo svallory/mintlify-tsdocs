@@ -21,7 +21,7 @@ fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
 # Publish the wrapper package
-bun publish
+npm publish
 
 # Navigate back to the root directory
 cd ../..
