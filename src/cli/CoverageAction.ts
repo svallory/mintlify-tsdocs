@@ -9,7 +9,7 @@ import { Colorize } from '@rushstack/terminal';
 
 import { BaseAction } from './BaseAction';
 import { DocumenterCli } from './ApiDocumenterCommandLine';
-import { loadConfig, generateApiExtractorConfig } from '../config';
+import { loadConfig, loadConfigOrDefaults, generateApiExtractorConfig } from '../config';
 import { CoverageConfig, CoverageLevel, CoverageRule } from '../config/types';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
 import { Extractor, ExtractorConfig, ExtractorResult } from '@microsoft/api-extractor';
@@ -126,8 +126,8 @@ export class CoverageAction extends BaseAction {
             ? path.resolve(process.cwd(), this._projectDirParameter.value)
             : process.cwd();
 
-        // Load config
-        const config = loadConfig(projectDir);
+        // Load config (with automatic fallback to defaults)
+        const config = loadConfigOrDefaults(projectDir);
 
         // Determine .tsdocs directory
         const tsdocsDir = config.docsJson

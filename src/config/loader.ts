@@ -70,6 +70,39 @@ export function loadConfig(searchFrom?: string): ResolvedConfig {
 }
 
 /**
+ * Load configuration with fallback to auto-detected defaults.
+ * This is useful for commands like `lint` and `coverage` that should work
+ * without requiring explicit configuration.
+ *
+ * @param searchFrom - Directory to start searching from (default: current directory)
+ * @returns Resolved configuration (either loaded or auto-detected)
+ */
+export function loadConfigOrDefaults(searchFrom?: string): ResolvedConfig {
+  try {
+    // Try to load existing configuration
+    return loadConfig(searchFrom);
+  } catch (error) {
+    // If config not found, use auto-detected defaults
+    if (error instanceof DocumentationError && error.code === ErrorCode.CONFIG_NOT_FOUND) {
+      const searchDir = searchFrom || process.cwd();
+
+      // Create minimal config with auto-detected values
+      const minimalConfig: MintlifyTsDocsConfig = {
+        // Entry point will be auto-detected by resolveConfig
+        entryPoint: undefined as any,
+        // Other values will use defaults
+        outputFolder: undefined
+      };
+
+      return resolveConfig(minimalConfig, searchDir);
+    }
+
+    // Re-throw other errors
+    throw error;
+  }
+}
+
+/**
  * Auto-detect entry point from package.json or common paths
  */
 function detectEntryPoint(configDir: string): string {
