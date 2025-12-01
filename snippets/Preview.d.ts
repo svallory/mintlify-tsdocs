@@ -10,7 +10,7 @@ import * as React from 'react';
  * @example
  * ```tsx
  * <Preview title="Component Demo">
- *   <TypeTree name="config" type="object" />
+ *   <TypeTree open name="config" type="object" />
  * </Preview>
  * ```
  */

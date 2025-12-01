@@ -1,0 +1,117 @@
+---
+title: Implementation Guide
+sidebarTitle: Overview
+description: How to implement OpenDocs support in your tool or language
+---
+
+# Implementation Guide
+
+<Warning>
+  **RFC Status**: This implementation guide is part of the OpenDocs Specification RFC.
+
+  Please provide feedback via [GitHub Issues](https://github.com/svallory/mintlify-tsdocs/issues)
+  or join the [discussion](https://github.com/svallory/mintlify-tsdocs/discussions).
+</Warning>
+
+## Overview
+
+This guide walks you through implementing OpenDocs support in your documentation tool, language extractor, or documentation generator. OpenDocs is designed to be easy to implement while providing powerful capabilities.
+
+## Implementation Roadmap
+
+### Phase 1: Basic DocItem Support
+1. Implement the core DocItem model
+2. Add basic metadata extraction
+3. Generate simple JSON output
+
+**Guide**: [DocItem Model](/opendocs/implementation/docitem-model)
+
+### Phase 2: Documentation Integration
+1. Extract documentation comments
+2. Map to DocBlock format
+3. Handle language-specific features
+
+**Guides**: [DocItem Model](/opendocs/implementation/docitem-model), [Extractors](/opendocs/implementation/extractors)
+
+### Phase 3: Advanced Features
+1. Implement workspace organization
+2. Add file format optimization
+3. Support cross-references
+
+**Guides**: [Documentation Set Builder](/opendocs/implementation/docset-builder), [Performance](/opendocs/implementation/performance)
+
+## Implementation Path
+
+<CardGroup cols={2}>
+  <Card title="DocItem Model" icon="shapes" href="/opendocs/implementation/docitem-model">
+    Learn how to implement the core DocItem and DocBlock classes
+  </Card>
+  <Card title="Language Extractors" icon="code" href="/opendocs/implementation/extractors">
+    Build extractors for your programming language
+  </Card>
+  <Card title="Documentation Set Builder" icon="box" href="/opendocs/implementation/docset-builder">
+    Create and organize documentation sets
+  </Card>
+  <Card title="Testing" icon="flask" href="/opendocs/implementation/testing">
+    Test your OpenDocs implementation
+  </Card>
+  <Card title="Performance" icon="gauge" href="/opendocs/implementation/performance">
+    Optimize for large codebases
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+The fastest way to get started:
+
+1. **Start with DocItem**: Implement the basic DocItem class
+2. **Add extraction**: Extract from your language's AST
+3. **Generate JSON**: Serialize to OpenDocs format
+4. **Iterate**: Add features incrementally
+
+## Language-Specific Resources
+
+### TypeScript
+- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+- [TSDoc](https://tsdoc.org/)
+
+### Rust
+- [Syn](https://github.com/dtolnay/syn) - Rust parser
+- [Quote](https://github.com/dtolnay/quote) - Rust code generation
+
+### Go
+- [Go AST](https://pkg.go.dev/go/ast)
+- [Go Parser](https://pkg.go.dev/go/parser)
+
+### Python
+- [AST Module](https://docs.python.org/3/library/ast.html)
+- [Docstring parsing](https://www.python.org/dev/peps/pep-0257/)
+
+## Common Libraries
+
+### JSON Processing
+- [@apidevtools/json-schema-ref-parser](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser) - Resolve JSON Schema $ref
+
+### Validation
+- [ajv](https://www.npmjs.com/package/ajv) - JSON Schema validation
+
+## Next Steps
+
+Choose your path based on your needs:
+
+- **New to OpenDocs?** → Start with [DocItem Model](/opendocs/implementation/docitem-model)
+- **Building an extractor?** → Jump to [Extractors](/opendocs/implementation/extractors)
+- **Optimizing performance?** → See [Performance](/opendocs/implementation/performance)
+
+## Contributing
+
+Help improve this implementation guide by:
+
+1. Sharing your implementation experiences in [Discussions](https://github.com/svallory/mintlify-tsdocs/discussions)
+2. Contributing language-specific examples via [Pull Requests](https://github.com/svallory/mintlify-tsdocs/pulls)
+3. Reporting issues or suggesting improvements via [Issues](https://github.com/svallory/mintlify-tsdocs/issues)
+
+## See Also
+
+- [DocItem Model](/opendocs/opendocs-model) - Core documentation concepts
+- [Examples](/opendocs/examples/index) - Real-world implementations

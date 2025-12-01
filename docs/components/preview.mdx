@@ -46,7 +46,7 @@ Wrap any content with the Preview component:
 Add a custom title to provide context:
 
 <Preview title="Component Example">
-  <TypeTree
+  <TypeTree open
     name="config"
     type="object"
     description="Application configuration"
@@ -60,7 +60,7 @@ Add a custom title to provide context:
 
 ```jsx
 <Preview title="Component Example">
-  <TypeTree
+  <TypeTree open
     name="config"
     type="object"
     description="Application configuration"
@@ -109,7 +109,7 @@ Show interactive components:
 Display type structures with TypeTree:
 
 <Preview title="API Response Structure">
-  <TypeTree
+  <TypeTree open
     name="response"
     type="object"
     description="Standard API response format"
@@ -126,7 +126,7 @@ Display type structures with TypeTree:
 Document configuration objects:
 
 <Preview title="Database Configuration">
-  <TypeTree
+  <TypeTree open
     name="database"
     type="object"
     required={true}
@@ -174,12 +174,12 @@ import { MyComponent } from "/snippets/MyComponent.jsx"
     ```jsx
     // ✅ Clear and descriptive
     <Preview title="Required vs Optional Fields">
-      <TypeTree ... />
+      <TypeTree open ... />
     </Preview>
 
     // ❌ Too generic
     <Preview title="Example">
-      <TypeTree ... />
+      <TypeTree open ... />
     </Preview>
     ```
   </Accordion>
@@ -206,7 +206,7 @@ import { MyComponent } from "/snippets/MyComponent.jsx"
     ```jsx
     // ✅ Focused example
     <Preview title="Single Property">
-      <TypeTree name="id" type="string" required />
+      <TypeTree open name="id" type="string" required />
     </Preview>
 
     // ❌ Too much content

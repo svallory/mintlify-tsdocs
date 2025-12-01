@@ -1,0 +1,555 @@
+---
+title: Testing Your Implementation
+sidebarTitle: Testing
+description: Test strategies for OpenDocs implementations
+---
+
+<Warning>
+  **RFC Status**: This document is part of the OpenDocs RFC and subject to change based on community feedback.
+</Warning>
+
+# Testing Your Implementation
+
+Comprehensive testing ensures your OpenDocs implementation correctly extracts, organizes, and outputs documentation. This guide covers unit tests, integration tests, and testing strategies.
+
+## Unit Testing Strategies
+
+### Testing DocItem Extraction
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+import { TypeScriptExtractor } from './typescript-extractor';
+
+describe('TypeScriptExtractor', () => {
+  const extractor = new TypeScriptExtractor();
+
+  it('should extract basic class', () => {
+    const source = `
+      /**
+       * A simple user class
+       * @param name - The user's name
+       * @param age - The user's age
+       */
+      export class User {
+        constructor(public name: string, public age: number) {}
+      }
+    `;
+
+    const items = extractor.extractFromSource(source, 'test.ts');
+
+    expect(items).toHaveLength(1);
+    expect(items[0].name).toBe('User');
+    expect(items[0].kind).toBe('class');
+    expect(items[0].docBlock?.description).toContain('A simple user class');
+  });
+
+  it('should extract method documentation', () => {
+    const source = `
+      export class Calculator {
+        /**
+         * Adds two numbers
+         * @param a - First number
+         * @param b - Second number
+         * @returns The sum of a and b
+         */
+        add(a: number, b: number): number {
+          return a + b;
+        }
+      }
+    `;
+
+    const items = extractor.extractFromSource(source, 'test.ts');
+    const calculator = items[0];
+    const addMethod = calculator.items?.[0];
+
+    expect(addMethod?.name).toBe('add');
+    expect(addMethod?.docBlock?.tags?.param).toHaveLength(2);
+    expect(addMethod?.docBlock?.tags?.returns).toBeDefined();
+  });
+
+  it('should handle missing documentation', () => {
+    const source = `
+      export class UndocumentedClass {
+        undocumentedMethod() {}
+      }
+    `;
+
+    const items = extractor.extractFromSource(source, 'test.ts');
+
+    expect(items).toHaveLength(1);
+    expect(items[0].docBlock).toBeUndefined();
+    expect(items[0].items?.[0].docBlock).toBeUndefined();
+  });
+
+  it('should extract nested items', () => {
+    const source = `
+      export namespace MyNamespace {
+        export class NestedClass {
+          nestedMethod(): void {}
+        }
+      }
+    `;
+
+    const items = extractor.extractFromSource(source, 'test.ts');
+    const namespace = items[0];
+    const nestedClass = namespace.items?.[0];
+
+    expect(namespace.kind).toBe('namespace');
+    expect(nestedClass?.name).toBe('NestedClass');
+    expect(nestedClass?.container?.id).toContain('MyNamespace');
+  });
+
+  it('should extract type parameters', () => {
+    const source = `
+      export class Generic<T extends object> {
+        value: T;
+      }
+    `;
+
+    const items = extractor.extractFromSource(source, 'test.ts');
+    const genericClass = items[0];
+
+    expect(genericClass.metadata?.typeParameters).toHaveLength(1);
+    expect(genericClass.metadata?.typeParameters[0].name).toBe('T');
+    expect(genericClass.metadata?.typeParameters[0].constraint).toBe('object');
+  });
+});
+```
+
+### Testing DocBlock Extraction
+
+```typescript
+describe('DocBlockExtractor', () => {
+  it('should parse description', () => {
+    const comment = {
+      text: 'This is a description\nWith multiple lines',
+      tags: []
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.description).toBe('This is a description\nWith multiple lines');
+  });
+
+  it('should parse simple tags', () => {
+    const comment = {
+      text: 'Description\n@author John Doe\n@version 1.0.0',
+      tags: []
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.tags?.author).toEqual(['John Doe']);
+    expect(docBlock.tags?.version).toEqual(['1.0.0']);
+  });
+
+  it('should parse parameter tags', () => {
+    const comment = {
+      text: 'Description\n@param name - The name\n@param age - The age',
+      tags: []
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.tags?.param).toHaveLength(2);
+    expect(docBlock.tags?.param[0]).toMatchObject({
+      name: 'param',
+      content: 'The name',
+      parameters: { name: 'name' }
+    });
+  });
+
+  it('should extract deprecated info', () => {
+    const comment = {
+      text: 'Description\n@deprecated Use newMethod instead\n@deprecated-since 2.0.0',
+      tags: []
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.deprecated).toBeDefined();
+    expect(docBlock.deprecated?.message).toBe('Use newMethod instead');
+    expect(docBlock.deprecated?.since).toBe('2.0.0');
+  });
+});
+```
+
+### Testing Documentation Sets
+
+```typescript
+describe('WorkspaceBuilder', () => {
+  it('should create workspace structure', () => {
+    const workspace = new WorkspaceBuilder('test-ws', 'Test Workspace');
+
+    workspace.addProject({
+      id: 'project1',
+      name: 'Project 1',
+      language: 'typescript',
+      items: { format: 'json', file: 'items.json', count: 10 }
+    });
+
+    expect(workspace.getWorkspace().navigation.projects).toHaveLength(1);
+    expect(workspace.getWorkspace().navigation.projects[0].id).toBe('project1');
+  });
+
+  it('should generate correct file paths', () => {
+    const workspace = new WorkspaceBuilder('test-ws', 'Test Workspace');
+
+    workspace.addProject({
+      id: 'my-project',
+      name: 'My Project',
+      language: 'typescript',
+      items: { format: 'json', file: 'items.json', count: 25 }
+    });
+
+    const project = workspace.getWorkspace().navigation.projects[0];
+    expect(project._ref).toBe('projects/my-project.json');
+  });
+});
+```
+
+## Integration Tests
+
+### Testing Complete Workflow
+
+```typescript
+describe('OpenDocs Integration', () => {
+  it('should handle workspace with multiple projects', async () => {
+    const workspace = new WorkspaceBuilder('test-workspace', 'Test Workspace');
+
+    workspace.addProject({
+      id: 'project1',
+      name: 'Project 1',
+      language: 'typescript',
+      items: { format: 'json', file: 'project1-items.json', count: 10 }
+    });
+
+    workspace.addProject({
+      id: 'project2',
+      name: 'Project 2',
+      language: 'rust',
+      items: { format: 'json', file: 'project2-items.json', count: 25 }
+    });
+
+    await workspace.build('./test-output');
+
+    // Verify files were created
+    expect(fs.existsSync('./test-output/workspace.json')).toBe(true);
+    expect(fs.existsSync('./test-output/projects/project1.json')).toBe(true);
+    expect(fs.existsSync('./test-output/projects/project2.json')).toBe(true);
+  });
+
+  it('should extract and write complete project', async () => {
+    const extractor = new TypeScriptExtractor();
+    const workspace = new WorkspaceBuilder('test-ws', 'Test');
+
+    // Extract from source
+    const items = extractor.extractFromFile('./src/index.ts');
+
+    // Create project
+    workspace.addProject({
+      id: 'test-project',
+      name: 'Test Project',
+      language: 'typescript',
+      items: { format: 'json', file: 'items.json', count: items.length }
+    });
+
+    // Build workspace
+    await workspace.build('./test-output');
+
+    // Verify structure
+    const workspaceData = JSON.parse(
+      await fs.readFile('./test-output/workspace.json', 'utf-8')
+    );
+
+    expect(workspaceData.workspace.navigation.projects).toHaveLength(1);
+  });
+});
+```
+
+### Testing Cross-Project References
+
+```typescript
+describe('ReferenceManager', () => {
+  it('should track cross-project references', () => {
+    const refManager = new ReferenceManager();
+
+    refManager.addReference({
+      sourceProject: 'ui-lib',
+      sourceItem: 'Button',
+      targetProject: 'core-lib',
+      targetItem: 'Component',
+      relationship: 'extends'
+    });
+
+    const refs = refManager.getReferences('ui-lib', 'Button');
+
+    expect(refs).toHaveLength(1);
+    expect(refs[0].targetProject).toBe('core-lib');
+  });
+
+  it('should write references to file', async () => {
+    const refManager = new ReferenceManager();
+
+    refManager.addReference({
+      sourceProject: 'proj1',
+      sourceItem: 'Class1',
+      targetProject: 'proj2',
+      targetItem: 'Class2',
+      relationship: 'implements'
+    });
+
+    await refManager.writeReferences('./test-output');
+
+    expect(fs.existsSync('./test-output/references.json')).toBe(true);
+
+    const data = JSON.parse(
+      await fs.readFile('./test-output/references.json', 'utf-8')
+    );
+
+    expect(data.references).toHaveLength(1);
+  });
+});
+```
+
+## Testing File Formats
+
+### JSON Format Tests
+
+```typescript
+describe('JsonFormatWriter', () => {
+  const writer = new JsonFormatWriter();
+
+  it('should write items as JSON', async () => {
+    const items: DocItem[] = [
+      {
+        id: 'item1',
+        name: 'Item1',
+        kind: 'class',
+        language: 'typescript'
+      },
+      {
+        id: 'item2',
+        name: 'Item2',
+        kind: 'function',
+        language: 'typescript'
+      }
+    ];
+
+    await writer.writeDocItems('./test-output/items.json', items);
+
+    const data = JSON.parse(
+      await fs.readFile('./test-output/items.json', 'utf-8')
+    );
+
+    expect(data.items).toHaveLength(2);
+    expect(data.metadata.count).toBe(2);
+  });
+});
+```
+
+### JSON $ref Tests
+
+```typescript
+describe('JsonRefFormatWriter', () => {
+  const writer = new JsonRefFormatWriter();
+
+  it('should write items with JSON $ref', async () => {
+    const items: DocItem[] = [
+      {
+        id: 'item1',
+        name: 'Item1',
+        kind: 'class',
+        language: 'typescript'
+      },
+      {
+        id: 'item2',
+        name: 'Item2',
+        kind: 'function',
+        language: 'typescript'
+      }
+    ];
+
+    await writer.writeDocItems('./test-output/items.json',
+      (async function*() { for (const item of items) yield item; })()
+    );
+
+    // Main document should contain references
+    const mainContent = await fs.readFile('./test-output/items.json', 'utf-8');
+    const mainDoc = JSON.parse(mainContent);
+
+    expect(mainDoc.items).toHaveLength(2);
+    expect(mainDoc.items[0].$ref).toBe('./items/item-0.json');
+    expect(mainDoc.items[1].$ref).toBe('./items/item-1.json');
+
+    // Individual items should be in separate files
+    const item1Content = await fs.readFile('./test-output/items/item-0.json', 'utf-8');
+    const item1 = JSON.parse(item1Content);
+    expect(item1.id).toBe('item1');
+  });
+
+  it('should read items with JSON $ref', async () => {
+    // First write
+    const items: DocItem[] = [
+      { id: 'item1', name: 'Item1', kind: 'class', language: 'typescript' }
+    ];
+
+    await writer.writeDocItems('./test-output/items.json',
+      (async function*() { for (const item of items) yield item; })()
+    );
+
+    // Then read
+    const readItems: DocItem[] = [];
+    for await (const item of writer.readDocItems('./test-output/items.json')) {
+      readItems.push(item);
+    }
+
+    expect(readItems).toHaveLength(1);
+    expect(readItems[0].id).toBe('item1');
+  });
+});
+```
+
+## Test Fixtures
+
+### Creating Reusable Test Data
+
+```typescript
+// test/fixtures/typescript-samples.ts
+export const sampleClass = `
+  /**
+   * A sample class for testing
+   * @example
+   * const user = new User('John', 30);
+   */
+  export class User {
+    constructor(
+      public name: string,
+      public age: number
+    ) {}
+  }
+`;
+
+export const sampleInterface = `
+  /**
+   * Configuration interface
+   */
+  export interface Config {
+    /** API endpoint URL */
+    apiUrl: string;
+
+    /** Request timeout in milliseconds */
+    timeout: number;
+  }
+`;
+
+export const sampleFunction = `
+  /**
+   * Calculates the sum of two numbers
+   * @param a - First number
+   * @param b - Second number
+   * @returns The sum
+   */
+  export function add(a: number, b: number): number {
+    return a + b;
+  }
+`;
+```
+
+### Using Fixtures in Tests
+
+```typescript
+import { sampleClass, sampleInterface, sampleFunction } from './fixtures/typescript-samples';
+
+describe('TypeScript Extraction', () => {
+  it('should extract class from fixture', () => {
+    const items = extractor.extractFromSource(sampleClass, 'test.ts');
+
+    expect(items[0].kind).toBe('class');
+    expect(items[0].name).toBe('User');
+  });
+
+  it('should extract interface from fixture', () => {
+    const items = extractor.extractFromSource(sampleInterface, 'test.ts');
+
+    expect(items[0].kind).toBe('interface');
+    expect(items[0].name).toBe('Config');
+  });
+});
+```
+
+## Best Practices
+
+### 1. Test Edge Cases
+
+```typescript
+it('should handle empty source files', () => {
+  const items = extractor.extractFromSource('', 'empty.ts');
+  expect(items).toHaveLength(0);
+});
+
+it('should handle syntax errors gracefully', () => {
+  const badSource = 'export class Broken {';
+  expect(() => extractor.extractFromSource(badSource, 'broken.ts'))
+    .toThrow('Syntax error');
+});
+
+it('should handle very long descriptions', () => {
+  const longDesc = 'A'.repeat(10000);
+  const source = `/** ${longDesc} */ export class Test {}`;
+
+  const items = extractor.extractFromSource(source, 'test.ts');
+  expect(items[0].docBlock?.description).toHaveLength(10000);
+});
+```
+
+### 2. Validate Output
+
+```typescript
+function validateDocItem(item: DocItem): void {
+  expect(item.id).toBeDefined();
+  expect(item.name).toBeDefined();
+  expect(item.kind).toBeDefined();
+  expect(item.language).toBeDefined();
+}
+
+it('should produce valid DocItems', () => {
+  const items = extractor.extractFromSource(sampleClass, 'test.ts');
+  items.forEach(validateDocItem);
+});
+```
+
+### 3. Test Performance
+
+```typescript
+it('should extract 1000 classes in under 1 second', async () => {
+  const source = Array(1000).fill(sampleClass).join('\n');
+
+  const start = Date.now();
+  const items = extractor.extractFromSource(source, 'test.ts');
+  const duration = Date.now() - start;
+
+  expect(duration).toBeLessThan(1000);
+  expect(items).toHaveLength(1000);
+});
+```
+
+### 4. Use Snapshots
+
+```typescript
+it('should match snapshot', () => {
+  const items = extractor.extractFromSource(sampleClass, 'test.ts');
+  expect(items).toMatchSnapshot();
+});
+```
+
+## See Also
+
+- [Language Extractors](/opendocs/implementation/extractors) - Build language extractors
+- [Documentation Set Builder](/opendocs/implementation/docset-builder) - Organize documentation
+- [Performance Optimization](/opendocs/implementation/performance) - Optimize for large codebases
+- [Implementation Overview](/opendocs/implementation/overview) - Getting started
+
+---
+
+*This guide is part of the OpenDocs Specification RFC. Help us improve it by sharing your testing strategies.*

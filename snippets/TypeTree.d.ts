@@ -64,7 +64,7 @@ export interface TypeTreeProperty {
  *
  * @example
  * ```tsx
- * <TypeTree
+ * <TypeTree open
  *   name="config"
  *   type="object"
  *   description="Configuration settings"
@@ -97,9 +97,9 @@ export interface TypeTreeProps extends TypeTreeProperty {
  *
  * @example
  * ```tsx
- * <TypeTreeGroup title="Parameters">
- *   <TypeTree name="id" type="string" required />
- *   <TypeTree name="name" type="string" />
+ * <TypeTreeGroup open title="Parameters">
+ *   <TypeTree open name="id" type="string" required />
+ *   <TypeTree open name="name" type="string" />
  * </TypeTreeGroup>
  * ```
  */
@@ -113,11 +113,11 @@ export interface TypeTreeGroupProps {
 /**
  * TypeTree - Recursive expandable type documentation component
  */
-export const TypeTree: React.FC<TypeTreeProps>;
+export const TypeTree: React.FC<TypeTree openProps>;
 
 /**
  * TypeTreeGroup - Simple wrapper for grouping multiple TypeTree components
  */
-export const TypeTreeGroup: React.FC<TypeTreeGroupProps>;
+export const TypeTreeGroup: React.FC<TypeTreeGroup openProps>;
 
 export default TypeTree;

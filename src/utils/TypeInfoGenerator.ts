@@ -81,7 +81,7 @@ export class TypeInfoGenerator {
       ' * ```jsx',
       ' * import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"',
       ' * ',
-      ' * <TypeTree {...TypeInfo.MyPackage.MyInterface} />',
+      ' * <TypeTree open {...TypeInfo.MyPackage.MyInterface} />',
       ' * ',
       ' * // Or access nested properties:',
       ' * const apiModelProp = TypeInfo.MintTsdocs.IMarkdownDocumenterOptions.properties.find(',

@@ -1,0 +1,227 @@
+---
+title: OpenDocs Specification
+sidebarTitle: Overview
+description: A universal documentation interchange format for multi-language code documentation
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+<Note>
+  **RFC Status**: This specification is currently a Request for Comments (RFC).
+
+  Please provide feedback via [GitHub Issues](https://github.com/svallory/mintlify-tsdocs/issues)
+  or start a discussion in our [Discussions](https://github.com/svallory/mintlify-tsdocs/discussions).
+</Note>
+
+## Overview
+
+OpenDocs is a universal documentation interchange format designed to standardize how documentation is extracted, stored, and processed across different programming languages and documentation tools. It provides a language-agnostic way to represent API documentation that can be consumed by various documentation generators and platforms.
+
+### Specification Status
+
+| Version | Status | Date | Description |
+|---------|--------|------|-------------|
+| 0.1.0 | RFC Draft | Current | Initial specification based on DocItem model |
+
+## Key Principles
+
+- **Language Agnostic**: Works with any programming language
+- **Template Friendly**: Designed for consumption by template engines
+- **Scalable**: Handles projects from small libraries to massive monorepos
+- **Extensible**: Supports language-specific metadata without breaking compatibility
+- **Standard Based**: Uses established standards like JSON Schema and JSON $ref
+
+<Note>
+  **Format Flexibility**: The `format: "json"` property in OpenDocs files indicates the current format.
+  This design allows for future support of additional formats, with JSONL (line-delimited JSON) being
+  considered as the next format to support for streaming large documentation sets. The format property
+  ensures forward compatibility as the specification evolves.
+</Note>
+
+## Core Concepts
+
+<CardGroup cols={2}>
+  <Card title="Documentation Set" icon="library-big" href="/opendocs/opendocs-file-organization">
+    A collection of OpenDocs JSON files representing your complete documentation
+  </Card>
+  <Card title="OpenDocs File" icon="file-json" href="/opendocs/opendocs-file-organization">
+    The main opendocs.json file containing project organization and metadata
+  </Card>
+  <Card title="Project" icon="box" href="/opendocs/opendocs-file-organization">
+    Individual documentable unit (crate, module, package, library)
+  </Card>
+  <Card title="DocItem" icon="shapes" href="/opendocs/opendocs-model">
+    The fundamental unit of documentation - everything is a DocItem
+  </Card>
+  <Card title="DocBlock" icon="square-pilcrow" href="/opendocs/opendocs-model">
+    Structured documentation content with description, tags, and metadata
+  </Card>
+  <Card title="Tags" icon="tag" href="/opendocs/opendocs-model">
+    Documentation annotations (@param, @returns, @example, etc.)
+  </Card>
+</CardGroup>
+
+### OpenDocs File Structure
+
+<FileTree
+  title="Documentation Set"
+  structure={[
+    {
+      name: "opendocs.json",
+      description: "Entry point with DocumentationSet metadata",
+      badge: { text: "Required", color: "blue" }
+    },
+    {
+      name: "projects/",
+      children: [
+        {
+          name: "auth-service.json",
+          description: "Complete Project with items",
+          badge: { text: "JSON", color: "green" }
+        },
+        {
+          name: "web-sdk.json",
+          description: "Complete Project with items",
+          badge: { text: "JSON", color: "green" }
+        },
+        {
+          name: "shared-types.json",
+          description: "Complete Project with items",
+          badge: { text: "JSON", color: "green" }
+        }
+      ]
+    }
+  ]}
+/>
+
+### Key Relationships
+
+<div className="not-prose mb-8">
+  {/* <div className="dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6"> */}
+    
+    <div className="grid gap-3 text-sm">
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">Documentation Set</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> is a collection of OpenDocs JSON files</span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">opendocs.json</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> is the main file containing project organization</span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">Project</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> contains multiple </span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocItems</span>
+          <span className="text-slate-600 dark:text-slate-400"> (classes, functions, types, etc.)</span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocItem</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> contains exactly one </span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocBlock</span>
+          <span className="text-slate-600 dark:text-slate-400"> (its documentation)</span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocItem</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> and can contain other </span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocItems</span>
+          <span className="text-slate-600 dark:text-slate-400"> (hierarchical structure)</span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">DocBlock</span>
+          &nbsp;
+          <span className="text-slate-600 dark:text-slate-400"> contains multiple </span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">Tags</span>
+          <span className="text-slate-600 dark:text-slate-400"> (@param, @returns, @example, etc.)</span>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+## Why OpenDocs?
+
+Traditional documentation tools are often tightly coupled to specific programming languages or frameworks. OpenDocs provides a common interchange format that allows:
+
+- **Tool Interoperability**: Extract documentation with one tool, render with another
+- **Multi-Language Support**: Document polyglot projects consistently
+- **Performance**: Efficient processing of large codebases through streaming formats
+- **Flexibility**: Language-specific extractors with universal consumers
+
+## Example OpenDocs File
+
+Here's a simple example of an `opendocs.json` file for a single-project Documentation Set:
+
+<div className="not-prose">
+  <JsonTree
+    data={{
+      "id": "my-library",
+      "name": "My Library",
+      "version": "1.0.0",
+      "projects": [
+        {
+          "id": "main",
+          "name": "Main Library",
+          "language": "typescript",
+          "version": "1.0.0",
+          "items": [
+            {
+              "id": "main#Calculator",
+              "name": "Calculator",
+              "kind": "class",
+              "language": "typescript",
+              "docBlock": {
+                "description": "A simple calculator class"
+              }
+            }
+          ]
+        }
+      ]
+    }}
+    title="Simple opendocs.json Example"
+  />
+</div>
+
+## Getting Started
+
+1. Read the [Design Principles](/opendocs/design-principles) to understand the philosophy behind OpenDocs
+2. Review the [OpenDocs Model](/opendocs/opendocs-model) to understand Projects, DocItems, and DocBlocks
+3. Learn about [File Organization](/opendocs/opendocs-file-organization) for structuring your Documentation Set
+
+## Contributing
+
+We welcome feedback and contributions:
+
+- **Issues**: [Report problems or suggest improvements](https://github.com/svallory/mintlify-tsdocs/issues)
+- **Discussions**: [Join the conversation](https://github.com/svallory/mintlify-tsdocs/discussions)
+- **Pull Requests**: [Contribute to the specification](https://github.com/svallory/mintlify-tsdocs/pulls)
+
+## License
+
+The OpenDocs Specification is licensed under the MIT License, making it free to implement and use in any project.

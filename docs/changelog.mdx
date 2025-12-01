@@ -6,34 +6,140 @@ icon: history
 
 # Changelog
 
-<Update label="2025-11-21" description="Version 0.0.4">
+<Update label="2025-11-22" description="Version 0.0.4">
 
-### Fixed: Enum Documentation
+### Critical Fix: Module System
 
-Enums now correctly display all members instead of only the last one.
+**Fixed CLI not loading** - Converted from ES modules to CommonJS to resolve "Cannot find module" errors. The project was configured for ES modules but TypeScript wasn't adding .js extensions to imports, causing Node.js to fail at runtime.
 
-**Before:** Only the last enum member appeared (e.g., `ErrorCode` with 30 members showed only `VALIDATION_ERROR`)
+### New Features
 
-**After:** All enum members now render in a single file with their values and descriptions
+#### Type-Safe Link Components
+
+- **RefLink & PageLink** - Components with dual validation (compile-time + runtime)
+  - **IDE autocomplete**: Auto-generates `ValidRefs.d.ts` and `ValidPages.d.ts` with TypeScript union types
+  - **Compile-time safety**: Type-safe target selection with IntelliSense
+  - **Runtime validation**: Highlights broken links with `broken-link` CSS class
+  - **Visual feedback**: Invalid links display with title tooltip for easy debugging
+  - **SSR-safe**: Validation only runs client-side
 
 <Frame>
-  <img src="/img/changelog/enum-fix-after.png" alt="Enum documentation fix comparison" />
+  <img src="/img/features/components.jpg" alt="RefLink and PageLink components with autocomplete" />
 </Frame>
+
+#### TypeInfo Generation System
+
+- **Auto-generates `TypeInfo.jsx`** containing structured type information for all API items
+  - Provides TypeTree-compatible data with IDE autocomplete support
+  - Includes TypeScript declaration file (`TypeInfo.d.ts`) for VSCode IntelliSense
+  - Enables documentation authors to reference type information programmatically in MDX files
+  - Supports nested property analysis for complex object types
+
+#### New Components
+
+- **Preview Component** - Showcase documentation examples with style
+  - Bordered container with customizable title header
+  - Dark mode support with Tailwind CSS theming
+  - Code block aesthetic styling
+  - Perfect for wrapping TypeTree and other component demonstrations
+
+- **Feature Component** - Highlight features in documentation
+  - Icon support with customizable styling
+  - Card grid layouts
+  - Flexible content organization
+
+#### New CLI Commands
+
+- **`coverage` command** - Calculate TSDoc coverage with filtering, grouping, and threshold support
+  - Reports by file, module, or API kind
+  - Set minimum coverage requirements
+  - Track documentation completeness
+
+<Frame>
+  <img src="/img/features/coverage.jpg" alt="Coverage command showing documentation coverage by file" />
+</Frame>
+
+- **`lint` command** - Check documentation quality and find issues
+  - Validates TSDoc comments
+  - Finds broken references
+  - Checks for missing documentation
+
+<Frame>
+  <img src="/img/features/lint.jpg" alt="Lint command showing documentation issues" />
+</Frame>
+
+### Major Improvements
+
+#### Enhanced CLI Experience
+
+- **Verbose Mode** - Added `--verbose/-v` flag to control detailed output
+  - Component installation shows summary by default
+  - Detailed per-file logs only in verbose mode
+  - Cleaner output for most use cases
+
+- **Improved Linting** - Inverted `--no-lint` to `--lint` flag
+  - Warnings disabled by default (errors always shown)
+  - Opt-in to see API Extractor warnings
+  - Less noisy output during generation
+
+- **Better Warning Display**
+  - File location (file:line:column) added to all warnings
+  - Warnings grouped by source file
+  - Color-coded syntax highlighting (Nord theme)
+  - Line numbers, identifiers, and TSDoc tags highlighted
+  - Auto-wraps to terminal width
+
+- **New `config` Command** - Replaces deprecated `show config`
+  - `show stats` → use `coverage` instead
+  - `show config` → use `config` instead
+  - Deprecated commands still work with warnings
+
+#### Code Quality
+
+- **Reusable Issue Display** - Created `IssueDisplayUtils` for consistent formatting
+- **Enhanced Lint Command** - Collects warnings from all sources:
+  - API Extractor (TSDoc syntax, invalid tags, reference errors)
+  - API Model analysis (missing docs, params, returns)
+  - ESLint with tsdoc-plugin (when installed)
+
+- **Improved Snippets** - Better type checking and generation
+
+- **Refactored Services** - Extracted common command subtasks for better maintainability
+
+#### Documentation & Validation
+
+- **Node Validation** - Added validation to prevent invalid node creation:
+  - DocTable: Rejects empty header arrays
+  - DocExpandable: Rejects empty titles
+  - Better error messages
+
+- **Fixed TSDoc Registration** - Corrected package name (`mint-tsdocs` instead of `@micrososft/mint-tsdocs`)
+
+- **Comprehensive JSDoc** - Added detailed documentation to:
+  - All markdown emitter methods
+  - Custom node classes
+  - Validation requirements
+
+### Internal Changes
+
+- Switched from picocolors to chalk for true color (24-bit RGB) support
+- Simplified filename sanitization logic (~2x faster)
+- Removed excessive debug logging
+- Better code organization with extracted helper methods
 
 </Update>
 
 <Update label="2025-11-20" description="Version 0.0.3">
 
-### Added: TypeInfo Component Generation
+### Initial Release
 
-- Auto-generates `TypeInfo.jsx` with type information
-- Includes TypeScript definitions for IDE autocomplete
-- Integrated into documentation pipeline
-
-### Improved: Template System
-
-- Better type handling in template data converter
-- Enhanced error messages in Liquid engine
-- Custom template override support
+- Core documentation generation from TypeScript API Extractor models
+- Mintlify-compatible MDX output with frontmatter
+- LiquidJS-based template system with customization support
+- Navigation integration with `docs.json`
+- Custom TSDoc nodes for tables, headings, note boxes, and expandables
+- Caching system for type analysis and API resolution
+- CLI with `init`, `generate`, and `customize` commands
+- TypeTree component for rendering type hierarchies
 
 </Update>

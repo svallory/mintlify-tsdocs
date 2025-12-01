@@ -61,6 +61,8 @@
             "pages": [
               "components/type-info",
               "components/type-tree",
+              "components/file-tree",
+              "components/jsontree",
               "components/preview",
               "components/feature",
               {
@@ -107,8 +109,42 @@
             ]
           },
           {
+            "group": "OpenDocs Specification",
+            "icon": "file-code",
+            "pages": [
+              "opendocs/index",
+              "opendocs/design-principles",
+              "opendocs/opendocs-model",
+              "opendocs/opendocs-file-organization",
+              {
+                "group": "Implementation Guide",
+                "hidden": true,
+                "icon": "code",
+                "pages": [
+                  "opendocs/implementation/overview",
+                  "opendocs/implementation/docitem-model",
+                  "opendocs/implementation/extractors",
+                  "opendocs/implementation/docset-builder",
+                  "opendocs/implementation/testing",
+                  "opendocs/implementation/performance"
+                ]
+              },
+              {
+                "group": "Examples",
+                "icon": "lightbulb",
+                "pages": [
+                  "opendocs/examples/index",
+                  "opendocs/examples/simple-projects",
+                  "opendocs/examples/monorepo",
+                  "opendocs/examples/microservices",
+                  "opendocs/examples/integration"
+                ]
+              }
+            ]
+          },
+          {
             "group": "Architecture",
-            "icon": "sitemap",
+            "icon": "landmark",
             "pages": [
               "architecture/overview",
               "architecture/cli-layer",

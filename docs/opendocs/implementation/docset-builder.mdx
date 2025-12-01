@@ -1,0 +1,574 @@
+---
+title: Documentation Set Builder
+sidebarTitle: DocSet Builder
+description: Create and organize OpenDocs documentation sets
+---
+
+<Warning>
+  **RFC Status**: This document is part of the OpenDocs RFC and subject to change based on community feedback.
+</Warning>
+
+# Documentation Set Builder
+
+The DocumentationSet builder helps you organize extracted DocItems into structured, navigable documentation sets. This guide covers workspace organization, file formats, and cross-project references.
+
+import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx"
+
+## Workspace Organization
+
+### WorkspaceBuilder Class
+
+export const workspaceBuilderType = {
+  name: "WorkspaceBuilder",
+  type: "class",
+  description: "Builder class for creating OpenDocs workspace structure",
+  properties: [
+    {
+      name: "projects",
+      type: "Map<string, Project>",
+      description: "Map of project ID to Project objects"
+    },
+    {
+      name: "workspace",
+      type: "Workspace",
+      description: "Main workspace configuration"
+    },
+    {
+      name: "constructor",
+      type: "function",
+      description: "Initialize with workspace ID and name"
+    },
+    {
+      name: "addProject",
+      type: "function",
+      description: "Add a project to the workspace",
+      parameters: [
+        {
+          name: "project",
+          type: "Project",
+          description: "Project to add"
+        }
+      ]
+    },
+    {
+      name: "build",
+      type: "function",
+      description: "Generate workspace files",
+      parameters: [
+        {
+          name: "outputDir",
+          type: "string",
+          description: "Output directory path"
+        }
+      ]
+    }
+  ]
+};
+
+<TypeTree open {...workspaceBuilderType} />
+
+### Basic Implementation
+
+```typescript
+class WorkspaceBuilder {
+  private projects: Map<string, Project> = new Map();
+  private workspace: Workspace;
+
+  constructor(workspaceId: string, workspaceName: string) {
+    this.workspace = {
+      id: workspaceId,
+      name: workspaceName,
+      navigation: {
+        root: { id: 'root', name: workspaceName },
+        projects: []
+      },
+      organization: {
+        format: 'chunked',
+        maxFileSize: '10MB'
+      }
+    };
+  }
+
+  addProject(project: Project): void {
+    this.projects.set(project.id, project);
+    this.workspace.navigation.projects.push({
+      id: project.id,
+      name: project.name,
+      _ref: `projects/${project.id}.json`
+    });
+  }
+
+  async build(outputDir: string): Promise<void> {
+    // Ensure output directory exists
+    await fs.mkdir(path.join(outputDir, 'projects'), { recursive: true });
+
+    // Write workspace file
+    await fs.writeFile(
+      path.join(outputDir, 'workspace.json'),
+      JSON.stringify({ workspace: this.workspace }, null, 2)
+    );
+
+    // Write project files
+    for (const [projectId, project] of this.projects) {
+      const projectPath = path.join(outputDir, 'projects', `${projectId}.json`);
+      await fs.writeFile(projectPath, JSON.stringify({ project }, null, 2));
+
+      // Write project items
+      if (project.items) {
+        await this.writeProjectItems(outputDir, project);
+      }
+    }
+  }
+
+  private async writeProjectItems(outputDir: string, project: Project): Promise<void> {
+    switch (project.items.format) {
+      case 'json':
+        await this.writeJsonItems(outputDir, project);
+        break;
+      case 'json-ref':
+        await this.writeJsonRefItems(outputDir, project);
+        break;
+    }
+  }
+
+  private async writeJsonItems(outputDir: string, project: Project): Promise<void> {
+    const itemsPath = path.join(outputDir, 'projects', `${project.id}-items.json`);
+    // Implementation for JSON format
+  }
+
+  private async writeJsonRefItems(outputDir: string, project: Project): Promise<void> {
+    const itemsDir = path.join(outputDir, 'projects', `${project.id}-items`);
+    await fs.mkdir(itemsDir, { recursive: true });
+
+    const references: any[] = [];
+    let counter = 0;
+
+    // Write individual items to external files with JSON $ref
+    for await (const item of this.generateDocItems(project)) {
+      const itemPath = path.join(itemsDir, `item-${counter}.json`);
+      await fs.writeFile(itemPath, JSON.stringify(item, null, 2));
+
+      references.push({
+        $ref: `./${project.id}-items/item-${counter}.json`
+      });
+      counter++;
+    }
+
+    // Write main file with references
+    const mainDocPath = path.join(outputDir, 'projects', `${project.id}-items.json`);
+    const mainDoc = {
+      items: references,
+      total: counter
+    };
+    await fs.writeFile(mainDocPath, JSON.stringify(mainDoc, null, 2));
+  }
+
+  private async* generateDocItems(project: Project): AsyncGenerator<DocItem> {
+    // Implementation to generate DocItems for the project
+  }
+}
+
+<Note>
+  **Format Property**: The `format` property in project configurations (e.g., `format: "json"` or `format: "json-ref"`)
+  is designed for extensibility. While JSON and JSON $ref are currently supported, this design allows for future
+  addition of other formats. JSONL (line-delimited JSON) is being considered as a future format option for
+  streaming large documentation sets, providing the same performance benefits as JSON $ref but with a
+  different file structure approach.
+</Note>
+```
+
+## File Organization Strategies
+
+### Monolithic Format
+
+Best for small projects (< 5MB):
+
+```typescript
+// workspace.json
+{
+  "workspace": {
+    "id": "my-workspace",
+    "name": "My Workspace",
+    "navigation": {
+      "root": { "id": "root", "name": "My Workspace" },
+      "projects": [
+        {
+          "id": "project1",
+          "name": "Project 1",
+          "items": [
+            // All DocItems inline
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+### Chunked Format
+
+Best for medium projects (5-50MB):
+
+```
+workspace/
+├── workspace.json           # Main workspace file
+└── projects/
+    ├── project1.json        # Project metadata
+    ├── project1-items.json  # All DocItems for project1
+    ├── project2.json
+    └── project2-items.json
+```
+
+### JSON $ref Format
+
+Best for large projects (> 50MB) using JSON $ref to external files:
+
+```
+workspace/
+├── workspace.json
+└── projects/
+    ├── project1.json
+    ├── project1-items.json          # Main file with $ref array
+    ├── project1-items/
+    │   ├── item-0.json              # Individual items
+    │   ├── item-1.json
+    │   └── ...
+    ├── project2.json
+    ├── project2-items.json
+    └── project2-items/
+        ├── item-0.json
+        └── ...
+```
+
+## Writing JSON and JSON $ref Formats
+
+### JSON Format Writer
+
+```typescript
+class JsonFormatWriter {
+  async writeDocItems(filePath: string, items: DocItem[]): Promise<void> {
+    const data = {
+      items,
+      metadata: {
+        count: items.length,
+        generatedAt: new Date().toISOString(),
+        version: '1.0.0'
+      }
+    };
+
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+  }
+}
+```
+
+### JSON $ref Format Writer
+
+```typescript
+class JsonRefFormatWriter {
+  async writeDocItems(outputDir: string, items: AsyncIterable<DocItem>): Promise<void> {
+    await fs.mkdir(outputDir, { recursive: true });
+
+    const references: any[] = [];
+    let counter = 0;
+
+    // Write individual items to external files
+    for await (const item of items) {
+      const itemPath = path.join(outputDir, `item-${counter}.json`);
+      await fs.writeFile(itemPath, JSON.stringify(item, null, 2));
+
+      references.push({
+        $ref: `./item-${counter}.json`
+      });
+      counter++;
+    }
+
+    // Write main file with references
+    const mainDoc = {
+      items: references,
+      total: counter
+    };
+    await fs.writeFile(
+      path.join(outputDir, 'items.json'),
+      JSON.stringify(mainDoc, null, 2)
+    );
+  }
+
+  async* readDocItems(outputDir: string): AsyncGenerator<DocItem> {
+    // Read main document with references
+    const mainContent = await fs.readFile(path.join(outputDir, 'items.json'), 'utf-8');
+    const mainDoc = JSON.parse(mainContent);
+
+    // Load each referenced item
+    for (const ref of mainDoc.items) {
+      const itemPath = path.join(outputDir, ref.$ref.replace('./', ''));
+      const itemContent = await fs.readFile(itemPath, 'utf-8');
+      yield JSON.parse(itemContent) as DocItem;
+    }
+  }
+}
+```
+
+## File Format Optimization
+
+### Automatic Format Selection
+
+```typescript
+class FormatOptimizer {
+  static chooseFormat(docItemCount: number, estimatedSize: number): FileFormat {
+    if (estimatedSize < 5 * 1024 * 1024) { // < 5MB
+      return 'monolithic';
+    } else if (estimatedSize < 50 * 1024 * 1024) { // < 50MB
+      return 'chunked';
+    } else {
+      return 'streaming';
+    }
+  }
+
+  static estimateDocItemSize(item: DocItem): number {
+    // Rough estimation based on typical DocItem structure
+    const baseSize = 200; // Base overhead
+    const nameSize = item.name.length * 2;
+    const idSize = item.id.length * 2;
+    const metadataSize = item.metadata ? JSON.stringify(item.metadata).length : 0;
+    const docBlockSize = item.docBlock ? this.estimateDocBlockSize(item.docBlock) : 0;
+    const childrenSize = item.items ? item.items.reduce((sum, child) => sum + this.estimateDocItemSize(child), 0) : 0;
+
+    return baseSize + nameSize + idSize + metadataSize + docBlockSize + childrenSize;
+  }
+
+  private static estimateDocBlockSize(docBlock: DocBlock): number {
+    let size = 100; // Base size
+    if (docBlock.description) size += docBlock.description.length * 2;
+    if (docBlock.tags) size += JSON.stringify(docBlock.tags).length;
+    if (docBlock.deprecated) size += 50;
+    return size;
+  }
+}
+```
+
+### Usage Example
+
+```typescript
+const builder = new WorkspaceBuilder('my-workspace', 'My Workspace');
+
+// Estimate size
+const totalSize = items.reduce((sum, item) =>
+  sum + FormatOptimizer.estimateDocItemSize(item), 0
+);
+
+// Choose format
+const format = FormatOptimizer.chooseFormat(items.length, totalSize);
+
+// Add project with chosen format
+builder.addProject({
+  id: 'my-project',
+  name: 'My Project',
+  language: 'typescript',
+  items: {
+    format,
+    file: format === 'json-ref' ? 'my-project-items' : 'my-project-items.json',
+    count: items.length
+  }
+});
+```
+
+## Cross-References Between Projects
+
+### Reference Types
+
+```typescript
+interface CrossProjectReference {
+  sourceProject: string;
+  sourceItem: string;
+  targetProject: string;
+  targetItem: string;
+  relationship: 'extends' | 'implements' | 'uses' | 'references';
+}
+```
+
+### Reference Manager
+
+```typescript
+class ReferenceManager {
+  private references: Map<string, CrossProjectReference[]> = new Map();
+
+  addReference(ref: CrossProjectReference): void {
+    const key = `${ref.sourceProject}::${ref.sourceItem}`;
+    const refs = this.references.get(key) || [];
+    refs.push(ref);
+    this.references.set(key, refs);
+  }
+
+  getReferences(projectId: string, itemId: string): CrossProjectReference[] {
+    const key = `${projectId}::${itemId}`;
+    return this.references.get(key) || [];
+  }
+
+  async writeReferences(outputDir: string): Promise<void> {
+    const data = {
+      references: Array.from(this.references.entries()).map(([key, refs]) => ({
+        key,
+        refs
+      }))
+    };
+
+    await fs.writeFile(
+      path.join(outputDir, 'references.json'),
+      JSON.stringify(data, null, 2)
+    );
+  }
+}
+```
+
+### Usage Example
+
+```typescript
+const refManager = new ReferenceManager();
+
+// Add cross-project reference
+refManager.addReference({
+  sourceProject: 'ui-library',
+  sourceItem: 'Button',
+  targetProject: 'core-library',
+  targetItem: 'Component',
+  relationship: 'extends'
+});
+
+// Write references
+await refManager.writeReferences(outputDir);
+```
+
+## Complete Example
+
+```typescript
+async function buildDocumentationSet() {
+  const workspace = new WorkspaceBuilder('my-workspace', 'My Documentation');
+  const refManager = new ReferenceManager();
+
+  // Project 1: TypeScript library
+  const tsProject = {
+    id: 'ts-lib',
+    name: 'TypeScript Library',
+    language: 'typescript',
+    items: {
+      format: 'jsonl' as const,
+      file: 'ts-lib-items.jsonl',
+      count: 0
+    }
+  };
+
+  workspace.addProject(tsProject);
+
+  // Project 2: Rust library
+  const rustProject = {
+    id: 'rust-lib',
+    name: 'Rust Library',
+    language: 'rust',
+    items: {
+      format: 'json' as const,
+      file: 'rust-lib-items.json',
+      count: 0
+    }
+  };
+
+  workspace.addProject(rustProject);
+
+  // Add cross-project reference
+  refManager.addReference({
+    sourceProject: 'ts-lib',
+    sourceItem: 'WasmWrapper',
+    targetProject: 'rust-lib',
+    targetItem: 'CoreEngine',
+    relationship: 'uses'
+  });
+
+  // Build workspace
+  await workspace.build('./docs-output');
+  await refManager.writeReferences('./docs-output');
+
+  console.log('Documentation set built successfully!');
+}
+
+buildDocumentationSet().catch(console.error);
+```
+
+## Output Structure
+
+```
+docs-output/
+├── workspace.json           # Workspace metadata and navigation
+├── references.json          # Cross-project references
+└── projects/
+    ├── ts-lib.json          # TypeScript project metadata
+    ├── ts-lib-items.jsonl   # TypeScript DocItems (JSONL)
+    ├── rust-lib.json        # Rust project metadata
+    └── rust-lib-items.json  # Rust DocItems (JSON)
+```
+
+## Best Practices
+
+### 1. Choose the Right Format
+
+- **Monolithic**: Small, self-contained projects
+- **Chunked**: Projects that will be loaded entirely but are too large for monolithic
+- **Streaming**: Very large projects or when memory is constrained
+
+### 2. Use Consistent IDs
+
+Ensure IDs are stable across builds:
+
+```typescript
+function generateStableId(item: LanguageItem): string {
+  // Use fully-qualified names
+  const path = item.namespace ? `${item.namespace}::${item.name}` : item.name;
+
+  // Include language prefix
+  return `${item.language}::${path}`;
+}
+```
+
+### 3. Validate Before Writing
+
+```typescript
+class ValidationError extends Error {
+  constructor(message: string, public item: DocItem) {
+    super(message);
+  }
+}
+
+function validateDocItem(item: DocItem): void {
+  if (!item.id) throw new ValidationError('Missing ID', item);
+  if (!item.name) throw new ValidationError('Missing name', item);
+  if (!item.kind) throw new ValidationError('Missing kind', item);
+  if (!item.language) throw new ValidationError('Missing language', item);
+}
+```
+
+### 4. Handle Large Datasets Efficiently
+
+Use streaming for large projects:
+
+```typescript
+async function streamLargeProject(extractor: Extractor, outputPath: string) {
+  const writer = createWriteStream(outputPath);
+
+  for await (const filePath of getSourceFiles()) {
+    for await (const item of extractor.extractFromFile(filePath)) {
+      validateDocItem(item);
+      writer.write(JSON.stringify(item) + '\n');
+    }
+  }
+
+  writer.end();
+}
+```
+
+## See Also
+
+- [Language Extractors](/opendocs/implementation/extractors) - Extract DocItems from source code
+- [OpenDocs File Organization](/opendocs/opendocs-file-organization) - File structure and navigation
+- [Performance Optimization](/opendocs/implementation/performance) - Optimize for large codebases
+
+---
+
+*This guide is part of the OpenDocs Specification RFC. Help us improve it by sharing your implementation experience.*

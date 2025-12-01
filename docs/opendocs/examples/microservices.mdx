@@ -1,0 +1,243 @@
+---
+title: Microservices Examples
+sidebarTitle: Microservices
+description: OpenDocs for microservices architectures
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+# Microservices Examples
+
+<Warning>
+  **RFC Status**: This section contains proposed examples for the OpenDocs Specification RFC.
+
+  These examples are provided to illustrate how the specification could be implemented.
+  [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help refine these examples.
+</Warning>
+
+## Microservices Architecture
+
+This example demonstrates how to document a microservices architecture with cross-service references and performance optimization for large codebases.
+
+### Project Structure
+
+<FileTree
+  structure={[
+    {
+      name: "user-service/",
+      children: [
+        { name: "go.mod" },
+        { name: "main.go" }
+      ]
+    },
+    {
+      name: "billing-service/",
+      children: [
+        { name: "package.json" },
+        { name: "src/" }
+      ]
+    },
+    {
+      name: "notification-service/",
+      children: [
+        { name: "Cargo.toml" },
+        { name: "src/" }
+      ]
+    },
+    {
+      name: "api-gateway/",
+      children: [
+        { name: "package.json" },
+        { name: "src/" }
+      ]
+    }
+  ]}
+/>
+
+### opendocs.json Configuration
+```json
+{
+  "documentationSet": {
+    "id": "acme-microservices-docs",
+    "name": "Acme Microservices Documentation",
+    "description": "Microservices architecture documentation",
+    "version": "1.0.0",
+    "created": "2024-01-01T00:00:00Z"
+  },
+  "projects": [
+    {
+      "id": "user-service",
+      "name": "User Service",
+      "language": "go",
+      "version": "1.2.0",
+      "location": {
+        "type": "file",
+        "path": "services/user-service.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "billing-service",
+      "name": "Billing Service",
+      "language": "typescript",
+      "version": "2.1.0",
+      "location": {
+        "type": "file",
+        "path": "services/billing-service.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "notification-service",
+      "name": "Notification Service",
+      "language": "rust",
+      "version": "0.8.5",
+      "location": {
+        "type": "file",
+        "path": "services/notification-service.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "api-gateway",
+      "name": "API Gateway",
+      "language": "typescript",
+      "version": "1.5.2",
+      "location": {
+        "type": "file",
+        "path": "services/api-gateway.json",
+        "format": "json"
+      }
+    }
+  ],
+  "navigation": {
+    "title": "Microservices API",
+    "groups": [
+      {
+        "name": "Core Services",
+        "projects": ["user-service", "billing-service"]
+      },
+      {
+        "name": "Support Services",
+        "projects": ["notification-service"]
+      },
+      {
+        "name": "Infrastructure",
+        "projects": ["api-gateway"]
+      }
+    ]
+  }
+}
+```
+
+## Cross-Service References
+
+The billing service demonstrates how to document dependencies on other services:
+
+```json
+{
+  "project": {
+    "id": "billing-service",
+    "name": "Billing Service",
+    "language": "typescript",
+    "items": {
+      "format": "jsonl",
+      "file": "billing-service-items.jsonl",
+      "count": 203
+    },
+    "metadata": {
+      "dependencies": [
+        { "project": "user-service", "ref": "../user-service/user-service.json" },
+        { "project": "notification-service", "ref": "../notification-service/notification-service.json" }
+      ],
+      "externalApis": ["Stripe API", "PayPal API"]
+    }
+  }
+}
+```
+
+## Performance Optimization Examples
+
+### Large Codebase with Streaming
+
+For enterprise platforms with tens of thousands of documented items, use streaming and chunked processing:
+
+```json
+{
+  "workspace": {
+    "id": "enterprise-platform",
+    "name": "Enterprise Platform",
+    "description": "Large enterprise platform with 50k+ documented items",
+    "navigation": {
+      "projects": [
+        { "id": "core", "name": "Core Library", "_ref": "projects/core.json" },
+        { "id": "modules", "name": "Business Modules", "_ref": "projects/modules.json" }
+      ]
+    },
+    "organization": {
+      "format": "streaming",
+      "chunkSize": 1000
+    }
+  }
+}
+```
+
+### Chunked Processing
+
+Configure projects for efficient memory usage with parallel processing:
+
+```json
+{
+  "project": {
+    "id": "modules",
+    "name": "Business Modules",
+    "language": "typescript",
+    "items": {
+      "format": "jsonl",
+      "file": "modules-items.jsonl",
+      "count": 45678
+    },
+    "metadata": {
+      "processingStrategy": "chunked",
+      "memoryLimit": "512MB",
+      "parallelProcessing": true
+    }
+  }
+}
+```
+
+## Key Features
+
+- **Service Independence**: Each microservice maintains its own documentation
+- **Cross-References**: Services can reference APIs from other services
+- **External Dependencies**: Document integration with third-party APIs
+- **Performance Optimization**: Streaming and chunked processing for large codebases
+- **Logical Grouping**: Organize services by their role in the architecture
+
+## Best Practices
+
+1. **Document Service Boundaries**: Clearly indicate which APIs are public vs internal
+2. **Track Dependencies**: Maintain explicit references between services
+3. **Version Carefully**: Use semantic versioning and track breaking changes
+4. **Optimize for Scale**: Use JSONL and streaming for services with large APIs
+5. **Group by Function**: Organize navigation by service purpose, not technology
+
+## Performance Considerations
+
+For large microservices architectures:
+
+- Use **JSONL format** for all services with 100+ documented items
+- Enable **streaming processing** when total items exceed 10,000
+- Configure **chunk size** based on available memory (1000 items = ~10MB)
+- Use **parallel processing** for faster documentation generation
+- Set **memory limits** to prevent out-of-memory errors
+
+## See Also
+
+- [Monorepo Examples](/opendocs/examples/monorepo) - Multi-language monorepo patterns
+- [Performance Guide](/opendocs/implementation/performance) - Optimization strategies
+- [Examples Overview](/opendocs/examples/index) - Back to all examples
+
+---
+
+*This example is part of the OpenDocs Specification RFC. [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help improve it.*

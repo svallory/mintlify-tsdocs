@@ -1,0 +1,474 @@
+---
+title: FileTree
+description: Display hierarchical file structures with visual icons and descriptions
+icon: "folder-tree"
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+The `FileTree` component provides a beautiful way to display project file structures, directory hierarchies, and file organization in your documentation. It renders a static tree view with Lucide icons, optional descriptions, and badges in a clean code-block styled interface.
+
+## Basic Usage
+
+Import the component and pass it a hierarchical structure of files and directories.
+
+```jsx FileTree usage
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx"
+
+const fileStructure = [
+  {
+    name: "src/",
+    description: "Source code directory",
+    children: [
+      {
+        name: "index.ts",
+        description: "Main entry point"
+      },
+      {
+        name: "components/",
+        children: [
+          { name: "Button.tsx", description: "Button component" },
+          { name: "Card.tsx", description: "Card component" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "package.json",
+    description: "Package configuration",
+    badge: { text: "Config", color: "blue" }
+  }
+];
+
+<FileTree title="Project Structure" structure={fileStructure} />
+```
+
+export const basicStructure = [
+  {
+    name: "src/",
+    description: "Source code directory",
+    children: [
+      {
+        name: "index.ts",
+        description: "Main entry point"
+      },
+      {
+        name: "components/",
+        children: [
+          { name: "Button.tsx", description: "Button component" },
+          { name: "Card.tsx", description: "Card component" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "package.json",
+    description: "Package configuration",
+    badge: { text: "Config", color: "blue" }
+  }
+];
+
+<Preview title="Basic FileTree Example">
+  <FileTree title="Project Structure" structure={basicStructure} />
+</Preview>
+
+## Features
+
+### Visual Design
+- **Code block styling** with rounded corners and syntax highlighting appearance
+- **Dark mode support** with automatic theme switching
+- **Vertical guide lines** for nested directory structures
+- **Consistent spacing** and typography for optimal readability
+
+### File Icons
+- **Folder icons** for directories (📁)
+- **File icons** for individual files (📄)
+- **Icon customization** via the `getFileIcon` function (extensible for different file types)
+
+### Metadata Support
+- **Descriptions** provide context for files and directories
+- **Badges** highlight important files with customizable colors
+- **Hierarchical structure** supports unlimited nesting depth
+
+## Advanced Example
+
+Here's a comprehensive example showing a typical project structure with various file types and metadata:
+
+<Preview
+  code={`<FileTree
+  title="OpenDocs Project Structure"
+  structure={[
+    {
+      name: "docs/",
+      description: "Documentation source files",
+      children: [
+        {
+          name: "components/",
+          description: "Reusable MDX components",
+          children: [
+            { name: "type-tree.mdx", description: "TypeTree component docs" },
+            { name: "file-tree.mdx", description: "FileTree component docs" },
+            { name: "preview.mdx", description: "Preview component docs" }
+          ]
+        },
+        {
+          name: "docs.json",
+          description: "Mintlify navigation configuration",
+          badge: { text: "Config", color: "blue" }
+        }
+      ]
+    },
+    {
+      name: "src/",
+      description: "Source code",
+      children: [
+        {
+          name: "cli/",
+          description: "Command-line interface",
+          children: [
+            { name: "InitAction.ts", description: "Initialize command" },
+            { name: "GenerateAction.ts", description: "Generate command" }
+          ]
+        },
+        {
+          name: "components/",
+          description: "React components",
+          badge: { text: "React", color: "green" },
+          children: [
+            { name: "FileTree.jsx", description: "File tree component" },
+            { name: "JsonTree.jsx", description: "JSON tree component" },
+            { name: "TypeTree.jsx", description: "Type tree component" }
+          ]
+        }
+      ]
+    },
+    {
+      name: "package.json",
+      description: "Package manifest",
+      badge: { text: "Package", color: "purple" }
+    },
+    {
+      name: "tsconfig.json",
+      description: "TypeScript configuration",
+      badge: { text: "Config", color: "blue" }
+    }
+  ]}
+/>`}
+>
+  <FileTree
+    title="OpenDocs Project Structure"
+    structure={[
+      {
+        name: "docs/",
+        description: "Documentation source files",
+        children: [
+          {
+            name: "components/",
+            description: "Reusable MDX components",
+            children: [
+              { name: "type-tree.mdx", description: "TypeTree component docs" },
+              { name: "file-tree.mdx", description: "FileTree component docs" },
+              { name: "preview.mdx", description: "Preview component docs" }
+            ]
+          },
+          {
+            name: "docs.json",
+            description: "Mintlify navigation configuration",
+            badge: { text: "Config", color: "blue" }
+          }
+        ]
+      },
+      {
+        name: "src/",
+        description: "Source code",
+        children: [
+          {
+            name: "cli/",
+            description: "Command-line interface",
+            children: [
+              { name: "InitAction.ts", description: "Initialize command" },
+              { name: "GenerateAction.ts", description: "Generate command" }
+            ]
+          },
+          {
+            name: "components/",
+            description: "React components",
+            badge: { text: "React", color: "green" },
+            children: [
+              { name: "FileTree.jsx", description: "File tree component" },
+              { name: "JsonTree.jsx", description: "JSON tree component" },
+              { name: "TypeTree.jsx", description: "Type tree component" }
+            ]
+          }
+        ]
+      },
+      {
+        name: "package.json",
+        description: "Package manifest",
+        badge: { text: "Package", color: "purple" }
+      },
+      {
+        name: "tsconfig.json",
+        description: "TypeScript configuration",
+        badge: { text: "Config", color: "blue" }
+      }
+    ]}
+  />
+</Preview>
+
+## Properties
+
+<ResponseField name="structure" type="FileTreeItem[]" required>
+  Hierarchical array of files and directories to display. Each item should have a `name` property.
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  Optional title displayed at the top of the file tree component
+</ResponseField>
+
+<ResponseField name="maxDepth" type="number" default="10">
+  Maximum nesting depth to prevent infinite recursion in deeply nested structures
+</ResponseField>
+
+<ResponseField name="showIcons" type="boolean" default="true">
+  Whether to display file and folder icons next to items
+</ResponseField>
+
+## FileTreeItem Interface
+
+Each item in the `structure` array should follow this interface:
+
+```typescript
+interface FileTreeItem {
+  name: string;           // File or directory name
+  description?: string;   // Optional description shown next to the name
+  badge?: FileTreeBadge; // Optional badge configuration
+  children?: FileTreeItem[]; // Child items for directories
+}
+
+interface FileTreeBadge {
+  text: string;          // Badge text content
+  color?: string;        // Badge color (Mintlify Badge color prop)
+}
+```
+
+## FileTreeGroup
+
+Use `FileTreeGroup` to organize multiple related file trees:
+
+<Preview
+  code={`<FileTreeGroup title="Project Structures">
+  <FileTree
+    title="Frontend Structure"
+    structure={[
+      { name: "src/", children: [
+        { name: "components/", children: [
+          { name: "Header.tsx", description: "Header component" },
+          { name: "Footer.tsx", description: "Footer component" }
+        ]},
+        { name: "pages/", children: [
+          { name: "Home.tsx", description: "Home page" },
+          { name: "About.tsx", description: "About page" }
+        ]}
+      ]}
+    ]}
+  />
+  <FileTree
+    title="Backend Structure"
+    structure={[
+      { name: "api/", children: [
+        { name: "routes/", children: [
+          { name: "users.ts", description: "User routes" },
+          { name: "posts.ts", description: "Post routes" }
+        ]},
+        { name: "middleware/", children: [
+          { name: "auth.ts", description: "Authentication middleware" },
+          { name: "validation.ts", description: "Validation middleware" }
+        ]}
+      ]}
+    ]}
+  />
+</FileTreeGroup>`}
+>
+  <FileTreeGroup title="Project Structures">
+    <FileTree
+      title="Frontend Structure"
+      structure={[
+        { name: "src/", children: [
+          { name: "components/", children: [
+            { name: "Header.tsx", description: "Header component" },
+            { name: "Footer.tsx", description: "Footer component" }
+          ]},
+          { name: "pages/", children: [
+            { name: "Home.tsx", description: "Home page" },
+            { name: "About.tsx", description: "About page" }
+          ]}
+        ]}
+      ]}
+    />
+    <FileTree
+      title="Backend Structure"
+      structure={[
+        { name: "api/", children: [
+          { name: "routes/", children: [
+            { name: "users.ts", description: "User routes" },
+            { name: "posts.ts", description: "Post routes" }
+          ]},
+          { name: "middleware/", children: [
+            { name: "auth.ts", description: "Authentication middleware" },
+            { name: "validation.ts", description: "Validation middleware" }
+          ]}
+        ]}
+      ]}
+    />
+  </FileTreeGroup>
+</Preview>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Names" icon="message">
+    Choose clear, descriptive names for files and directories that immediately convey their purpose.
+
+    ```jsx
+    // ✅ Good
+    { name: "user-authentication.ts", description: "Handles user login/logout logic" }
+
+    // ❌ Avoid
+    { name: "util.ts", description: "Utility functions" }
+    ```
+  </Accordion>
+
+  <Accordion title="Add Context with Descriptions" icon="info">
+    Use descriptions to provide additional context that helps users understand the purpose and contents of files/directories.
+
+    ```jsx
+    <FileTree
+      title="API Structure"
+      structure={[
+        {
+          name: "controllers/",
+          description: "Request handlers that process incoming API calls"
+        },
+        {
+          name: "models/",
+          description: "Data models defining database schema structure"
+        },
+        {
+          name: "middleware/",
+          description: "Cross-cutting concerns like authentication and validation"
+        }
+      ]}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Use Badges Strategically" icon="tag">
+    Apply badges to highlight important files, configuration files, or items that need special attention.
+
+    ```jsx
+    <FileTree
+      structure={[
+        { name: "package.json", badge: { text: "Config", color: "blue" } },
+        { name: "Dockerfile", badge: { text: "Docker", color: "green" } },
+        { name: "README.md", badge: { text: "Docs", color: "purple" } },
+        { name: "LICENSE", badge: { text: "Legal", color: "red" } }
+      ]}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Group Related Items" icon="layer-group">
+    Organize file structures logically, grouping related functionality together and using FileTreeGroup for multiple related structures.
+
+    ```jsx
+    <FileTreeGroup title="Monorepo Structure">
+      <FileTree title="Shared Packages" structure={sharedPackages} />
+      <FileTree title="Frontend Apps" structure={frontendApps} />
+      <FileTree title="Backend Services" structure={backendServices} />
+    </FileTreeGroup>
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Depth Reasonable" icon="sitemap">
+    While FileTree supports unlimited nesting, limit depth to 4-5 levels for readability. Consider breaking very deep structures into separate documentation sections.
+  </Accordion>
+</AccordionGroup>
+
+## Styling and Theming
+
+FileTree automatically adapts to Mintlify's light and dark themes:
+
+- **Light mode**: Light gray backgrounds with dark text
+- **Dark mode**: Dark backgrounds with light text
+- **Code block styling**: Consistent with other code elements in your documentation
+- **Vertical guide lines**: Subtle visual indicators for nested structures
+- **Hover states**: Clean interaction feedback
+- **Typography**: Monospace font for file names, proportional font for descriptions
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Component not found" icon="triangle-exclamation">
+    If you see `Cannot find module "/snippets/FileTree.jsx"`:
+
+    1. Ensure FileTree.jsx exists in your `docs/snippets/` folder
+    2. Run `mint-tsdocs` to auto-install the component
+    3. Check that the import path is correct (should start with `/snippets/`)
+  </Accordion>
+
+  <Accordion title="Icons not displaying" icon="image">
+    If file/folder icons are not showing:
+
+    1. Verify that Mintlify's Icon component is available
+    2. Check browser console for JavaScript errors
+    3. Ensure `showIcons` prop is not set to `false`
+  </Accordion>
+
+  <Accordion title="Structure not rendering" icon="code">
+    If the file tree doesn't display correctly:
+
+    1. Verify that each item has a `name` property
+    2. Check that the `structure` prop is a valid array
+    3. Ensure proper JSON formatting in your MDX file
+  </Accordion>
+
+  <Accordion title="Styling issues" icon="paintbrush">
+    If the component doesn't look right:
+
+    1. Ensure Tailwind CSS is properly loaded in your Mintlify site
+    2. Check that you're using an up-to-date version of the component
+    3. Try refreshing the page to reload styles
+  </Accordion>
+</AccordionGroup>
+
+## Version History
+
+<CardGroup cols={2}>
+  <Card title="v3.0.0" icon="rocket">
+    Initial release with hierarchical file structure visualization, Lucide icons, and code block styling
+  </Card>
+  <Card title="Future" icon="sparkles">
+
+    - File type detection with specific icons for different extensions
+    - Expandable/collapsible directories
+    - File size and modification date display
+    - Copy file paths functionality
+
+  </Card>
+</CardGroup>
+
+## Related Components
+
+<CardGroup cols={3}>
+  <Card title="JsonTree" icon="code" href="/components/jsontree">
+    Display JSON data structures with beautiful formatting
+  </Card>
+  <Card title="TypeTree" icon="network" href="/components/type-tree">
+    Display recursive type structures with expandable properties
+  </Card>
+  <Card title="Preview" icon="eye" href="/components/preview">
+    Styled wrapper for component examples
+  </Card>
+</CardGroup>

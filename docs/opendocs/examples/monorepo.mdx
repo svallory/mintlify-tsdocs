@@ -1,0 +1,226 @@
+---
+title: Monorepo Examples
+sidebarTitle: Monorepo
+description: OpenDocs for multi-language monorepos
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+# Monorepo Examples
+
+<Warning>
+  **RFC Status**: This section contains proposed examples for the OpenDocs Specification RFC.
+
+  These examples are provided to illustrate how the specification could be implemented.
+  [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help refine these examples.
+</Warning>
+
+## Multi-Language Monorepo
+
+This example demonstrates how to document a complex monorepo containing multiple programming languages and shared dependencies.
+
+### Project Structure
+
+<FileTree
+  structure={[
+    {
+      name: "frontend/",
+      children: [
+        { name: "react-app/" },
+        { name: "vue-components/" }
+      ]
+    },
+    {
+      name: "backend/",
+      children: [
+        { name: "go-api/" },
+        { name: "rust-service/" }
+      ]
+    },
+    {
+      name: "shared/",
+      children: [
+        { name: "typescript-types/" },
+        { name: "protobuf-definitions/" }
+      ]
+    },
+    { name: "docs/" }
+  ]}
+/>
+
+### opendocs.json Configuration
+```json
+{
+  "documentationSet": {
+    "id": "acme-monorepo-docs",
+    "name": "Acme Monorepo Documentation",
+    "description": "Multi-language monorepo for Acme Corp",
+    "version": "2.0.0",
+    "created": "2024-01-01T00:00:00Z"
+  },
+  "projects": [
+    {
+      "id": "react-app",
+      "name": "React App",
+      "language": "typescript",
+      "version": "1.5.0",
+      "location": {
+        "type": "file",
+        "path": "projects/react-app.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "vue-components",
+      "name": "Vue Components",
+      "language": "typescript",
+      "version": "1.2.0",
+      "location": {
+        "type": "file",
+        "path": "projects/vue-components.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "go-api",
+      "name": "Go API",
+      "language": "go",
+      "version": "1.8.3",
+      "location": {
+        "type": "file",
+        "path": "projects/go-api.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "rust-service",
+      "name": "Rust Service",
+      "language": "rust",
+      "version": "0.9.1",
+      "location": {
+        "type": "file",
+        "path": "projects/rust-service.json",
+        "format": "json"
+      }
+    },
+    {
+      "id": "shared-types",
+      "name": "Shared Types",
+      "language": "typescript",
+      "version": "1.0.0",
+      "location": {
+        "type": "file",
+        "path": "projects/shared-types.json",
+        "format": "json"
+      },
+      "dependencies": []
+    }
+  ],
+  "navigation": {
+    "title": "Platform Documentation",
+    "groups": [
+      {
+        "name": "Frontend",
+        "projects": ["react-app", "vue-components"]
+      },
+      {
+        "name": "Backend",
+        "projects": ["go-api", "rust-service"]
+      },
+      {
+        "name": "Shared",
+        "projects": ["shared-types"]
+      }
+    ]
+  }
+}
+```
+
+## Go API Project
+
+### Project Manifest
+```json
+{
+  "project": {
+    "id": "go-api",
+    "name": "Go REST API",
+    "language": "go",
+    "items": {
+      "format": "json-ref",
+      "file": "go-api-items",
+      "count": 89
+    },
+    "metadata": {
+      "goVersion": "1.21",
+      "modulePath": "github.com/acme/go-api",
+      "dependencies": [
+        { "project": "shared-types", "ref": "../shared-types/shared-types.json" }
+      ]
+    }
+  }
+}
+```
+
+### Sample Go DocItems
+```json
+{"id": "go-api#handlers#UserHandler", "name": "UserHandler", "kind": "struct", "language": "go", "docBlock": {"description": "HTTP handler for user-related endpoints"}, "metadata": {"package": "handlers", "methods": ["GetUser", "CreateUser", "UpdateUser"]}}
+{"id": "go-api#handlers#UserHandler#GetUser", "name": "GetUser", "kind": "method", "language": "go", "container": {"id": "go-api#handlers#UserHandler", "relationship": "struct"}, "docBlock": {"description": "Retrieves a user by ID", "tags": {"param": [{"name": "param", "content": "HTTP request context", "parameters": {"name": "ctx", "type": "context.Context"}}], "returns": ["User data if found, error otherwise"]}}}
+{"id": "go-api#models#User", "name": "User", "kind": "struct", "language": "go", "docBlock": {"description": "User model representing a system user"}, "metadata": {"fields": [{"name": "ID", "type": "string"}, {"name": "Name", "type": "string"}, {"name": "Email", "type": "string"}]}}
+```
+
+## Rust Service Project
+
+### Project Manifest
+```json
+{
+  "project": {
+    "id": "rust-service",
+    "name": "Rust Background Service",
+    "language": "rust",
+    "items": {
+      "format": "json-ref",
+      "file": "rust-service-items",
+      "count": 156
+    },
+    "metadata": {
+      "rustEdition": "2021",
+      "crateName": "acme-rust-service",
+      "dependencies": [
+        { "project": "shared-types", "ref": "../shared-types/shared-types.json" }
+      ]
+    }
+  }
+}
+```
+
+### Sample Rust DocItems
+```json
+{"id": "rust-service#engine#ProcessingEngine", "name": "ProcessingEngine", "kind": "trait", "language": "rust", "docBlock": {"description": "Core trait for data processing engines"}, "metadata": {"associatedTypes": ["Input", "Output"], "supertraits": ["Send + Sync"]}}
+{"id": "rust-service#engine#ProcessingEngine#process", "name": "process", "kind": "trait-method", "language": "rust", "container": {"id": "rust-service#engine#ProcessingEngine", "relationship": "trait"}, "docBlock": {"description": "Processes input data and returns output", "tags": {"param": [{"name": "param", "content": "Input data to process", "parameters": {"name": "input", "type": "Self::Input"}}], "returns": ["Processed output data"]}}}
+{"id": "rust-service#workers#DataWorker", "name": "DataWorker", "kind": "struct", "language": "rust", "docBlock": {"description": "Worker responsible for processing data chunks"}, "metadata": {"visibility": "public", "fields": [{"name": "id", "type": "u64"}, {"name": "engine", "type": "Box<dyn ProcessingEngine>"}]}}
+```
+
+## Key Features
+
+- **Multi-Language Support**: Documents TypeScript, Go, and Rust in a single documentation set
+- **Shared Dependencies**: Projects can reference shared type definitions
+- **Organized Navigation**: Groups projects by functional area (Frontend, Backend, Shared)
+- **JSON $ref Format**: Efficient external file references for larger projects
+- **Version Tracking**: Each project maintains independent versioning
+
+## Best Practices
+
+1. **Use JSONL for Larger Projects**: When a project has 100+ documented items, JSONL provides better streaming performance
+2. **Group Logically**: Organize navigation by functional areas rather than programming language
+3. **Share Common Types**: Create a shared types project that other projects can reference
+4. **Version Independently**: Each project should have its own version tracking
+
+## See Also
+
+- [Simple Project Examples](/opendocs/examples/simple-projects) - Basic single-language examples
+- [Microservices Examples](/opendocs/examples/microservices) - Service-oriented architectures
+- [Examples Overview](/opendocs/examples/index) - Back to all examples
+
+---
+
+*This example is part of the OpenDocs Specification RFC. [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help improve it.*

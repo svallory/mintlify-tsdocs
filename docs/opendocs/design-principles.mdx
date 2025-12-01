@@ -1,0 +1,144 @@
+---
+title: Design Principles
+sidebarTitle: Design Principles
+description: Core design principles behind OpenDocs architecture
+---
+
+## Overview
+
+OpenDocs is built on five fundamental design principles that ensure flexibility, consistency, and ease of use across different programming languages and documentation needs. These principles guide every architectural decision and implementation choice.
+
+## 1. Universal Abstraction (DocItem)
+
+Every documentation element, regardless of programming language, is represented as a DocItem:
+
+- **Rust**: `struct`, `trait`, `impl-method`
+- **Go**: `struct`, `interface`, `receiver-method`
+- **TypeScript**: `class`, `interface`, `method`, `property`
+- **Python**: `class`, `function`, `property`
+
+This abstraction eliminates the need to understand language-specific documentation models while providing a consistent interface for template authors and tool developers.
+
+## 2. Language-Specific Flexibility (DocItem.kind)
+
+The `kind` field allows complete language-specific typing without breaking the universal model:
+
+```json
+{
+  "id": "serde::de::Deserialize",
+  "name": "Deserialize",
+  "kind": "trait",
+  "language": "rust",
+  "metadata": {
+    "associatedTypes": ["Item"],
+    "supertraits": ["Sized"]
+  }
+}
+```
+
+This principle ensures that:
+- Templates can handle language-specific constructs appropriately
+- Language-specific metadata is preserved
+- The core model remains simple and consistent
+
+## 3. Hierarchical Structure (Project → DocItem → DocItem)
+
+**Purpose: Supporting Monorepos**
+
+The Project concept was specifically designed to support monorepos where a single Documentation Set contains multiple projects (packages, apps, libraries). Each Project represents a distinct documentable unit with its own language, version, and dependencies, while all projects share the same documentation structure.
+
+DocItems form natural hierarchies through the `items` array, with Project as the root:
+
+```json
+{
+  "id": "my-project",
+  "name": "My Project",
+  "language": "typescript",
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "my-project#my-module",
+      "name": "My Module",
+      "kind": "module",
+      "language": "typescript",
+      "items": [
+        {
+          "id": "my-project#my-module#MyClass",
+          "name": "MyClass",
+          "kind": "class",
+          "language": "typescript",
+          "items": [
+            {
+              "id": "my-project#my-module#MyClass#constructor",
+              "name": "constructor",
+              "kind": "constructor",
+              "language": "typescript"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+This hierarchy mirrors natural code organization and enables:
+- Intuitive navigation structures
+- Logical documentation grouping
+- Efficient template rendering
+
+## 4. Documentation Standardization (DocBlock)
+
+All documentation formats map to the same DocBlock structure, enabling:
+- Consistent rendering across languages
+- Template compatibility regardless of source format
+- Cross-format documentation migration
+- Unified tooling and processing
+
+Whether your documentation comes from TSDoc, Javadoc, or custom formats, it converges to the same internal representation.
+
+## 5. Tag Flexibility (DocTag)
+
+Support for both simple and complex tags enables:
+- Simple metadata (`@since`, `@author`)
+- Complex structured data (`@param` with type and name)
+- Custom tag extensions for project-specific needs
+
+This flexibility ensures that:
+- Common documentation patterns are handled efficiently
+- Complex parameter documentation is fully supported
+- Projects can extend the system with custom tags
+- Both human-readable and machine-processable documentation coexist
+
+## Benefits of These Principles
+
+### For Documentation Authors
+- **Consistency**: Write documentation once, use it everywhere
+- **Flexibility**: Support for language-specific features
+- **Future-proof**: Easy to add new languages or documentation formats
+
+### For Template Authors
+- **Simplicity**: Single model to understand and work with
+- **Power**: Access to rich metadata and relationships
+- **Extensibility**: Support for custom tags and patterns
+
+### For Tool Developers
+- **Unified API**: Consistent interface regardless of source language
+- **Rich Metadata**: Comprehensive information for advanced features
+- **Performance**: Efficient hierarchical processing and caching
+
+## Applying These Principles
+
+When implementing OpenDocs support for a new language or extending the system:
+
+1. **Map language constructs to DocItems** using appropriate `kind` values
+2. **Preserve language-specific metadata** in the `metadata` field
+3. **Maintain hierarchical relationships** through proper parent-child linking
+4. **Convert documentation formats** to the standard DocBlock structure
+5. **Support both simple and complex tags** for maximum flexibility
+
+## Next Steps
+
+- Learn about the [OpenDocs Models](/opendocs/opendocs-model) to understand the concrete implementation of these principles
+- Explore [implementation guides](/opendocs/implementation/overview) for building OpenDocs support
+- See [examples](/opendocs/examples) of these principles in action

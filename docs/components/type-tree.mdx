@@ -37,7 +37,7 @@ const databaseField: TypeTreeProperty = {
   ]
 };
 
-<TypeTree {...databaseField} />
+<TypeTree open {...databaseField} />
 ```
 
 The `TypeTree` component will recurse through the properties using the 
@@ -66,7 +66,7 @@ export const databaseField = {
 };
 
 <Preview title="TypeTree Preview">
-  <TypeTree {...databaseField} />
+  <TypeTree open {...databaseField} />
 </Preview>
 
 ## Using the Auto-generated TypeInfo
@@ -86,7 +86,7 @@ Simply import TypeInfo and spread it into a TypeTree component:
 ```mdx Document any type from your API
 import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 
-<TypeTree {...TypeInfo.PackageName.TypeName} />
+<TypeTree open {...TypeInfo.PackageName.TypeName} />
 ```
 
 The TypeInfo object is organized as `TypeInfo.PackageName.TypeName`, where package names are converted to PascalCase. For example, `mint-tsdocs` becomes `MintTsdocs`.
@@ -96,7 +96,7 @@ The TypeInfo object is organized as `TypeInfo.PackageName.TypeName`, where packa
 Here's the complete `ResolvedConfig` type from mint-tsdocs, automatically generated with full nested documentation:
 
 <Preview title="Auto-generated from TypeScript source">
-  <TypeTree {...TypeInfo.MintTsdocs.ResolvedConfig} />
+  <TypeTree open {...TypeInfo.MintTsdocs.ResolvedConfig} />
 </Preview>
 
 ### IDE Autocomplete
@@ -167,7 +167,7 @@ For a complete guide on using TypeInfo, see the [TypeInfo documentation](/snippe
 TypeTree automatically renders nested properties with expandable sections. This example demonstrates 3 levels of nesting, showcasing the auto-expansion behavior:
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="apiConfig"
   type="object"
   description="API configuration settings"
@@ -249,7 +249,7 @@ TypeTree automatically renders nested properties with expandable sections. This 
   ]}
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="apiConfig"
     type="object"
     description="API configuration settings"
@@ -353,14 +353,14 @@ This provides an optimal balance between information density and discoverability
 Use `TypeTreeGroup` to organize multiple related types:
 
 <Preview
-  code={`<TypeTreeGroup title="Request Parameters">
-  <TypeTree
+  code={`<TypeTreeGroup open title="Request Parameters">
+  <TypeTree open
     name="id"
     type="string"
     description="Unique identifier"
     required={true}
   />
-  <TypeTree
+  <TypeTree open
     name="options"
     type="object"
     description="Optional configuration"
@@ -371,14 +371,14 @@ Use `TypeTreeGroup` to organize multiple related types:
   />
 </TypeTreeGroup>`}
 >
-  <TypeTreeGroup title="Request Parameters">
-    <TypeTree
+  <TypeTreeGroup open title="Request Parameters">
+    <TypeTree open
       name="id"
       type="string"
       description="Unique identifier"
       required={true}
     />
-    <TypeTree
+    <TypeTree open
       name="options"
       type="object"
       description="Optional configuration"
@@ -395,14 +395,14 @@ Use `TypeTreeGroup` to organize multiple related types:
 ### Union Types
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="status"
   type="'pending' | 'active' | 'completed'"
   description="Current status of the task"
   required={true}
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="status"
     type="'pending' | 'active' | 'completed'"
     description="Current status of the task"
@@ -413,13 +413,13 @@ Use `TypeTreeGroup` to organize multiple related types:
 ### Array Types
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="tags"
   type="Array<string>"
   description="List of tags associated with the item"
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="tags"
     type="Array<string>"
     description="List of tags associated with the item"
@@ -429,13 +429,13 @@ Use `TypeTreeGroup` to organize multiple related types:
 ### Generic Types
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="response"
   type="Promise<Result<T>>"
   description="Async operation result"
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="response"
     type="Promise<Result<T>>"
     description="Async operation result"
@@ -445,14 +445,14 @@ Use `TypeTreeGroup` to organize multiple related types:
 ### Function Types
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="handler"
   type="(event: Event) => void"
   description="Event handler callback"
   required={true}
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="handler"
     type="(event: Event) => void"
     description="Event handler callback"
@@ -465,14 +465,14 @@ Use `TypeTreeGroup` to organize multiple related types:
 Mark deprecated properties with the `deprecated` flag:
 
 <Preview
-  code={`<TypeTree
+  code={`<TypeTree open
   name="oldField"
   type="string"
   description="This field is deprecated. Use 'newField' instead."
   deprecated={true}
 />`}
 >
-  <TypeTree
+  <TypeTree open
     name="oldField"
     type="string"
     description="This field is deprecated. Use 'newField' instead."
@@ -485,28 +485,28 @@ Mark deprecated properties with the `deprecated` flag:
 The component automatically displays badges for required and optional properties:
 
 <Preview
-  code={`<TypeTreeGroup title="User Fields">
-  <TypeTree
+  code={`<TypeTreeGroup open title="User Fields">
+  <TypeTree open
     name="email"
     type="string"
     description="User email address"
     required={true}
   />
-  <TypeTree
+  <TypeTree open
     name="phone"
     type="string"
     description="User phone number"
   />
 </TypeTreeGroup>`}
 >
-  <TypeTreeGroup title="User Fields">
-    <TypeTree
+  <TypeTreeGroup open title="User Fields">
+    <TypeTree open
       name="email"
       type="string"
       description="User email address"
       required={true}
     />
-    <TypeTree
+    <TypeTree open
       name="phone"
       type="string"
       description="User phone number"
@@ -522,14 +522,14 @@ The component automatically displays badges for required and optional properties
 
     ```jsx
     // ❌ Not helpful
-    <TypeTree
+    <TypeTree open
       name="timeout"
       type="number"
       description="A number"
     />
 
     // ✅ Clear and helpful
-    <TypeTree
+    <TypeTree open
       name="timeout"
       type="number"
       description="Maximum time in milliseconds to wait for a response before aborting"
@@ -542,7 +542,7 @@ The component automatically displays badges for required and optional properties
     Always document default values to help users understand the expected behavior:
 
     ```jsx
-    <TypeTree
+    <TypeTree open
       name="retries"
       type="number"
       description="Number of retry attempts for failed requests"
@@ -555,14 +555,14 @@ The component automatically displays badges for required and optional properties
     For very complex types with many properties, use TypeTreeGroup to create logical sections:
 
     ```jsx
-    <TypeTreeGroup title="Authentication Options">
-      <TypeTree name="apiKey" type="string" />
-      <TypeTree name="token" type="string" />
+    <TypeTreeGroup open title="Authentication Options">
+      <TypeTree open name="apiKey" type="string" />
+      <TypeTree open name="token" type="string" />
     </TypeTreeGroup>
 
-    <TypeTreeGroup title="Request Options">
-      <TypeTree name="timeout" type="number" />
-      <TypeTree name="retries" type="number" />
+    <TypeTreeGroup open title="Request Options">
+      <TypeTree open name="timeout" type="number" />
+      <TypeTree open name="retries" type="number" />
     </TypeTreeGroup>
     ```
   </Accordion>
@@ -588,7 +588,7 @@ TypeTree is designed as a cleaner alternative to deeply nested ParamField compon
 <Tabs>
   <Tab title="TypeTree (Recommended)">
     ```jsx
-    <TypeTree
+    <TypeTree open
       name="config"
       type="object"
       properties={[

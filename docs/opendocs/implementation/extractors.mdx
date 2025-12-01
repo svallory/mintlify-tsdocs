@@ -1,0 +1,684 @@
+---
+title: Language Extractors
+sidebarTitle: Extractors
+description: Build extractors for your programming language
+---
+
+<Warning>
+  **RFC Status**: This document is part of the OpenDocs RFC and subject to change based on community feedback.
+</Warning>
+
+# Language Extractors
+
+Language extractors are the core components that parse source code and convert it into OpenDocs DocItems. This guide shows you how to build extractors for different programming languages.
+
+## Introduction
+
+A language extractor:
+1. Parses source code using language-specific AST parsers
+2. Extracts documentation comments and metadata
+3. Converts language constructs to DocItems
+4. Maintains relationships between items (containers, references)
+
+## TypeScript Extractor Example
+
+Here's a complete implementation of a TypeScript extractor using the TypeScript Compiler API:
+
+```typescript
+import * as ts from 'typescript';
+import { DocItem, DocBlockExtractor } from './opendocs';
+
+export class TypeScriptExtractor {
+  private checker: ts.TypeChecker;
+  private sourceFile: ts.SourceFile;
+
+  constructor(private program: ts.Program) {
+    this.checker = program.getTypeChecker();
+  }
+
+  extractFromFile(filePath: string): DocItem[] {
+    this.sourceFile = this.program.getSourceFile(filePath);
+    if (!this.sourceFile) {
+      throw new Error(`Source file not found: ${filePath}`);
+    }
+
+    const items: DocItem[] = [];
+    this.extractFromNode(this.sourceFile, items);
+    return items;
+  }
+
+  private extractFromNode(node: ts.Node, items: DocItem[]): void {
+    if (this.isExportedDeclaration(node)) {
+      const item = this.extractDocItem(node);
+      if (item) {
+        items.push(item);
+      }
+    }
+
+    ts.forEachChild(node, child => {
+      this.extractFromNode(child, items);
+    });
+  }
+
+  private extractDocItem(node: ts.Node): DocItem | null {
+    switch (node.kind) {
+      case ts.SyntaxKind.ClassDeclaration:
+        return this.extractClass(node as ts.ClassDeclaration);
+      case ts.SyntaxKind.InterfaceDeclaration:
+        return this.extractInterface(node as ts.InterfaceDeclaration);
+      case ts.SyntaxKind.FunctionDeclaration:
+        return this.extractFunction(node as ts.FunctionDeclaration);
+      default:
+        return null;
+    }
+  }
+
+  private extractClass(node: ts.ClassDeclaration): DocItem {
+    const name = node.name?.text || 'Anonymous';
+    const symbol = this.checker.getSymbolAtLocation(node.name!);
+
+    return new DocItem(
+      this.generateClassId(symbol),
+      name,
+      'class',
+      'typescript',
+      this.extractDocBlock(node),
+      this.findContainer(node),
+      this.extractClassMetadata(node, symbol),
+      this.extractClassMembers(node)
+    );
+  }
+
+  private extractDocBlock(node: ts.Node): DocBlock | undefined {
+    const jsDoc = (node as any).jsDoc?.[0];
+    if (!jsDoc) return undefined;
+
+    return DocBlockExtractor.extract({
+      text: jsDoc.comment?.toString() || '',
+      tags: jsDoc.tags?.map(tag => ({
+        name: tag.tagName.text,
+        text: tag.comment?.toString() || ''
+      })) || []
+    });
+  }
+
+  private extractClassMetadata(node: ts.ClassDeclaration, symbol: ts.Symbol | undefined): Record<string, any> {
+    const metadata: Record<string, any> = {};
+
+    // Extract type parameters
+    if (node.typeParameters) {
+      metadata.typeParameters = node.typeParameters.map(param => ({
+        name: param.name.text,
+        constraint: param.constraint ? this.checker.typeToString(this.checker.getTypeAtLocation(param.constraint)) : undefined
+      }));
+    }
+
+    // Extract heritage clauses (extends/implements)
+    if (node.heritageClauses) {
+      metadata.heritageTypes = node.heritageClauses.map(clause => ({
+        kind: clause.token === ts.SyntaxKind.ExtendsKeyword ? 'extends' : 'implements',
+        types: clause.types.map(type => this.checker.typeToString(this.checker.getTypeAtLocation(type)))
+      }));
+    }
+
+    // Extract modifiers
+    metadata.modifiers = this.extractModifiers(node);
+
+    return metadata;
+  }
+
+  private extractClassMembers(node: ts.ClassDeclaration): DocItem[] {
+    const members: DocItem[] = [];
+
+    for (const member of node.members) {
+      if (ts.isMethodDeclaration(member) || ts.isPropertyDeclaration(member)) {
+        const memberItem = this.extractMember(member);
+        if (memberItem) {
+          members.push(memberItem);
+        }
+      }
+    }
+
+    return members;
+  }
+
+  private extractModifiers(node: ts.Node): string[] {
+    const modifiers: string[] = [];
+
+    if (node.modifiers) {
+      for (const modifier of node.modifiers) {
+        switch (modifier.kind) {
+          case ts.SyntaxKind.PublicKeyword:
+            modifiers.push('public');
+            break;
+          case ts.SyntaxKind.PrivateKeyword:
+            modifiers.push('private');
+            break;
+          case ts.SyntaxKind.ProtectedKeyword:
+            modifiers.push('protected');
+            break;
+          case ts.SyntaxKind.StaticKeyword:
+            modifiers.push('static');
+            break;
+          case ts.SyntaxKind.ReadonlyKeyword:
+            modifiers.push('readonly');
+            break;
+        }
+      }
+    }
+
+    return modifiers;
+  }
+
+  private generateClassId(symbol: ts.Symbol | undefined): string {
+    if (!symbol) return 'anonymous-class';
+
+    const declaration = symbol.declarations?.[0];
+    if (!declaration) return symbol.name;
+
+    // Build qualified name
+    const parts: string[] = [];
+    let current: ts.Node = declaration;
+
+    while (current) {
+      if (ts.isModuleDeclaration(current)) {
+        parts.unshift(current.name.text);
+      } else if (ts.isClassDeclaration(current) && current.name) {
+        parts.push(current.name.text);
+      }
+      current = current.parent;
+    }
+
+    return parts.join('::');
+  }
+
+  private findContainer(node: ts.Node): ContainerRef | undefined {
+    let parent = node.parent;
+
+    while (parent) {
+      if (ts.isModuleDeclaration(parent)) {
+        return {
+          id: parent.name.text,
+          relationship: 'module'
+        };
+      }
+      if (ts.isSourceFile(parent)) {
+        return {
+          id: parent.fileName,
+          relationship: 'file'
+        };
+      }
+      parent = parent.parent;
+    }
+
+    return undefined;
+  }
+
+  private isExportedDeclaration(node: ts.Node): boolean {
+    return node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) || false;
+  }
+}
+```
+
+## Rust Extractor Example
+
+Here's a complete implementation of a Rust extractor using the Syn library:
+
+```rust
+use serde::{Deserialize, Serialize};
+use syn::{parse_file, File, Item, ItemFn, ItemStruct, ItemTrait};
+use quote::quote;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DocItem {
+    pub id: String,
+    pub name: String,
+    pub kind: String,
+    pub language: String,
+    pub doc_block: Option<DocBlock>,
+    pub container: Option<ContainerRef>,
+    pub metadata: Option<serde_json::Value>,
+    pub items: Option<Vec<DocItem>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DocBlock {
+    pub description: Option<String>,
+    pub tags: Option<serde_json::Map<String, serde_json::Value>>,
+    pub deprecated: Option<DeprecatedInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeprecatedInfo {
+    pub message: String,
+    pub since: Option<String>,
+}
+
+pub struct RustExtractor {
+    current_module: Vec<String>,
+}
+
+impl RustExtractor {
+    pub fn new() -> Self {
+        Self {
+            current_module: Vec::new(),
+        }
+    }
+
+    pub fn extract_from_source(&mut self, source: &str, filename: &str) -> Result<Vec<DocItem>, Box<dyn std::error::Error>> {
+        let syntax_tree = parse_file(source)?;
+        let mut items = Vec::new();
+
+        self.extract_from_file(&syntax_tree, filename, &mut items)?;
+        Ok(items)
+    }
+
+    fn extract_from_file(&mut self, file: &File, filename: &str, items: &mut Vec<DocItem>) -> Result<(), Box<dyn std::error::Error>> {
+        for item in &file.items {
+            self.extract_item(item, filename, items)?;
+        }
+        Ok(())
+    }
+
+    fn extract_item(&mut self, item: &Item, filename: &str, items: &mut Vec<DocItem>) -> Result<(), Box<dyn std::error::Error>> {
+        match item {
+            Item::Struct(item_struct) => {
+                let doc_item = self.extract_struct(item_struct, filename)?;
+                items.push(doc_item);
+            }
+            Item::Trait(item_trait) => {
+                let doc_item = self.extract_trait(item_trait, filename)?;
+                items.push(doc_item);
+            }
+            Item::Fn(item_fn) => {
+                if self.is_public_item(item_fn) {
+                    let doc_item = self.extract_function(item_fn, filename)?;
+                    items.push(doc_item);
+                }
+            }
+            Item::Mod(item_mod) => {
+                if let Some((_, ref items)) = item_mod.content {
+                    let prev_module = self.current_module.clone();
+                    self.current_module.push(item_mod.ident.to_string());
+
+                    for inner_item in items {
+                        self.extract_item(inner_item, filename, items)?;
+                    }
+
+                    self.current_module = prev_module;
+                }
+            }
+            _ => {} // Skip other item types for now
+        }
+        Ok(())
+    }
+
+    fn extract_struct(&self, item_struct: &ItemStruct, filename: &str) -> Result<DocItem, Box<dyn std::error::Error>> {
+        let name = item_struct.ident.to_string();
+        let id = self.generate_id(&name, "struct");
+
+        let doc_block = self.extract_doc_block(&item_struct.attrs);
+        let metadata = self.extract_struct_metadata(item_struct);
+        let fields = self.extract_struct_fields(item_struct)?;
+
+        Ok(DocItem {
+            id,
+            name,
+            kind: "struct".to_string(),
+            language: "rust".to_string(),
+            doc_block,
+            container: self.get_container_ref(),
+            metadata: Some(serde_json::to_value(metadata)?),
+            items: Some(fields),
+        })
+    }
+
+    fn extract_trait(&self, item_trait: &ItemTrait, filename: &str) -> Result<DocItem, Box<dyn std::error::Error>> {
+        let name = item_trait.ident.to_string();
+        let id = self.generate_id(&name, "trait");
+
+        let doc_block = self.extract_doc_block(&item_trait.attrs);
+        let metadata = self.extract_trait_metadata(item_trait);
+        let methods = self.extract_trait_methods(item_trait)?;
+
+        Ok(DocItem {
+            id,
+            name,
+            kind: "trait".to_string(),
+            language: "rust".to_string(),
+            doc_block,
+            container: self.get_container_ref(),
+            metadata: Some(serde_json::to_value(metadata)?),
+            items: Some(methods),
+        })
+    }
+
+    fn extract_function(&self, item_fn: &ItemFn, filename: &str) -> Result<DocItem, Box<dyn std::error::Error>> {
+        let name = item_fn.sig.ident.to_string();
+        let id = self.generate_id(&name, "function");
+
+        let doc_block = self.extract_doc_block(&item_fn.attrs);
+        let metadata = self.extract_function_metadata(item_fn);
+
+        Ok(DocItem {
+            id,
+            name,
+            kind: "function".to_string(),
+            language: "rust".to_string(),
+            doc_block,
+            container: self.get_container_ref(),
+            metadata: Some(serde_json::to_value(metadata)?),
+            items: None,
+        })
+    }
+
+    fn extract_doc_block(&self, attrs: &[syn::Attribute]) -> Option<DocBlock> {
+        for attr in attrs {
+            if attr.path.is_ident("doc") {
+                if let Ok(syn::Meta::NameValue(meta)) = attr.parse_meta() {
+                    if let syn::Lit::Str(lit_str) = meta.lit {
+                        let doc_text = lit_str.value();
+                        return Some(self.parse_doc_comment(&doc_text));
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn parse_doc_comment(&self, doc_text: &str) -> DocBlock {
+        let lines: Vec<&str> = doc_text.lines()
+            .map(|line| line.trim_start_matches("/// ").trim_start_matches("///"))
+            .collect();
+
+        let (description, tag_lines) = self.split_description_and_tags(&lines);
+        let tags = self.parse_tags(&tag_lines);
+
+        DocBlock {
+            description: if description.is_empty() { None } else { Some(description.join("\n")) },
+            tags: if tags.is_empty() { None } else { Some(tags) },
+            deprecated: self.extract_deprecated(&tags),
+        }
+    }
+
+    fn extract_struct_metadata(&self, item_struct: &ItemStruct) -> serde_json::Value {
+        let mut metadata = serde_json::Map::new();
+
+        // Extract generics
+        if !item_struct.generics.params.is_empty() {
+            let type_params: Vec<serde_json::Value> = item_struct.generics.params.iter()
+                .map(|param| {
+                    serde_json::json!({
+                        "name": param.to_token_stream().to_string()
+                    })
+                })
+                .collect();
+            metadata.insert("typeParameters".to_string(), serde_json::Value::Array(type_params));
+        }
+
+        // Extract visibility
+        metadata.insert("visibility".to_string(), serde_json::Value::String(
+            self.visibility_to_string(&item_struct.vis)
+        ));
+
+        serde_json::Value::Object(metadata)
+    }
+
+    fn extract_trait_metadata(&self, item_trait: &ItemTrait) -> serde_json::Value {
+        let mut metadata = serde_json::Map::new();
+
+        // Extract supertraits
+        if !item_trait.supertraits.is_empty() {
+            let supertraits: Vec<String> = item_trait.supertraits.iter()
+                .map(|bound| bound.to_token_stream().to_string())
+                .collect();
+            metadata.insert("supertraits".to_string(), serde_json::Value::Array(
+                supertraits.into_iter().map(serde_json::Value::String).collect()
+            ));
+        }
+
+        // Extract generics
+        if !item_trait.generics.params.is_empty() {
+            let type_params: Vec<serde_json::Value> = item_trait.generics.params.iter()
+                .map(|param| {
+                    serde_json::json!({
+                        "name": param.to_token_stream().to_string()
+                    })
+                })
+                .collect();
+            metadata.insert("typeParameters".to_string(), serde_json::Value::Array(type_params));
+        }
+
+        serde_json::Value::Object(metadata)
+    }
+
+    fn extract_function_metadata(&self, item_fn: &ItemFn) -> serde_json::Value {
+        let mut metadata = serde_json::Map::new();
+
+        // Extract signature
+        let signature = serde_json::json!({
+            "parameters": item_fn.sig.inputs.iter().map(|arg| {
+                serde_json::json!({
+                    "name": arg.to_token_stream().to_string()
+                })
+            }).collect::<Vec<_>>(),
+            "returnType": item_fn.sig.output.to_token_stream().to_string()
+        });
+
+        metadata.insert("signature".to_string(), signature);
+        metadata.insert("visibility".to_string(), serde_json::Value::String(
+            self.visibility_to_string(&item_fn.vis)
+        ));
+
+        serde_json::Value::Object(metadata)
+    }
+
+    fn generate_id(&self, name: &str, kind: &str) -> String {
+        let mut parts = self.current_module.clone();
+        parts.push(name.to_string());
+        parts.join("::")
+    }
+
+    fn get_container_ref(&self) -> Option<ContainerRef> {
+        if self.current_module.is_empty() {
+            None
+        } else {
+            Some(ContainerRef {
+                id: self.current_module.join("::"),
+                relationship: "module".to_string(),
+            })
+        }
+    }
+
+    fn visibility_to_string(&self, vis: &syn::Visibility) -> String {
+        match vis {
+            syn::Visibility::Public(_) => "public".to_string(),
+            syn::Visibility::Crate(_) => "crate".to_string(),
+            syn::Visibility::Restricted(r) => format!("restricted({})", r.path.to_token_stream()),
+            syn::Visibility::Inherited => "private".to_string(),
+        }
+    }
+
+    fn is_public_item(&self, item: &impl syn::parse::Parse) -> bool {
+        // Simplified public item detection
+        // In real implementation, check visibility modifiers
+        true
+    }
+}
+```
+
+## Best Practices for Building Extractors
+
+### 1. Start Simple
+
+<Tip>
+  Begin with basic extraction of classes, functions, and interfaces before adding complex features like generics, decorators, or annotations.
+</Tip>
+
+Focus on:
+- Name and ID extraction
+- Basic documentation comments
+- Simple metadata (visibility, modifiers)
+- Container relationships
+
+### 2. Leverage Language-Specific Tools
+
+Use established AST parsers and tooling:
+- **TypeScript**: TypeScript Compiler API
+- **Rust**: Syn + Quote
+- **Go**: go/ast + go/parser
+- **Python**: ast module
+- **Java**: JavaParser or Eclipse JDT
+
+### 3. Handle Documentation Comments Properly
+
+Different languages have different documentation comment formats:
+
+```typescript
+// TypeScript/JavaScript - JSDoc
+/**
+ * Function description
+ * @param name - Parameter description
+ * @returns Return value description
+ */
+
+// Rust - Doc comments
+/// Function description
+///
+/// # Arguments
+/// * `name` - Parameter description
+
+// Python - Docstrings
+"""
+Function description
+
+Args:
+    name: Parameter description
+
+Returns:
+    Return value description
+"""
+
+// Go - Comment blocks
+// Function description.
+//
+// Parameters:
+//   - name: Parameter description
+```
+
+### 4. Generate Unique, Stable IDs
+
+IDs should be:
+- **Unique**: No collisions within a project
+- **Stable**: Unchanged across rebuilds
+- **Qualified**: Include namespace/module path
+- **Language-prefixed**: Indicate language for cross-language projects
+
+Example ID patterns:
+```typescript
+// TypeScript
+"typescript::MyNamespace::MyClass::myMethod"
+
+// Rust
+"rust::my_crate::my_module::MyStruct"
+
+// Go
+"go::github.com/user/repo/pkg::MyType"
+```
+
+### 5. Extract Rich Metadata
+
+Include language-specific metadata that helps documentation tools:
+
+```typescript
+{
+  metadata: {
+    // TypeScript
+    typeParameters: [{ name: "T", constraint: "object" }],
+    modifiers: ["public", "static"],
+    heritageTypes: [{ kind: "extends", types: ["BaseClass"] }],
+
+    // Rust
+    visibility: "pub(crate)",
+    supertraits: ["Clone", "Debug"],
+
+    // Common
+    deprecated: { message: "Use newMethod instead", since: "2.0.0" },
+    sourceLocation: { file: "src/index.ts", line: 42 }
+  }
+}
+```
+
+## Common Pitfalls
+
+### 1. Incomplete AST Traversal
+
+**Problem**: Missing items due to incomplete tree walking.
+
+**Solution**: Use recursive traversal and handle all relevant node types:
+
+```typescript
+private extractFromNode(node: ts.Node, items: DocItem[]): void {
+  // Extract current node
+  if (this.shouldExtract(node)) {
+    const item = this.extractDocItem(node);
+    if (item) items.push(item);
+  }
+
+  // Recurse to children
+  ts.forEachChild(node, child => {
+    this.extractFromNode(child, items);
+  });
+}
+```
+
+### 2. Ignoring Nested Structures
+
+**Problem**: Only extracting top-level items.
+
+**Solution**: Track nesting context and extract nested classes, enums, etc.
+
+### 3. Poor Error Handling
+
+**Problem**: Extraction crashes on malformed code.
+
+**Solution**: Gracefully handle parse errors and continue extraction:
+
+```typescript
+try {
+  const item = this.extractClass(node);
+  items.push(item);
+} catch (error) {
+  console.warn(`Failed to extract ${node.name}: ${error.message}`);
+  // Continue with next item
+}
+```
+
+### 4. Memory Leaks on Large Codebases
+
+**Problem**: Loading entire AST into memory.
+
+**Solution**: Process files in batches and use streaming:
+
+```typescript
+async* extractFromProject(projectPath: string): AsyncGenerator<DocItem> {
+  for await (const filePath of this.getSourceFiles(projectPath)) {
+    const items = this.extractFromFile(filePath);
+    for (const item of items) {
+      yield item;
+    }
+    // File processed, memory can be freed
+  }
+}
+```
+
+## See Also
+
+- [DocItem Model](/opendocs/implementation/docitem-model) - Core documentation structure
+- [Documentation Set Builder](/opendocs/implementation/docset-builder) - Organizing extracted items
+- [Testing Your Implementation](/opendocs/implementation/testing) - Test strategies for extractors
+- [Performance Optimization](/opendocs/implementation/performance) - Optimize extraction performance
+
+---
+
+*This guide is part of the OpenDocs Specification RFC. Help us improve it by sharing your extractor implementations and feedback.*

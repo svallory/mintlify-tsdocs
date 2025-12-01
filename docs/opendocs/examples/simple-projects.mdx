@@ -1,0 +1,166 @@
+---
+title: Simple Project Examples
+sidebarTitle: Simple Projects
+description: OpenDocs examples for single-language libraries
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+# Simple Project Examples
+
+<Warning>
+  **RFC Status**: This section contains proposed examples for the OpenDocs Specification RFC.
+
+  These examples are provided to illustrate how the specification could be implemented.
+  [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help refine these examples.
+</Warning>
+
+## Simple TypeScript Library
+
+This example demonstrates the most basic OpenDocs implementation for a single-language TypeScript utility library.
+
+### Project Structure
+
+<FileTree
+  structure={[
+    {
+      name: "src/",
+      children: [
+        { name: "index.ts" },
+        { name: "math.ts" },
+        { name: "string.ts" }
+      ]
+    },
+    { name: "package.json" },
+    { name: "tsconfig.json" }
+  ]}
+/>
+
+### opendocs.json Configuration
+```json
+{
+  "documentationSet": {
+    "id": "typescript-utils-docs",
+    "name": "TypeScript Utilities Documentation",
+    "description": "A collection of utility functions for TypeScript",
+    "version": "1.0.0",
+    "created": "2024-01-15T10:30:00Z"
+  },
+  "projects": [
+    {
+      "id": "main",
+      "name": "Main Library",
+      "language": "typescript",
+      "version": "1.2.3",
+      "location": {
+        "type": "embedded",
+        "format": "json"
+      }
+    }
+  ],
+  "navigation": {
+    "title": "API Reference",
+    "groups": [
+      {
+        "name": "Core API",
+        "projects": ["main"]
+      }
+    ]
+  }
+}
+```
+
+### Generated Documentation
+```json
+{
+  "project": {
+    "id": "main",
+    "name": "TypeScript Utilities",
+    "language": "typescript",
+    "items": {
+      "format": "json",
+      "file": "main-items.json",
+      "count": 15
+    },
+    "metadata": {
+      "version": "1.2.3",
+      "repository": "https://github.com/example/typescript-utils"
+    }
+  }
+}
+```
+
+### Sample DocItems
+```json
+[
+  {
+    "id": "math#add",
+    "name": "add",
+    "kind": "function",
+    "language": "typescript",
+    "docBlock": {
+      "description": "Adds two numbers together",
+      "tags": {
+        "param": [
+          {
+            "name": "param",
+            "content": "The first number",
+            "parameters": { "name": "a", "type": "number" }
+          },
+          {
+            "name": "param",
+            "content": "The second number",
+            "parameters": { "name": "b", "type": "number" }
+          }
+        ],
+        "returns": ["The sum of a and b"]
+      }
+    },
+    "metadata": {
+      "signature": {
+        "parameters": [
+          { "name": "a", "type": "number" },
+          { "name": "b", "type": "number" }
+        ],
+        "returnType": "number"
+      }
+    }
+  },
+  {
+    "id": "string#capitalize",
+    "name": "capitalize",
+    "kind": "function",
+    "language": "typescript",
+    "docBlock": {
+      "description": "Capitalizes the first letter of a string",
+      "tags": {
+        "param": [
+          {
+            "name": "param",
+            "content": "The string to capitalize",
+            "parameters": { "name": "str", "type": "string" }
+          }
+        ],
+        "returns": ["The capitalized string"]
+      }
+    }
+  }
+]
+```
+
+## Key Takeaways
+
+- **Embedded Format**: Simple projects can use `"type": "embedded"` to keep all DocItems in the opendocs.json file
+- **Minimal Configuration**: Only requires basic metadata and project information
+- **Single Navigation Group**: Groups all API items under one navigation section
+- **JSON Format**: Ideal for projects with fewer than 100 documented items
+
+## See Also
+
+- [Monorepo Examples](/opendocs/examples/monorepo) - Multi-language project examples
+- [OpenDocs File Organization](/opendocs/opendocs-file-organization) - Learn about file storage options
+- [Examples Overview](/opendocs/examples/index) - Back to all examples
+
+---
+
+*This example is part of the OpenDocs Specification RFC. [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help improve it.*

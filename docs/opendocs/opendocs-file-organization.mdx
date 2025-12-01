@@ -1,0 +1,348 @@
+---
+title: OpenDocs File Organization
+sidebarTitle: File Organization
+description: How OpenDocs organizes documentation into files and projects
+---
+
+## Overview
+
+OpenDocs uses JSON Schema `$ref` to organize documentation, making file structure flexible. Only `opendocs.json` is required—everything else can be referenced via `$ref`.
+
+## Using $ref
+
+The `$ref` keyword (defined in [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986)) allows JSON documents to reference content in other locations using URI references. OpenDocs uses `$ref` to split large documentation sets across multiple files.
+
+**Basic syntax:**
+```json
+{
+  "id": "my-docs",
+  "name": "My Documentation",
+  "projects": [
+    { "$ref": "./projects/auth.json" },           // Relative file reference
+    { "$ref": "https://example.com/types.json" }  // URL reference
+  ]
+}
+```
+
+The referenced file should contain the complete object that would otherwise be inline. For example, `./projects/auth.json` should contain a complete `Project` object.
+
+For a comprehensive guide on `$ref` usage, see the [Swagger $ref documentation](https://swagger.io/docs/specification/v3_0/using-ref/).
+
+## Key Principle: File Organization is Flexible
+
+Since OpenDocs relies on JSON Schema `$ref`, the physical directory structure and file naming conventions are **completely flexible**. You can organize your documentation files however you prefer:
+
+- All content can be embedded in `opendocs.json`
+- Content can be split across multiple files using `$ref`
+- Files can be named and organized in any directory structure
+- The only requirement is that `opendocs.json` must exist as the entry point
+
+### Example: Using $ref for Flexibility
+
+```json
+{
+  "documentationSet": { "id": "my-docs", "name": "My Documentation" },
+  "projects": [
+    { "$ref": "./projects/auth.json" },
+    { "$ref": "./deeply/nested/path/to/sdk.json" },
+    { "$ref": "https://example.com/shared/types.json" }
+  ]
+}
+```
+
+The same documentation set could be organized with all content in a single file, or split across any number of files in any directory structure.
+
+import { TypeTree, TypeTreeGroup } from "/snippets/tsdocs/TypeTree.jsx"
+
+## File Structure
+
+### Documentation Set Layout
+
+Since OpenDocs uses JSON Schema `$ref`, the physical file organization is irrelevant. The only required file is `opendocs.json`:
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+<FileTree
+  title="Minimal Documentation Set"
+  structure={[
+    {
+      name: "opendocs.json",
+      description: "Required entry point with project organization"
+    }
+  ]}
+/>
+
+## Organization Strategies
+
+You can organize your Documentation Set in two main ways:
+
+1. **Monolithic** - All content embedded in `opendocs.json`
+2. **Distributed** - Content split across multiple files using `$ref`
+
+The choice depends on your preferences and project size. Both are valid approaches.
+
+## Example: Monorepo Documentation Set
+
+This example shows a monorepo with multiple projects. We'll show both the monolithic approach (everything embedded) and the distributed approach (split using `$ref`).
+
+### Monolithic Approach
+
+Everything in a single `opendocs.json` file:
+
+```json
+{
+  "id": "acme-platform",
+  "name": "ACME Platform",
+  "version": "1.0.0",
+  "projects": [
+    {
+      "id": "auth-service",
+      "name": "Authentication Service",
+      "language": "go",
+      "version": "1.5.0",
+      "dependencies": ["shared-types"],
+      "items": [
+        {
+          "id": "auth-service#AuthController",
+          "name": "AuthController",
+          "kind": "struct",
+          "language": "go",
+          "docBlock": {
+            "description": "Handles authentication requests"
+          },
+          "items": [
+            {
+              "id": "auth-service#AuthController#Login",
+              "name": "Login",
+              "kind": "method",
+              "language": "go",
+              "docBlock": {
+                "description": "Authenticates a user",
+                "tags": {
+                  "param": [
+                    {
+                      "name": "param",
+                      "content": "User credentials",
+                      "parameters": { "name": "credentials", "type": "Credentials" }
+                    }
+                  ],
+                  "returns": ["Authentication token"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "web-sdk",
+      "name": "Web SDK",
+      "language": "typescript",
+      "version": "2.0.0",
+      "dependencies": ["shared-types"],
+      "items": [
+        {
+          "id": "web-sdk#ApiClient",
+          "name": "ApiClient",
+          "kind": "class",
+          "language": "typescript",
+          "docBlock": {
+            "description": "Main API client for the platform"
+          }
+        }
+      ]
+    },
+    {
+      "id": "shared-types",
+      "name": "Shared Types",
+      "language": "typescript",
+      "version": "1.0.0",
+      "items": [
+        {
+          "id": "shared-types#User",
+          "name": "User",
+          "kind": "interface",
+          "language": "typescript",
+          "docBlock": {
+            "description": "User entity"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Distributed Approach
+
+The same documentation split across multiple files using `$ref`:
+
+**opendocs.json:**
+```json
+{
+  "id": "acme-platform",
+  "name": "ACME Platform",
+  "version": "1.0.0",
+  "projects": [
+    { "$ref": "./projects/auth-service.json" },
+    { "$ref": "./projects/web-sdk.json" },
+    { "$ref": "./projects/shared-types.json" }
+  ]
+}
+```
+
+**projects/auth-service.json:**
+```json
+{
+  "id": "auth-service",
+  "name": "Authentication Service",
+  "language": "go",
+  "version": "1.5.0",
+  "dependencies": ["shared-types"],
+  "items": [
+    {
+      "id": "auth-service#AuthController",
+      "name": "AuthController",
+      "kind": "struct",
+      "language": "go",
+      "docBlock": {
+        "description": "Handles authentication requests"
+      },
+      "items": [
+        {
+          "id": "auth-service#AuthController#Login",
+          "name": "Login",
+          "kind": "method",
+          "language": "go",
+          "docBlock": {
+            "description": "Authenticates a user",
+            "tags": {
+              "param": [
+                {
+                  "name": "param",
+                  "content": "User credentials",
+                  "parameters": { "name": "credentials", "type": "Credentials" }
+                }
+              ],
+              "returns": ["Authentication token"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**projects/web-sdk.json:**
+```json
+{
+  "id": "web-sdk",
+  "name": "Web SDK",
+  "language": "typescript",
+  "version": "2.0.0",
+  "dependencies": ["shared-types"],
+  "items": [
+    {
+      "id": "web-sdk#ApiClient",
+      "name": "ApiClient",
+      "kind": "class",
+      "language": "typescript",
+      "docBlock": {
+        "description": "Main API client for the platform"
+      }
+    }
+  ]
+}
+```
+
+**projects/shared-types.json:**
+```json
+{
+  "id": "shared-types",
+  "name": "Shared Types",
+  "language": "typescript",
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "shared-types#User",
+      "name": "User",
+      "kind": "interface",
+      "language": "typescript",
+      "docBlock": {
+        "description": "User entity"
+      }
+    }
+  ]
+}
+```
+
+Both approaches produce identical documentation. The distributed approach is easier to manage for large projects with many items.
+
+## File and Directory Naming
+
+Since OpenDocs uses `$ref`, file names and directory structure are completely flexible. Use whatever organization makes sense for your project:
+
+```
+opendocs.json
+projects/
+  ├── auth-service.json
+  ├── web-sdk.json
+  └── shared-types.json
+```
+
+Or:
+
+```
+my-docs.json
+api/
+  auth.json
+  sdk.json
+  types.json
+```
+
+Both are equally valid.
+
+## Best Practices
+
+### ID Conventions
+
+Use consistent, predictable naming for IDs:
+
+**Documentation Set IDs:** `lowercase-with-hyphens`
+- Example: `acme-platform-docs`
+
+**Project IDs:** `lowercase-with-hyphens`
+- Example: `auth-service`, `web-sdk`, `shared-types`
+
+**DocItem IDs:** `project-id#item-path`
+- Top-level: `auth-service#AuthController`
+- Nested: `auth-service#AuthController#Login`
+- Deep nesting: `auth-service#api#v2#AuthController#Login`
+
+**Language-Specific Delimiters:**
+- Use `#` to separate OpenDocs components
+- Use `::` for namespace-style IDs (Rust): `serde::de::Deserialize`
+- Use `.` for package-style IDs (TypeScript): `@acme/utils.StringHelper`
+
+### Project Organization
+
+1. **Use meaningful IDs** - `auth-service` not `proj1`
+2. **Declare dependencies** - Help tools understand relationships between projects
+3. **Include versions** - Track documentation evolution over time
+
+## Next Steps
+
+- Learn about the [OpenDocs Model](/opendocs/opendocs-model) to understand Projects, DocItems, and DocBlocks
+- Explore the [Design Principles](/opendocs/design-principles) behind OpenDocs
+
+## RFC Feedback
+
+This file organization specification is part of the OpenDocs RFC. Please provide feedback on:
+
+- File organization patterns and use cases
+- `$ref` usage and resolution strategies
+- ID naming conventions and best practices
+- Any confusion or unclear aspects
+
+Submit feedback via [GitHub Issues](https://github.com/svallory/mintlify-tsdocs/issues) or [Discussions](https://github.com/svallory/mintlify-tsdocs/discussions).

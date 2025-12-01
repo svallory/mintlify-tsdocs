@@ -28,7 +28,8 @@ export const TypeTree = ({
   properties = [],
   defaultValue,
   level = 0,
-  maxDepth = 10
+  maxDepth = 10,
+  open = false
 }) => {
   // Prevent infinite recursion from circular references
   if (level >= maxDepth) {
@@ -61,13 +62,13 @@ export const TypeTree = ({
     >
       {description}
       {hasNested && (
-        <Expandable title="props" key={`${name}-${level}`} defaultOpen={false}>
+        <Expandable title="props" key={`${name}-${level}`} defaultOpen={open}>
           {properties.map((prop, idx) => {
             // Use stable key: combine name with index for uniqueness
             // Better than pure index, though ideally each prop would have a unique ID
             const key = prop.name ? `${prop.name}-${idx}` : `prop-${idx}`;
             return (
-              <TypeTree
+              <TypeTree open
                 key={key}
                 name={prop.name}
                 type={prop.type}

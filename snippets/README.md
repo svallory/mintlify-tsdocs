@@ -64,6 +64,7 @@ Display nested object types, API parameters, return values, or any hierarchical 
 
 ```jsx
 <TypeTree
+  open
   name="config"
   type="object"
   description="Database configuration settings"
@@ -106,6 +107,7 @@ import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx";
 ## Configuration Object
 
 <TypeTree
+  open
   name="config"
   type="object"
   required={true}
@@ -225,6 +227,151 @@ import { PageLink } from "/snippets/tsdocs/PageLink.jsx";
 
 ---
 
+### `FileTree.jsx`
+
+Static component for displaying hierarchical file structures with visual icons and descriptions. Renders a tree view of files and folders using Lucide icons.
+
+**Purpose:**
+Display project file structures, directory hierarchies, or file organization in documentation with a clean, code-block styled interface.
+
+**Key Features:**
+
+- ✅ Static hierarchical file structure visualization
+- ✅ Lucide icons for files and folders
+- ✅ Optional descriptions and badges for files/directories
+- ✅ Vertical guide lines for nested items
+- ✅ Maximum depth protection
+- ✅ Dark mode support with Tailwind classes
+- ✅ Code block styling with rounded corners
+
+**Props:**
+
+| Prop        | Type              | Default  | Description                                |
+| ----------- | ----------------- | -------- | ------------------------------------------ |
+| `structure` | `FileTreeItem[]`  | required | Hierarchical structure of files and directories |
+| `title`     | `string`          | optional | Title for the file tree                    |
+| `maxDepth`  | `number`          | `10`     | Maximum depth to prevent infinite recursion |
+| `showIcons` | `boolean`         | `true`   | Whether to show file/folder icons          |
+
+**Usage Example:**
+
+```jsx
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+<FileTree
+  title="OpenDocs File Structure"
+  structure={[
+    {
+      name: "opendocs.json",
+      description: "Main file with project organization",
+      badge: { text: "Collection", color: "blue" }
+    },
+    {
+      name: "projects/",
+      children: [
+        {
+          name: "auth-service.json",
+          description: "Project metadata"
+        },
+        {
+          name: "auth-service.jsonl",
+          description: "Project DocItems (JSONL format)",
+          badge: { text: "JSONL", color: "green" }
+        }
+      ]
+    }
+  ]}
+/>
+```
+
+**In MDX:**
+
+```mdx
+---
+title: "Project Structure"
+---
+
+import { FileTree } from "/snippets/tsdocs/FileTree.jsx";
+
+## File Organization
+
+<FileTree
+  title="Source Code Structure"
+  structure={[
+    { name: "src/", children: [
+      { name: "index.ts", description: "Main entry point" },
+      { name: "components/", children: [
+        { name: "Button.tsx", description: "Button component" },
+        { name: "Card.tsx", description: "Card component" }
+      ]}
+    ]},
+    { name: "package.json", description: "Package configuration" }
+  ]}
+/>
+```
+
+---
+
+### `JsonTree.jsx`
+
+A beautiful, UX-focused component for displaying JSON structures. Uses badges, type indicators, and visual hierarchy for optimal readability.
+
+**Purpose:**
+Display JSON data structures with enhanced visual design, including type-specific colors, badges, and clean indentation for improved readability.
+
+**Key Features:**
+
+- ✅ Beautiful JSON structure visualization
+- ✅ Type-specific color coding (strings, numbers, booleans, null)
+- ✅ Badge-based property names with consistent styling
+- ✅ Recursive rendering for nested objects and arrays
+- ✅ Visual hierarchy with borders and indentation
+- ✅ Maximum depth protection
+- ✅ Clean, modern design with proper spacing
+
+**Props:**
+
+| Prop       | Type     | Default  | Description                          |
+| ---------- | -------- | -------- | ------------------------------------ |
+| `data`     | `any`    | required | JSON data to display                 |
+| `title`    | `string` | optional | Title for the root visualization     |
+| `maxDepth` | `number` | `5`      | Maximum depth to prevent recursion   |
+
+**Usage Example:**
+
+```jsx
+import { JsonTree } from "/snippets/tsdocs/JsonTree.jsx";
+
+<JsonTree
+  data={{
+    name: "John Doe",
+    age: 30,
+    isActive: true,
+    address: {
+      street: "123 Main St",
+      city: "New York",
+      coordinates: {
+        lat: 40.7128,
+        lng: -74.0060
+      }
+    },
+    hobbies: ["reading", "coding", "hiking"],
+    metadata: null
+  }}
+  title="User Profile Data"
+/>
+```
+
+**Rendered Output Features:**
+- Property names displayed as blue badges
+- String values in green with proper quotes
+- Numbers in blue
+- Booleans in orange
+- Null values in gray with italic styling
+- Arrays show length indicator
+- Objects show nested structure with visual indentation
+- Consistent spacing and typography
+
 ### `TypeTreeGroup.jsx`
 
 Wrapper component for grouping multiple `TypeTree` components.
@@ -239,9 +386,9 @@ Wrapper component for grouping multiple `TypeTree` components.
 **Usage Example:**
 
 ```jsx
-<TypeTreeGroup title="Function Parameters">
-  <TypeTree name="id" type="string" required />
-  <TypeTree name="options" type="object" properties={...} />
+<TypeTreeGroup open title="Function Parameters">
+  <TypeTree open name="id" type="string" required />
+  <TypeTree open name="options" type="object" properties={...} />
 </TypeTreeGroup>
 ```
 
@@ -303,6 +450,8 @@ export default CodeTabs;
 private async _installMintlifyComponents(outputFolder: string): Promise<void> {
   const componentsToCopy = [
     'TypeTree.jsx',
+    'FileTree.jsx',
+    'JsonTree.jsx',
     'CodeTabs.jsx'  // Add here
   ];
 
@@ -391,7 +540,7 @@ import { TypeTree } from "../../src/components/TypeTree";
 describe("TypeTree", () => {
   it("should render basic property", () => {
     render(
-      <TypeTree name="username" type="string" description="User's name" />
+      <TypeTree open name="username" type="string" description="User's name" />
     );
 
     expect(screen.getByText("username")).toBeInTheDocument();
@@ -402,6 +551,7 @@ describe("TypeTree", () => {
   it("should expand/collapse nested properties", () => {
     render(
       <TypeTree
+        open
         name="config"
         type="object"
         properties={[{ name: "host", type: "string" }]}
@@ -415,12 +565,12 @@ describe("TypeTree", () => {
   });
 
   it("should show required badge", () => {
-    render(<TypeTree name="id" type="string" required />);
+    render(<TypeTree open name="id" type="string" required />);
     expect(screen.getByText("required")).toBeInTheDocument();
   });
 
   it("should show deprecated badge", () => {
-    render(<TypeTree name="oldField" type="string" deprecated />);
+    render(<TypeTree open name="oldField" type="string" deprecated />);
     expect(screen.getByText("deprecated")).toBeInTheDocument();
   });
 });
@@ -531,13 +681,13 @@ my - 2; // margin-y: 0.5rem
    ```jsx
    // ❌ Bad
    {
-     properties.map((prop, idx) => <TypeTree key={idx} {...prop} />);
+     properties.map((prop, idx) => <TypeTree open key={idx} {...prop} />);
    }
 
    // ✅ Good
    {
      properties.map((prop) => (
-       <TypeTree key={`${prop.name}-${level}`} {...prop} />
+       <TypeTree open key={`${prop.name}-${level}`} {...prop} />
      ));
    }
    ```
@@ -683,7 +833,7 @@ import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx";
 
 ## Request Body
 
-<TypeTree
+<TypeTree open
   name="body"
   type="object"
   required={true}

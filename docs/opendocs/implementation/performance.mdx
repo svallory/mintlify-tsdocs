@@ -1,0 +1,595 @@
+---
+title: Performance Optimization
+sidebarTitle: Performance
+description: Optimize OpenDocs for large codebases
+---
+
+<Warning>
+  **RFC Status**: This document is part of the OpenDocs RFC and subject to change based on community feedback.
+</Warning>
+
+# Performance Optimization
+
+Optimize your OpenDocs implementation to handle large codebases efficiently. This guide covers memory management, streaming, caching, and performance best practices.
+
+## Memory Management
+
+### Streaming Large Datasets with JSON $ref
+
+For large codebases, avoid loading all DocItems into memory at once by using JSON $ref to external files:
+
+```typescript
+class StreamingDocItemProcessor {
+  private batchSize = 1000;
+  private maxMemoryUsage = 50 * 1024 * 1024; // 50MB
+
+  async* processLargeDataset(filename: string): AsyncGenerator<DocItem[]> {
+    let batch: DocItem[] = [];
+    let currentMemory = 0;
+
+    // Use JSON $ref to load items from external files on demand
+    const mainDoc = await this.loadMainDocument(filename);
+
+    for (const ref of mainDoc.items) {
+      const item = await this.loadReferencedItem(ref.$ref);
+      batch.push(item);
+      currentMemory += this.estimateItemSize(item);
+
+      if (batch.length >= this.batchSize || currentMemory >= this.maxMemoryUsage) {
+        yield batch;
+        batch = [];
+        currentMemory = 0;
+      }
+    }
+
+    if (batch.length > 0) {
+      yield batch;
+    }
+  }
+
+  private estimateItemSize(item: DocItem): number {
+    return JSON.stringify(item).length * 2; // Rough estimate
+  }
+
+  private async loadMainDocument(filename: string): Promise<any> {
+    // Main document contains references to external files
+    const content = await fs.readFile(filename, 'utf-8');
+    return JSON.parse(content);
+  }
+
+  private async loadReferencedItem(refPath: string): Promise<DocItem> {
+    // Load individual items from external files as needed
+    const content = await fs.readFile(refPath, 'utf-8');
+    return JSON.parse(content) as DocItem;
+  }
+}
+```
+
+### Memory-Efficient Extraction
+
+Process files one at a time instead of loading the entire project:
+
+```typescript
+class MemoryEfficientExtractor {
+  async* extractFromProject(projectPath: string): AsyncGenerator<DocItem> {
+    for await (const filePath of this.getSourceFiles(projectPath)) {
+      const items = await this.extractFromFile(filePath);
+
+      for (const item of items) {
+        yield item;
+      }
+
+      // File processed, AST can be garbage collected
+    }
+  }
+
+  private async* getSourceFiles(projectPath: string): AsyncGenerator<string> {
+    const files = await glob('**/*.ts', { cwd: projectPath });
+
+    for (const file of files) {
+      yield path.join(projectPath, file);
+    }
+  }
+
+  private async extractFromFile(filePath: string): Promise<DocItem[]> {
+    const program = ts.createProgram([filePath], {});
+    const extractor = new TypeScriptExtractor(program);
+
+    return extractor.extractFromFile(filePath);
+  }
+}
+```
+
+### Batch Processing
+
+Process items in batches for better performance:
+
+```typescript
+async function processInBatches<T>(
+  items: AsyncIterable<T>,
+  batchSize: number,
+  processor: (batch: T[]) => Promise<void>
+): Promise<void> {
+  let batch: T[] = [];
+
+  for await (const item of items) {
+    batch.push(item);
+
+    if (batch.length >= batchSize) {
+      await processor(batch);
+      batch = [];
+    }
+  }
+
+  // Process remaining items
+  if (batch.length > 0) {
+    await processor(batch);
+  }
+}
+
+// Usage
+const extractor = new MemoryEfficientExtractor();
+
+await processInBatches(
+  extractor.extractFromProject('./src'),
+  100,
+  async (batch) => {
+    await writeDocItems(batch);
+  }
+);
+```
+
+## Caching Strategies
+
+### LRU Cache for DocItems
+
+```typescript
+class DocItemCache {
+  private cache = new Map<string, DocItem>();
+  private maxSize = 10000;
+  private accessCount = new Map<string, number>();
+
+  get(id: string): DocItem | undefined {
+    const item = this.cache.get(id);
+    if (item) {
+      this.accessCount.set(id, (this.accessCount.get(id) || 0) + 1);
+    }
+    return item;
+  }
+
+  set(id: string, item: DocItem): void {
+    if (this.cache.size >= this.maxSize) {
+      this.evictLeastUsed();
+    }
+    this.cache.set(id, item);
+    this.accessCount.set(id, 1);
+  }
+
+  private evictLeastUsed(): void {
+    let minAccesses = Infinity;
+    let evictId: string | undefined;
+
+    for (const [id, count] of this.accessCount) {
+      if (count < minAccesses) {
+        minAccesses = count;
+        evictId = id;
+      }
+    }
+
+    if (evictId) {
+      this.cache.delete(evictId);
+      this.accessCount.delete(evictId);
+    }
+  }
+
+  clear(): void {
+    this.cache.clear();
+    this.accessCount.clear();
+  }
+
+  size(): number {
+    return this.cache.size;
+  }
+}
+```
+
+### File-Based Cache
+
+For very large projects, use file-based caching:
+
+```typescript
+class FileBasedCache {
+  constructor(private cacheDir: string) {}
+
+  async get(key: string): Promise<DocItem | undefined> {
+    const filePath = this.getFilePath(key);
+
+    try {
+      const data = await fs.readFile(filePath, 'utf-8');
+      return JSON.parse(data) as DocItem;
+    } catch {
+      return undefined;
+    }
+  }
+
+  async set(key: string, item: DocItem): Promise<void> {
+    const filePath = this.getFilePath(key);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(item));
+  }
+
+  private getFilePath(key: string): string {
+    const hash = crypto.createHash('md5').update(key).digest('hex');
+    const dir = hash.substring(0, 2);
+    const file = hash.substring(2);
+    return path.join(this.cacheDir, dir, `${file}.json`);
+  }
+
+  async clear(): Promise<void> {
+    await fs.rm(this.cacheDir, { recursive: true, force: true });
+  }
+}
+```
+
+### Cache with TTL
+
+Add time-to-live to cache entries:
+
+```typescript
+interface CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
+class TTLCache<T> {
+  private cache = new Map<string, CacheEntry<T>>();
+  private defaultTTL = 60 * 60 * 1000; // 1 hour
+
+  get(key: string): T | undefined {
+    const entry = this.cache.get(key);
+
+    if (!entry) return undefined;
+
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return undefined;
+    }
+
+    return entry.value;
+  }
+
+  set(key: string, value: T, ttl?: number): void {
+    const expiresAt = Date.now() + (ttl || this.defaultTTL);
+    this.cache.set(key, { value, expiresAt });
+  }
+
+  cleanup(): void {
+    const now = Date.now();
+
+    for (const [key, entry] of this.cache) {
+      if (now > entry.expiresAt) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+```
+
+## Parallel Processing
+
+### Worker Threads for Extraction
+
+Use worker threads to parallelize extraction:
+
+```typescript
+import { Worker } from 'worker_threads';
+
+class ParallelExtractor {
+  private workerCount = os.cpus().length;
+
+  async extractFromProject(projectPath: string): Promise<DocItem[]> {
+    const files = await this.getSourceFiles(projectPath);
+    const chunks = this.chunkArray(files, this.workerCount);
+
+    const results = await Promise.all(
+      chunks.map(chunk => this.processChunk(chunk))
+    );
+
+    return results.flat();
+  }
+
+  private async processChunk(files: string[]): Promise<DocItem[]> {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker('./extractor-worker.js', {
+        workerData: { files }
+      });
+
+      worker.on('message', (items: DocItem[]) => resolve(items));
+      worker.on('error', reject);
+      worker.on('exit', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+    });
+  }
+
+  private chunkArray<T>(array: T[], chunks: number): T[][] {
+    const result: T[][] = [];
+    const chunkSize = Math.ceil(array.length / chunks);
+
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+
+    return result;
+  }
+}
+```
+
+### Worker Thread Implementation
+
+```typescript
+// extractor-worker.js
+import { parentPort, workerData } from 'worker_threads';
+import { TypeScriptExtractor } from './extractor';
+
+async function processFiles(files: string[]): Promise<DocItem[]> {
+  const allItems: DocItem[] = [];
+
+  for (const file of files) {
+    const program = ts.createProgram([file], {});
+    const extractor = new TypeScriptExtractor(program);
+    const items = extractor.extractFromFile(file);
+    allItems.push(...items);
+  }
+
+  return allItems;
+}
+
+processFiles(workerData.files).then(items => {
+  parentPort?.postMessage(items);
+});
+```
+
+## Performance Monitoring
+
+### Measure Extraction Performance
+
+```typescript
+class PerformanceMonitor {
+  private metrics = new Map<string, number[]>();
+
+  measure<T>(name: string, fn: () => T): T {
+    const start = performance.now();
+    const result = fn();
+    const duration = performance.now() - start;
+
+    this.recordMetric(name, duration);
+
+    return result;
+  }
+
+  async measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const start = performance.now();
+    const result = await fn();
+    const duration = performance.now() - start;
+
+    this.recordMetric(name, duration);
+
+    return result;
+  }
+
+  private recordMetric(name: string, duration: number): void {
+    const measurements = this.metrics.get(name) || [];
+    measurements.push(duration);
+    this.metrics.set(name, measurements);
+  }
+
+  getStats(name: string): { avg: number; min: number; max: number; count: number } {
+    const measurements = this.metrics.get(name) || [];
+
+    if (measurements.length === 0) {
+      return { avg: 0, min: 0, max: 0, count: 0 };
+    }
+
+    const sum = measurements.reduce((a, b) => a + b, 0);
+
+    return {
+      avg: sum / measurements.length,
+      min: Math.min(...measurements),
+      max: Math.max(...measurements),
+      count: measurements.length
+    };
+  }
+
+  printStats(): void {
+    console.log('\nPerformance Statistics:');
+    console.log('='.repeat(80));
+
+    for (const [name, _] of this.metrics) {
+      const stats = this.getStats(name);
+      console.log(`${name}:`);
+      console.log(`  Count: ${stats.count}`);
+      console.log(`  Average: ${stats.avg.toFixed(2)}ms`);
+      console.log(`  Min: ${stats.min.toFixed(2)}ms`);
+      console.log(`  Max: ${stats.max.toFixed(2)}ms`);
+    }
+  }
+}
+
+// Usage
+const monitor = new PerformanceMonitor();
+
+const items = await monitor.measureAsync('extract-project', async () => {
+  return await extractor.extractFromProject('./src');
+});
+
+monitor.printStats();
+```
+
+## Optimization Tips
+
+### 1. Use Incremental Extraction
+
+Only re-extract changed files:
+
+```typescript
+class IncrementalExtractor {
+  private fileHashes = new Map<string, string>();
+
+  async extractChangedFiles(projectPath: string): Promise<DocItem[]> {
+    const files = await this.getSourceFiles(projectPath);
+    const changedFiles: string[] = [];
+
+    for (const file of files) {
+      const currentHash = await this.hashFile(file);
+      const previousHash = this.fileHashes.get(file);
+
+      if (currentHash !== previousHash) {
+        changedFiles.push(file);
+        this.fileHashes.set(file, currentHash);
+      }
+    }
+
+    console.log(`Processing ${changedFiles.length} of ${files.length} files`);
+
+    const items: DocItem[] = [];
+    for (const file of changedFiles) {
+      items.push(...await this.extractFromFile(file));
+    }
+
+    return items;
+  }
+
+  private async hashFile(filePath: string): Promise<string> {
+    const content = await fs.readFile(filePath);
+    return crypto.createHash('sha256').update(content).digest('hex');
+  }
+}
+```
+
+### 2. Lazy Load Child Items
+
+Don't extract all members upfront:
+
+```typescript
+class LazyDocItem {
+  private _items?: DocItem[];
+
+  get items(): DocItem[] {
+    if (!this._items) {
+      this._items = this.extractChildItems();
+    }
+    return this._items;
+  }
+
+  private extractChildItems(): DocItem[] {
+    // Extract only when accessed
+    return [];
+  }
+}
+```
+
+### 3. Optimize JSON with External References
+
+Use JSON $ref to external files for large outputs instead of streaming JSONL:
+
+```typescript
+async function writeItemsWithReferences(
+  items: AsyncIterable<DocItem>,
+  outputDir: string,
+  mainFile: string
+): Promise<void> {
+  const references: any[] = [];
+  let counter = 0;
+
+  // Create output directory
+  await fs.mkdir(outputDir, { recursive: true });
+
+  for await (const item of items) {
+    const refPath = path.join(outputDir, `item-${counter}.json`);
+
+    // Write individual item to external file
+    await fs.writeFile(refPath, JSON.stringify(item, null, 2));
+
+    // Create reference entry
+    references.push({
+      $ref: refPath
+    });
+
+    counter++;
+  }
+
+  // Write main file with references
+  const mainContent = {
+    items: references,
+    total: counter
+  };
+
+  await fs.writeFile(mainFile, JSON.stringify(mainContent, null, 2));
+}
+```
+
+<Note>
+  **Format Evolution**: The `format` property in OpenDocs configurations enables future format support.
+  While JSON $ref is currently recommended for large datasets, JSONL (line-delimited JSON) is being
+  considered as an additional format option. JSONL would provide similar streaming performance benefits
+  but with a single-file approach, making it suitable for different use cases and tooling preferences.
+</Note>
+
+### 4. Profile Your Code
+
+Use Node.js profiling tools:
+
+```bash
+# CPU profiling
+node --prof index.js
+
+# Process the profile
+node --prof-process isolate-*.log > profile.txt
+
+# Memory profiling
+node --inspect index.js
+# Then connect with Chrome DevTools
+```
+
+## Benchmarking
+
+### Create Performance Tests
+
+```typescript
+describe('Performance', () => {
+  it('should extract 1000 files in under 10 seconds', async () => {
+    const start = Date.now();
+
+    const items = await extractor.extractFromProject('./large-project');
+
+    const duration = Date.now() - start;
+
+    expect(duration).toBeLessThan(10000);
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it('should use less than 500MB memory', async () => {
+    const before = process.memoryUsage().heapUsed;
+
+    await extractor.extractFromProject('./large-project');
+
+    const after = process.memoryUsage().heapUsed;
+    const used = (after - before) / 1024 / 1024;
+
+    expect(used).toBeLessThan(500);
+  });
+});
+```
+
+## See Also
+
+- [Language Extractors](/opendocs/implementation/extractors) - Build efficient extractors
+- [Documentation Set Builder](/opendocs/implementation/docset-builder) - Optimize file organization
+- [Testing Your Implementation](/opendocs/implementation/testing) - Performance testing strategies
+
+---
+
+*This guide is part of the OpenDocs Specification RFC. Help us improve it by sharing your optimization techniques.*

@@ -8,7 +8,7 @@ icon: receipt-text
 
 **TypeInfo** is an auto-generated JavaScript module that contains structured type information for all documented API items in your project. It provides a convenient way to reference type structures in your documentation with full IDE autocomplete support.
 
-When you run `mint-tsdocs generate`, the tool creates `TypeInfo.jsx` and `TypeInfo.d.ts` files in your snippets directory. These files contain all the type information extracted from your TypeScript API in a format compatible with Mintlify's `<TypeTree>` component.
+When you run `mint-tsdocs generate`, the tool creates `TypeInfo.jsx` and `TypeInfo.d.ts` files in your snippets directory. These files contain all the type information extracted from your TypeScript API in a format compatible with Mintlify's `<TypeTree open>` component.
 
 ## Why Use TypeInfo?
 
@@ -20,7 +20,7 @@ With TypeInfo, you get full autocomplete when referencing types in your document
 import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 
 // IDE will suggest all available packages and types
-<TypeTree {...TypeInfo.MintTsdocs.IMarkdownDocumenterOptions} />
+<TypeTree open {...TypeInfo.MintTsdocs.IMarkdownDocumenterOptions} />
 ```
 
 ### 2. Single Source of Truth
@@ -44,12 +44,12 @@ const templatesConfig = TypeInfo.MintTsdocs.ResolvedConfig.properties.find(
 
 ### Basic Usage with TypeTree
 
-The most common use case is passing TypeInfo directly to the `<TypeTree>` component:
+The most common use case is passing TypeInfo directly to the `<TypeTree open>` component:
 
 ```jsx
 import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 
-<TypeTree {...TypeInfo.PackageName.TypeName} />
+<TypeTree open {...TypeInfo.PackageName.TypeName} />
 ```
 
 This will render a fully documented type tree with:
@@ -153,13 +153,13 @@ import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
 
 The main configuration object for mint-tsdocs:
 
-<TypeTree {...TypeInfo.MintTsdocs.MintlifyTsDocsConfig} />
+<TypeTree open {...TypeInfo.MintTsdocs.MintlifyTsDocsConfig} />
 
 ## Template Configuration
 
 Detailed template configuration options:
 
-<TypeTree {...TypeInfo.MintTsdocs.ResolvedTemplateConfig} />
+<TypeTree open {...TypeInfo.MintTsdocs.ResolvedTemplateConfig} />
 ```
 
 ## Relationship to Link Validation

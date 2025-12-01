@@ -1,0 +1,580 @@
+---
+title: JsonTree
+description: Display JSON structures with beautiful formatting and type-specific colors
+icon: "code"
+---
+
+import { JsonTree } from "/snippets/tsdocs/JsonTree.jsx"
+import { Preview } from "/snippets/tsdocs/Preview.jsx"
+
+The `JsonTree` component provides a beautiful, UX-focused way to display JSON data structures in your documentation. It uses badges, type indicators, and visual hierarchy for optimal readability, with type-specific colors and clean indentation.
+
+## Basic Usage
+
+Import the component and pass it JSON data to display.
+
+```jsx JsonTree usage
+import { JsonTree } from "/snippets/tsdocs/JsonTree.jsx"
+
+const userData = {
+  name: "John Doe",
+  age: 30,
+  isActive: true,
+  email: "john@example.com",
+  address: {
+    street: "123 Main St",
+    city: "New York",
+    country: "USA"
+  },
+  hobbies: ["reading", "coding", "hiking"],
+  metadata: null
+};
+
+<JsonTree data={userData} title="User Profile Data" />
+```
+
+export const userData = {
+  name: "John Doe",
+  age: 30,
+  isActive: true,
+  email: "john@example.com",
+  address: {
+    street: "123 Main St",
+    city: "New York",
+    country: "USA"
+  },
+  hobbies: ["reading", "coding", "hiking"],
+  metadata: null
+};
+
+<Preview title="Basic JsonTree Example">
+  <JsonTree data={userData} title="User Profile Data" />
+</Preview>
+
+## Features
+
+### Visual Design
+- **Type-specific colors**: Strings (green), numbers (blue), booleans (orange), null (gray)
+- **Badge-based property names**: Consistent blue badges for all property names
+- **Clean hierarchy**: Borders and indentation for nested structures
+- **Modern typography**: Proper spacing and font choices
+- **Dark mode support**: Automatic theme adaptation
+
+### Data Type Support
+- **Objects**: Display with nested property structure
+- **Arrays**: Show length and individual elements
+- **Primitives**: Strings, numbers, booleans, null values
+- **Mixed types**: Handle complex nested structures
+
+### Enhanced Readability
+- **String quotes**: Properly formatted string values
+- **Array length indicators**: Show `[n]` for array types
+- **Consistent spacing**: Optimal padding and margins
+- **Visual borders**: Subtle left borders for nested items
+
+## Advanced Examples
+
+### API Response Example
+
+<Preview
+  code={`<JsonTree
+  title="API Response"
+  data={{
+    status: "success",
+    data: {
+      users: [
+        {
+          id: 1,
+          name: "Alice Johnson",
+          email: "alice@example.com",
+          role: "admin",
+          isActive: true,
+          createdAt: "2023-01-15T10:30:00Z",
+          profile: {
+            bio: "Software engineer passionate about React",
+            avatar: "https://example.com/avatar1.jpg",
+            preferences: {
+              theme: "dark",
+              notifications: true,
+              language: "en"
+            }
+          }
+        },
+        {
+          id: 2,
+          name: "Bob Smith",
+          email: "bob@example.com",
+          role: "user",
+          isActive: false,
+          createdAt: "2023-03-20T14:45:00Z",
+          profile: null
+        }
+      ],
+      pagination: {
+        page: 1,
+        perPage: 10,
+        total: 2,
+        totalPages: 1
+      }
+    },
+    timestamp: "2023-12-01T08:15:30Z"
+  }}
+/>`}
+>
+  <JsonTree
+    title="API Response"
+    data={{
+      status: "success",
+      data: {
+        users: [
+          {
+            id: 1,
+            name: "Alice Johnson",
+            email: "alice@example.com",
+            role: "admin",
+            isActive: true,
+            createdAt: "2023-01-15T10:30:00Z",
+            profile: {
+              bio: "Software engineer passionate about React",
+              avatar: "https://example.com/avatar1.jpg",
+              preferences: {
+                theme: "dark",
+                notifications: true,
+                language: "en"
+              }
+            }
+          },
+          {
+            id: 2,
+            name: "Bob Smith",
+            email: "bob@example.com",
+            role: "user",
+            isActive: false,
+            createdAt: "2023-03-20T14:45:00Z",
+            profile: null
+          }
+        ],
+        pagination: {
+          page: 1,
+          perPage: 10,
+          total: 2,
+          totalPages: 1
+        }
+      },
+      timestamp: "2023-12-01T08:15:30Z"
+    }}
+  />
+</Preview>
+
+### Configuration Object Example
+
+<Preview
+  code={`<JsonTree
+  title="Application Configuration"
+  data={{
+    app: {
+      name: "My App",
+      version: "1.0.0",
+      environment: "production",
+      debug: false,
+      features: {
+        analytics: true,
+        notifications: true,
+        darkMode: true,
+        experimental: false
+      }
+    },
+    server: {
+      host: "localhost",
+      port: 3000,
+      ssl: {
+        enabled: true,
+        certPath: "/path/to/cert.pem",
+        keyPath: "/path/to/key.pem"
+      }
+    },
+    database: {
+      type: "postgresql",
+      host: "db.example.com",
+      port: 5432,
+      name: "myapp_prod",
+      pool: {
+        min: 2,
+        max: 10,
+        idle: 10000
+      }
+    },
+    redis: {
+      host: "redis.example.com",
+      port: 6379,
+      password: null,
+      db: 0
+    }
+  }}
+/>`}
+>
+  <JsonTree
+    title="Application Configuration"
+    data={{
+      app: {
+        name: "My App",
+        version: "1.0.0",
+        environment: "production",
+        debug: false,
+        features: {
+          analytics: true,
+          notifications: true,
+          darkMode: true,
+          experimental: false
+        }
+      },
+      server: {
+        host: "localhost",
+        port: 3000,
+        ssl: {
+          enabled: true,
+          certPath: "/path/to/cert.pem",
+          keyPath: "/path/to/key.pem"
+        }
+      },
+      database: {
+        type: "postgresql",
+        host: "db.example.com",
+        port: 5432,
+        name: "myapp_prod",
+        pool: {
+          min: 2,
+          max: 10,
+          idle: 10000
+        }
+      },
+      redis: {
+        host: "redis.example.com",
+        port: 6379,
+        password: null,
+        db: 0
+      }
+    }}
+  />
+</Preview>
+
+### Mixed Data Types Example
+
+<Preview
+  code={`<JsonTree
+  title="Mixed Data Types"
+  data={{
+    string: "Hello, World!",
+    number: 42,
+    float: 3.14159,
+    boolean: true,
+    nullValue: null,
+    array: [1, 2, 3, 4, 5],
+    mixedArray: ["string", 123, true, null, { nested: "object" }],
+    object: {
+      key1: "value1",
+      key2: "value2",
+      nested: {
+        deep: {
+          value: "Deeply nested string"
+        }
+      }
+    },
+    emptyArray: [],
+    emptyObject: {},
+    unicode: "🚀 Unicode support: 你好世界",
+    multiline: "Line 1\\nLine 2\\nLine 3"
+  }}
+/>`}
+>
+  <JsonTree
+    title="Mixed Data Types"
+    data={{
+      string: "Hello, World!",
+      number: 42,
+      float: 3.14159,
+      boolean: true,
+      nullValue: null,
+      array: [1, 2, 3, 4, 5],
+      mixedArray: ["string", 123, true, null, { nested: "object" }],
+      object: {
+        key1: "value1",
+        key2: "value2",
+        nested: {
+          deep: {
+            value: "Deeply nested string"
+          }
+        }
+      },
+      emptyArray: [],
+      emptyObject: {},
+      unicode: "🚀 Unicode support: 你好世界",
+      multiline: "Line 1\nLine 2\nLine 3"
+    }}
+  />
+</Preview>
+
+## Properties
+
+<ResponseField name="data" type="any" required>
+  The JSON data to display. Can be any valid JSON structure including objects, arrays, primitives, or nested combinations
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  Optional title displayed above the JSON structure
+</ResponseField>
+
+<ResponseField name="maxDepth" type="number" default="5">
+  Maximum nesting depth to prevent excessive rendering with deeply nested structures
+</ResponseField>
+
+## JsonTreeGroup
+
+Use `JsonTreeGroup` to organize multiple related JSON structures:
+
+<Preview
+  code={`<JsonTreeGroup title="API Examples">
+  <JsonTree
+    title="Success Response"
+    data={{
+      status: "success",
+      data: { user: { id: 1, name: "John" } }
+    }}
+  />
+
+  <JsonTree
+    title="Error Response"
+    data={{
+      status: "error",
+      error: {
+        code: "USER_NOT_FOUND",
+        message: "User with ID 1 not found"
+      }
+    }}
+  />
+</JsonTreeGroup>`}
+>
+  <JsonTreeGroup title="API Examples">
+    <JsonTree
+      title="Success Response"
+      data={{
+        status: "success",
+        data: { user: { id: 1, name: "John" } }
+      }}
+    />
+
+    <JsonTree
+      title="Error Response"
+      data={{
+        status: "error",
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "User with ID 1 not found"
+        }
+      }}
+    />
+  </JsonTreeGroup>
+</Preview>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Titles" icon="message">
+    Provide clear, contextual titles that explain what the JSON data represents.
+
+    ```jsx
+    // ✅ Good
+    <JsonTree title="User Profile API Response" data={userData} />
+
+    // ❌ Avoid
+    <JsonTree title="Data" data={userData} />
+    ```
+  </Accordion>
+
+  <Accordion title="Include Realistic Data" icon="database">
+    Use realistic, production-like data in examples to help users understand the actual structure and content.
+
+    ```jsx
+    // ✅ Good - Realistic API response
+    {
+      id: 12345,
+      email: "user@example.com",
+      created_at: "2023-12-01T10:30:00Z",
+      metadata: {
+        last_login: "2023-12-01T09:15:00Z",
+        preferences: { theme: "dark", notifications: true }
+      }
+    }
+
+    // ❌ Avoid - Generic placeholder data
+    {
+      field1: "value1",
+      field2: "value2",
+      nested: { key: "value" }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Show Different Data Types" icon="layer-group">
+    Include examples that demonstrate various data types (strings, numbers, booleans, null, arrays, objects) to showcase the component's type-specific formatting.
+
+    ```jsx
+    <JsonTree
+      title="Complete Type Example"
+      data={{
+        string: "Hello World",
+        number: 42,
+        boolean: true,
+        null_value: null,
+        array: [1, 2, 3],
+        object: { nested: "value" }
+      }}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Group Related Examples" icon="folder-tree">
+    Use JsonTreeGroup to organize multiple related JSON structures, such as different API responses or configuration examples.
+
+    ```jsx
+    <JsonTreeGroup title="API Response Examples">
+      <JsonTree title="Success Response" data={successData} />
+      <JsonTree title="Error Response" data={errorData} />
+      <JsonTree title="Validation Error" data={validationErrorData} />
+    </JsonTreeGroup>
+    ```
+  </Accordion>
+
+  <Accordion title="Consider Depth Limits" icon="sitemap">
+    For very deeply nested JSON structures, consider setting an appropriate `maxDepth` to prevent overwhelming the reader, or break the structure into multiple examples.
+  </Accordion>
+</AccordionGroup>
+
+## Styling and Theming
+
+JsonTree automatically adapts to Mintlify's light and dark themes:
+
+- **Property names**: Consistent blue badges across themes
+- **String values**: Green text with proper quote formatting
+- **Numbers**: Blue text for numeric values
+- **Booleans**: Orange text for true/false values
+- **Null values**: Gray italic text
+- **Borders**: Subtle left borders for nested structures
+- **Spacing**: Consistent padding and margins
+- **Typography**: Monospace font for values, clean spacing
+
+## Comparison with Code Blocks
+
+JsonTree is designed as a more readable alternative to raw JSON code blocks:
+
+<Tabs>
+  <Tab title="JsonTree (Recommended)">
+    ```jsx
+    <JsonTree
+      title="User Configuration"
+      data={{
+        theme: "dark",
+        notifications: true,
+        language: "en",
+        shortcuts: {
+          save: "cmd+s",
+          search: "cmd+f"
+        }
+      }}
+    />
+    ```
+
+    **Advantages:**
+    - Type-specific color coding
+    - Clean visual hierarchy
+    - Badge-based property names
+    - No syntax highlighting dependencies
+    - Consistent styling
+  </Tab>
+
+  <Tab title="Code Block (Basic)">
+    ```json
+    {
+      "theme": "dark",
+      "notifications": true,
+      "language": "en",
+      "shortcuts": {
+        "save": "cmd+s",
+        "search": "cmd+f"
+      }
+    }
+    ```
+
+    **Drawbacks:**
+    - Requires syntax highlighting
+    - No type-specific colors
+    - Less visual hierarchy
+    - Manual formatting required
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Component not found" icon="triangle-exclamation">
+    If you see `Cannot find module "/snippets/JsonTree.jsx"`:
+
+    1. Ensure JsonTree.jsx exists in your `docs/snippets/` folder
+    2. Run `mint-tsdocs` to auto-install the component
+    3. Check that the import path is correct (should start with `/snippets/`)
+  </Accordion>
+
+  <Accordion title="Data not rendering" icon="code">
+    If the JSON structure doesn't display:
+
+    1. Verify that the `data` prop contains valid JSON
+    2. Check browser console for JavaScript errors
+    3. Ensure the data is not `undefined` or `null` at the root level
+  </Accordion>
+
+  <Accordion title="Styling issues" icon="paintbrush">
+    If the component doesn't look right:
+
+    1. Ensure Tailwind CSS is properly loaded in your Mintlify site
+    2. Check that you're using an up-to-date version of the component
+    3. Try refreshing the page to reload styles
+  </Accordion>
+
+  <Accordion title="Performance with large data" icon="gauge">
+    If rendering is slow with large JSON structures:
+
+    1. Consider setting a lower `maxDepth` value
+    2. Break large structures into smaller, focused examples
+    3. Use pagination or filtering for very large datasets
+  </Accordion>
+</AccordionGroup>
+
+## Version History
+
+<CardGroup cols={2}>
+  <Card title="v2.0.0" icon="rocket">
+    Redesigned with beautiful formatting, type-specific colors, badge-based property names, and enhanced visual hierarchy
+  </Card>
+  <Card title="Future" icon="sparkles">
+
+    - Expandable/collapsible sections
+    - Copy JSON functionality
+    - Search and filtering
+    - Custom color themes
+
+  </Card>
+</CardGroup>
+
+## Related Components
+
+<CardGroup cols={3}>
+  <Card title="FileTree" icon="folder-tree" href="/components/file-tree">
+    Display hierarchical file structures with visual icons
+  </Card>
+  <Card title="TypeTree" icon="network" href="/components/type-tree">
+    Display recursive type structures with expandable properties
+  </Card>
+  <Card title="Preview" icon="eye" href="/components/preview">
+    Styled wrapper for component examples
+  </Card>
+</CardGroup>

@@ -554,7 +554,7 @@ export class CustomMarkdownEmitter extends MarkdownEmitter {
           const sanitizedParamType = SecurityUtils.sanitizeJsxAttribute(propertyInfo.type, 'type');
 
           // Write the TypeTree component with nested object support
-          writer.writeLine('<TypeTree');
+          writer.writeLine('<TypeTree open');
           writer.increaseIndent('  ');
           writer.writeLine(`name="${sanitizedParamName}"`);
           writer.writeLine(`type="${sanitizedParamType}"`);

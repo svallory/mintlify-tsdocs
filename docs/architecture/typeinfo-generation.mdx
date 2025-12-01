@@ -6,7 +6,7 @@ icon: code-branch
 
 ## Overview
 
-The TypeInfo generation system converts Microsoft API Extractor's API model into a structured JSON format compatible with Mintlify's `<TypeTree>` component. The key challenge is **fully recursive type expansion** - extracting not just top-level properties, but all nested object structures with their complete documentation.
+The TypeInfo generation system converts Microsoft API Extractor's API model into a structured JSON format compatible with Mintlify's `<TypeTree open>` component. The key challenge is **fully recursive type expansion** - extracting not just top-level properties, but all nested object structures with their complete documentation.
 
 ## Architecture
 
@@ -268,7 +268,7 @@ JavaScript module with the complete type structure:
  * @example
  * ```jsx
  * import { TypeInfo } from "/snippets/tsdocs/TypeInfo.jsx"
- * <TypeTree {...TypeInfo.MyPackage.MyInterface} />
+ * <TypeTree open {...TypeInfo.MyPackage.MyInterface} />
  * ```
  */
 export const TypeInfo = {

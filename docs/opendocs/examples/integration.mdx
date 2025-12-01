@@ -1,0 +1,341 @@
+---
+title: Integration & Migration
+sidebarTitle: Integration
+description: Template integration and migration examples
+---
+
+# Integration & Migration Examples
+
+<Warning>
+  **RFC Status**: This section contains proposed examples for the OpenDocs Specification RFC.
+
+  These examples are provided to illustrate how the specification could be implemented.
+  [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help refine these examples.
+</Warning>
+
+## Template Integration Examples
+
+OpenDocs supports multiple templating engines to generate documentation from DocItems. Here are examples using Liquid and Handlebars.
+
+### Liquid Template Usage
+
+```liquid
+{% for project in projects %}
+## {{ project.name }}
+
+{% assign project_data = project._ref | resolve_ref %}
+
+**Language**: {{ project_data.project.language }}
+**Items**: {{ project_data.project.items.count }}
+
+{% if project_data.project.metadata.dependencies %}
+### Dependencies
+{% for dep in project_data.project.metadata.dependencies %}
+- {{ dep.project }}
+{% endfor %}
+{% endif %}
+
+### API Reference
+{% for item in project_data.project.items %}
+{% if item.kind contains "function" %}
+#### {{ item.name }}
+{{ item.docBlock.description }}
+
+{% if item.docBlock.tags.param %}
+**Parameters:**
+{% for param in item.docBlock.tags.param %}
+- `{{ param.parameters.name }}`: {{ param.content }}
+{% endfor %}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+{% endfor %}
+```
+
+### Handlebars Template Usage
+
+```handlebars
+{{#each projects}}
+## {{name}}
+
+{{#with (resolve_ref _ref)}}
+**Language**: {{project.language}}
+**Items**: {{project.items.count}}
+
+{{#if project.metadata.dependencies}}
+### Dependencies
+{{#each project.metadata.dependencies}}
+- {{project}}
+{{/each}}
+{{/if}}
+
+### API Reference
+{{#each project.items}}
+{{#contains kind "function"}}
+#### {{name}}
+{{docBlock.description}}
+
+{{#if docBlock.tags.param}}
+**Parameters:**
+{{#each docBlock.tags.param}}
+- `{{parameters.name}}`: {{content}}
+{{/each}}
+{{/if}}
+
+{{/contains}}
+{{/each}}
+{{/with}}
+{{/each}}
+```
+
+## Testing Examples
+
+### Unit Test for Extractor
+
+Example of testing a TypeScript OpenDocs extractor:
+
+```typescript
+describe('TypeScript OpenDocs Extractor', () => {
+  it('should extract class with documentation', () => {
+    const source = `
+      /**
+       * Represents a user in the system
+       * @param name The user's full name
+       * @param email The user's email address
+       */
+      export class User {
+        constructor(public name: string, public email: string) {}
+      }
+    `;
+
+    const extractor = new TypeScriptOpenDocsExtractor();
+    const items = extractor.extractFromSource(source, 'user.ts');
+
+    expect(items).toHaveLength(1);
+    expect(items[0].name).toBe('User');
+    expect(items[0].kind).toBe('typescript-class');
+    expect(items[0].docBlock?.description).toContain('Represents a user in the system');
+    expect(items[0].docBlock?.tags?.param).toHaveLength(2);
+  });
+});
+```
+
+### Integration Test for Documentation Set
+
+Example of testing a complete documentation set build:
+
+```typescript
+describe('OpenDocs Documentation Set Integration', () => {
+  it('should handle multi-project documentation set', async () => {
+    const docSet = new OpenDocsDocumentationSet('test-docset', 'Test Documentation Set');
+
+    docSet.addProject({
+      id: 'frontend',
+      name: 'Frontend App',
+      language: 'typescript',
+      location: { type: 'file', path: 'projects/frontend.json', format: 'json' }
+    });
+
+    docSet.addProject({
+      id: 'backend',
+      name: 'Backend API',
+      language: 'go',
+      location: { type: 'file', path: 'projects/backend.json', format: 'json' }
+    });
+
+    await docSet.build('./test-output');
+
+    // Verify files were created
+    expect(fs.existsSync('./test-output/opendocs.json')).toBe(true);
+    expect(fs.existsSync('./test-output/projects/frontend.json')).toBe(true);
+    expect(fs.existsSync('./test-output/projects/backend.json')).toBe(true);
+
+    // Verify documentation set structure
+    const docSetData = JSON.parse(fs.readFileSync('./test-output/opendocs.json', 'utf8'));
+    expect(docSetData.projects).toHaveLength(2);
+  });
+});
+```
+
+## Migration Examples
+
+### From JSDoc to OpenDocs
+
+Migrating from traditional JSDoc comments to OpenDocs format:
+
+```javascript
+// Before: JSDoc comment
+/**
+ * Calculates the area of a rectangle
+ * @param {number} width - The width of the rectangle
+ * @param {number} height - The height of the rectangle
+ * @returns {number} The calculated area
+ * @throws {Error} If dimensions are negative
+ * @example
+ * area(10, 20) // returns 200
+ */
+function calculateArea(width, height) {
+  if (width < 0 || height < 0) {
+    throw new Error('Dimensions must be non-negative');
+  }
+  return width * height;
+}
+
+// After: OpenDocs DocItem
+{
+  "id": "utils#calculateArea",
+  "name": "calculateArea",
+  "kind": "function",
+  "language": "javascript",
+  "docBlock": {
+    "description": "Calculates the area of a rectangle",
+    "tags": {
+      "param": [
+        {
+          "name": "param",
+          "content": "The width of the rectangle",
+          "parameters": { "name": "width", "type": "number" }
+        },
+        {
+          "name": "param",
+          "content": "The height of the rectangle",
+          "parameters": { "name": "height", "type": "number" }
+        }
+      ],
+      "returns": ["The calculated area"],
+      "throws": [
+        {
+          "name": "throws",
+          "content": "If dimensions are negative",
+          "parameters": { "type": "Error" }
+        }
+      ],
+      "example": ["area(10, 20) // returns 200"]
+    }
+  },
+  "metadata": {
+    "signature": {
+      "parameters": [
+        { "name": "width", "type": "number" },
+        { "name": "height", "type": "number" }
+      ],
+      "returnType": "number"
+    }
+  }
+}
+```
+
+### From Rust Doc to OpenDocs
+
+Migrating from Rust documentation comments to OpenDocs format:
+
+```rust
+// Before: Rust doc comment
+/// A data structure that can be deserialized from any data format supported by Serde.
+///
+/// # Example
+///
+/// ```rust
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Person {
+///     name: String,
+///     age: u32,
+/// }
+/// ```
+pub trait Deserialize {
+    /// The associated type for the deserializer.
+    type Item;
+
+    /// Deserialize this value from the given Serde deserializer.
+    ///
+    /// # Errors
+    ///
+    /// This method returns an error when the deserializer encounters an error.
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer;
+}
+
+// After: OpenDocs DocItem
+{
+  "id": "serde::de::Deserialize",
+  "name": "Deserialize",
+  "kind": "trait",
+  "language": "rust",
+  "docBlock": {
+    "description": "A data structure that can be deserialized from any data format supported by Serde.",
+    "tags": {
+      "example": ["use serde::Deserialize;\n\n#[derive(Deserialize)]\nstruct Person {\n    name: String,\n    age: u32,\n}"]
+    }
+  },
+  "metadata": {
+    "associatedTypes": ["Item"],
+    "supertraits": ["Sized"],
+    "isPublic": true,
+    "crate": "serde",
+    "module": "de"
+  },
+  "items": [
+    {
+      "id": "serde::de::Deserialize#deserialize",
+      "name": "deserialize",
+      "kind": "trait-method",
+      "language": "rust",
+      "container": {
+        "id": "serde::de::Deserialize",
+        "relationship": "trait"
+      },
+      "docBlock": {
+        "description": "Deserialize this value from the given Serde deserializer.",
+        "tags": {
+          "param": [
+            {
+              "name": "param",
+              "content": "The Serde deserializer",
+              "parameters": { "name": "deserializer" }
+            }
+          ],
+          "returns": ["`Ok(value)` if deserialization is successful, `Err(error)` otherwise"],
+          "throws": [
+            {
+              "name": "throws",
+              "content": "When the deserializer encounters an error",
+              "parameters": { "type": "D::Error" }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+## Migration Best Practices
+
+1. **Preserve Semantics**: Ensure all documentation content is preserved during migration
+2. **Map Tags Correctly**: Convert language-specific doc tags to OpenDocs standard tags
+3. **Test Thoroughly**: Verify that all examples, parameters, and return types are correctly extracted
+4. **Automate When Possible**: Build migration scripts for large codebases
+5. **Validate Output**: Use JSON Schema validation to ensure generated DocItems are valid
+
+## Testing Best Practices
+
+1. **Test Extractors**: Write unit tests for each language extractor
+2. **Integration Tests**: Test the complete pipeline from source to documentation
+3. **Snapshot Testing**: Use snapshot tests to catch unintended changes in output
+4. **Performance Tests**: Test with large codebases to ensure acceptable performance
+5. **Validation Tests**: Ensure all output conforms to the OpenDocs schema
+
+## See Also
+
+- [Simple Project Examples](/opendocs/examples/simple-projects) - Basic implementation patterns
+- [DocItem Model](/opendocs/opendocs-model) - Understanding the core data model
+- [Implementation Guide](/opendocs/implementation/overview) - Step-by-step implementation guide
+- [Examples Overview](/opendocs/examples/index) - Back to all examples
+
+---
+
+*This example is part of the OpenDocs Specification RFC. [Provide feedback](https://github.com/svallory/mintlify-tsdocs/issues) to help improve it.*

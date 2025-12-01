@@ -1,0 +1,434 @@
+---
+title: DocItem Model Implementation
+sidebarTitle: DocItem Model
+description: Implementing the core DocItem and DocBlock classes
+---
+
+# DocItem Model Implementation
+
+## Overview
+
+The DocItem is the fundamental building block of OpenDocs. This guide shows you how to implement the DocItem and DocBlock classes in your language.
+
+import { TypeTree } from "/snippets/tsdocs/TypeTree.jsx"
+
+<Warning>
+  Start with the minimum viable implementation. You can always add more fields later.
+</Warning>
+
+## Core DocItem Class
+
+export const implementationDocItemType = {
+  name: "DocItem",
+  type: "object",
+  description: "Basic DocItem implementation structure",
+  properties: [
+    {
+      name: "id",
+      type: "string",
+      description: "Unique identifier for this item",
+      required: true
+    },
+    {
+      name: "name",
+      type: "string",
+      description: "Human-readable name",
+      required: true
+    },
+    {
+      name: "kind",
+      type: "string",
+      description: "Language-specific item type",
+      required: true
+    },
+    {
+      name: "language",
+      type: "string",
+      description: "Source language",
+      required: true
+    },
+    {
+      name: "docBlock",
+      type: "DocBlock",
+      description: "Documentation content"
+    },
+    {
+      name: "container",
+      type: "ContainerRef",
+      description: "Container relationship"
+    },
+    {
+      name: "metadata",
+      type: "object",
+      description: "Language-specific metadata"
+    },
+    {
+      name: "items",
+      type: "DocItem[]",
+      description: "Child items"
+    }
+  ]
+};
+
+<TypeTree open {...implementationDocItemType} />
+
+### TypeScript Implementation
+
+```typescript
+class DocItem {
+  constructor(
+    public id: string,
+    public name: string,
+    public kind: string,
+    public language: string,
+    public docBlock?: DocBlock,
+    public container?: ContainerRef,
+    public metadata?: Record<string, any>,
+    public items?: DocItem[]
+  ) {}
+
+  static fromLanguageItem(item: LanguageItem): DocItem {
+    return new DocItem(
+      this.generateId(item),
+      item.name,
+      this.mapKind(item),
+      this.detectLanguage(item),
+      this.extractDocBlock(item),
+      this.findContainer(item),
+      this.extractMetadata(item),
+      this.extractChildren(item)
+    );
+  }
+
+  private static generateId(item: LanguageItem): string {
+    // Language-specific ID generation
+    return `${item.namespace}::${item.name}`;
+  }
+
+  private static mapKind(item: LanguageItem): string {
+    // Map language-specific types to OpenDocs kinds
+    const kindMap = {
+      'class': 'class',
+      'interface': 'interface',
+      'function': 'function'
+    };
+    return kindMap[item.type] || `unknown-${item.type}`;
+  }
+}
+```
+
+## DocBlock Implementation
+
+The DocBlock contains all documentation content extracted from source code comments.
+
+```typescript
+interface DocBlock {
+  description?: string;
+  tags?: Record<string, (string | DocTag)[]>;
+  deprecated?: {
+    message: string;
+    since?: string;
+  };
+}
+
+interface DocTag {
+  name: string;
+  content: string;
+  parameters?: Record<string, string>;
+}
+
+class DocBlockExtractor {
+  static extract(comment: LanguageComment): DocBlock {
+    const lines = comment.text.split('\n');
+    const description = this.extractDescription(lines);
+    const tags = this.extractTags(lines);
+    const deprecated = this.extractDeprecated(tags);
+
+    return {
+      description,
+      tags: Object.keys(tags).length > 0 ? tags : undefined,
+      deprecated
+    };
+  }
+
+  private static extractTags(lines: string[]): Record<string, (string | DocTag)[]> {
+    const tags: Record<string, (string | DocTag)[]> = {};
+
+    for (const line of lines) {
+      const tagMatch = line.match(/@(\w+)\s*(.*)/);
+      if (tagMatch) {
+        const [, tagName, content] = tagMatch;
+
+        if (this.isComplexTag(tagName)) {
+          const parsed = this.parseComplexTag(tagName, content);
+          tags[tagName] = tags[tagName] || [];
+          tags[tagName].push(parsed);
+        } else {
+          tags[tagName] = tags[tagName] || [];
+          tags[tagName].push(content.trim());
+        }
+      }
+    }
+
+    return tags;
+  }
+
+  private static isComplexTag(tagName: string): boolean {
+    return ['param', 'returns', 'throws', 'example'].includes(tagName);
+  }
+
+  private static parseComplexTag(tagName: string, content: string): DocTag {
+    // Parse language-specific tag formats
+    switch (tagName) {
+      case 'param':
+        return this.parseParamTag(content);
+      case 'returns':
+        return this.parseReturnsTag(content);
+      case 'throws':
+        return this.parseThrowsTag(content);
+      default:
+        return { name: tagName, content };
+    }
+  }
+
+  private static parseParamTag(content: string): DocTag {
+    // Handle different parameter formats:
+    // TypeScript: @param name - description
+    // Javadoc: @param name description
+    // Python: @param name: description
+
+    const match = content.match(/^(\w+)[\s:-]+(.*)/);
+    if (match) {
+      const [, paramName, description] = match;
+      return {
+        name: 'param',
+        content: description.trim(),
+        parameters: { name: paramName }
+      };
+    }
+
+    return { name: 'param', content };
+  }
+
+  private static extractDescription(lines: string[]): string | undefined {
+    const descLines: string[] = [];
+
+    for (const line of lines) {
+      // Stop at first tag
+      if (line.trim().startsWith('@')) break;
+
+      const cleaned = line.trim();
+      if (cleaned) descLines.push(cleaned);
+    }
+
+    return descLines.length > 0 ? descLines.join('\n') : undefined;
+  }
+
+  private static extractDeprecated(tags: Record<string, any>): { message: string; since?: string } | undefined {
+    if (!tags.deprecated) return undefined;
+
+    const deprecatedTags = tags.deprecated;
+    if (typeof deprecatedTags[0] === 'string') {
+      return { message: deprecatedTags[0] };
+    }
+
+    const tag = deprecatedTags[0] as DocTag;
+    return {
+      message: tag.content,
+      since: tag.parameters?.since
+    };
+  }
+}
+```
+
+## Best Practices
+
+### 1. ID Generation
+
+Use consistent, predictable ID schemes:
+
+```typescript
+// Good - hierarchical with namespace
+generateId(item) {
+  const parts = [item.project, item.namespace, item.name];
+  return parts.filter(Boolean).join('#');
+}
+
+// Examples:
+// "user-service#api#UserController"
+// "web-sdk#types#User"
+```
+
+### 2. Kind Naming
+
+Use semantic names that work across languages:
+
+```typescript
+// Good - semantic and template-friendly
+const kindMap = {
+  'struct': 'struct',
+  'interface': 'interface',
+  'receiver-method': 'receiver-method'
+};
+
+// The language property provides language context
+// Templates can use {{ apiItem.language }} when needed
+```
+
+### 3. Metadata Preservation
+
+Store language-specific information in metadata:
+
+```typescript
+extractMetadata(node: ASTNode): Record<string, any> {
+  return {
+    // Type information
+    signature: extractSignature(node),
+
+    // Visibility
+    visibility: node.modifiers.includes('public') ? 'public' : 'private',
+
+    // Source location (useful for debugging)
+    sourceLocation: {
+      file: node.file,
+      line: node.line,
+      column: node.column
+    },
+
+    // Language-specific features
+    async: node.isAsync,
+    generator: node.isGenerator
+  };
+}
+```
+
+### 4. Container References
+
+Properly link items to their containers:
+
+```typescript
+findContainer(node: ASTNode): ContainerRef | undefined {
+  let parent = node.parent;
+
+  while (parent) {
+    if (isModule(parent)) {
+      return { id: parent.id, relationship: 'module' };
+    }
+    if (isClass(parent)) {
+      return { id: parent.id, relationship: 'class' };
+    }
+    parent = parent.parent;
+  }
+
+  return undefined;
+}
+```
+
+## Testing Your Implementation
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+
+describe('DocItem Implementation', () => {
+  it('should create DocItem with required fields', () => {
+    const item = new DocItem(
+      'test#MyClass',
+      'MyClass',
+      'class',
+      'typescript'
+    );
+
+    expect(item.id).toBe('test#MyClass');
+    expect(item.name).toBe('MyClass');
+    expect(item.kind).toBe('class');
+    expect(item.language).toBe('typescript');
+  });
+
+  it('should extract DocBlock from comment', () => {
+    const comment = {
+      text: `
+        Calculates the area of a rectangle
+        @param width - The width
+        @param height - The height
+        @returns The calculated area
+      `
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.description).toContain('Calculates the area');
+    expect(docBlock.tags?.param).toHaveLength(2);
+    expect(docBlock.tags?.returns).toBeDefined();
+  });
+
+  it('should handle deprecated items', () => {
+    const comment = {
+      text: `
+        Old function - do not use
+        @deprecated Use newFunction instead
+        @since 2.0.0
+      `
+    };
+
+    const docBlock = DocBlockExtractor.extract(comment);
+
+    expect(docBlock.deprecated).toBeDefined();
+    expect(docBlock.deprecated?.message).toContain('Use newFunction');
+    expect(docBlock.deprecated?.since).toBe('2.0.0');
+  });
+});
+```
+
+## Common Pitfalls
+
+### 1. Forgetting to Handle Missing Docs
+
+```typescript
+// Bad - assumes docBlock always exists
+const description = item.docBlock.description;
+
+// Good - defensive
+const description = item.docBlock?.description ?? 'No description provided';
+```
+
+### 2. Not Validating IDs
+
+```typescript
+// Bad - can create invalid IDs
+generateId(item) {
+  return item.name;  // Might contain spaces, special chars
+}
+
+// Good - sanitize IDs
+generateId(item) {
+  const sanitized = item.name.replace(/[^a-zA-Z0-9_]/g, '_');
+  return `${item.project}#${sanitized}`;
+}
+```
+
+### 3. Losing Source Information
+
+```typescript
+// Good - always preserve source location
+extractMetadata(node) {
+  return {
+    ...otherMetadata,
+    sourceLocation: {
+      file: node.file,
+      line: node.line,
+      column: node.column
+    }
+  };
+}
+```
+
+## Next Steps
+
+- Learn how to build [Language Extractors](/opendocs/implementation/extractors)
+- Understand [Documentation Set Building](/opendocs/implementation/docset-builder)
+- Review [Testing strategies](/opendocs/implementation/testing)
+
+## See Also
+
+- [DocItem Specification](/opendocs/opendocs-model) - The spec you're implementing
+- [Examples](/opendocs/examples/index) - Real-world implementations
