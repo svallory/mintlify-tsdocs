@@ -260,7 +260,7 @@ describe('TypeTree - Type Safety', () => {
   });
 
   it('should support TypeAnnotation union type', () => {
-    const annotations: Array<TypeTreeProperty['type']> = [
+    const annotations: Array<TypeTree openProperty['type']> = [
       'string',
       'number',
       'boolean',

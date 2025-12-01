@@ -454,7 +454,7 @@ describe('CustomMarkdownEmitter', () => {
         (emitter as any)._writeMintlifyTable(table, context);
 
         const output = stringBuilder.toString();
-        expect(output).toContain('<TypeTree');
+        expect(output).toContain('<TypeTree open');
         expect(output).toContain('name="name"');
         expect(output).toContain('type="string"');
         expect(output).toContain('required={true}');
@@ -804,7 +804,7 @@ describe('CustomMarkdownEmitter', () => {
       expect(output).toContain('## Properties');
       expect(output).toContain('import { TypeTree }');
       // But no TypeTree components since name is empty
-      expect(output).not.toContain('<TypeTree');
+      expect(output).not.toContain('<TypeTree open');
     });
 
     it('should handle missing type column', () => {

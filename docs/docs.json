@@ -27,7 +27,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://github.com/microsoft/rushstack/tree/main/README.md"
+      "href": "https://mint-tsdocs.saulo.engineer/introduction"
     }
   },
   "navigation": {
