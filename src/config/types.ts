@@ -295,8 +295,11 @@ export interface LintConfig {
    */
   eslint?: {
     /**
-     * Enable ESLint linting with tsdoc plugin
-     * @defaultValue true
+     * Enable ESLint linting with tsdoc plugin.
+     * - `true`: Force enable (error if eslint not installed)
+     * - `false`: Force disable (no hints shown)
+     * - Not set: Auto-detect (use eslint if installed, show hint if not)
+     * @defaultValue undefined (auto-detect)
      */
     enabled?: boolean;
 
@@ -539,7 +542,7 @@ export interface ResolvedConfig {
    */
   lint: {
     eslint: {
-      enabled: boolean;
+      enabled?: boolean;
       directories: string[];
       configPath?: string;
     };

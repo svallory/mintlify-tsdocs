@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mintlify-tsdocs.com/schemas/opendocs.schema.json",
+  "title": "OpenDocs Specification Schema",
+  "description": "JSON Schema for the OpenDocs specification - a universal documentation format for multi-language projects",
+  "type": "object",
+  "required": ["id", "name", "projects"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema identifier",
+      "format": "uri"
+    },
+    "id": {
+      "type": "string",
+      "description": "Documentation set identifier (lowercase-with-hyphens)",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable documentation name"
+    },
+    "version": {
+      "type": "string",
+      "description": "OpenDocs specification version",
+      "default": "1.0.0"
+    },
+    "format": {
+      "type": "string",
+      "description": "Serialization format",
+      "enum": ["json"],
+      "default": "json"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for the documentation set",
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp"
+        },
+        "generator": {
+          "type": "string",
+          "description": "Tool that generated this documentation"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository URL"
+        }
+      },
+      "additionalProperties": true
+    },
+    "projects": {
+      "type": "array",
+      "description": "Array of projects in the documentation set",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/Project" },
+          { "$ref": "#/definitions/Reference" }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Reference": {
+      "type": "object",
+      "required": ["$ref"],
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Reference to external JSON file",
+          "format": "uri-reference"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Project": {
+      "type": "object",
+      "required": ["id", "name", "language", "items"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique project identifier (lowercase-with-hyphens)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable project name"
+        },
+        "language": {
+          "type": "string",
+          "description": "Programming language",
+          "enum": ["typescript", "rust", "go", "python", "java", "csharp", "javascript", "php", "ruby", "swift", "kotlin", "scala", "dart", "elixir"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "version": {
+          "type": "string",
+          "description": "Project version"
+        },
+        "entryPoint": {
+          "type": "string",
+          "description": "Main entry point file path"
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "IDs of projects this project depends on",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "items": {
+          "type": "array",
+          "description": "Top-level documentation items",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/definitions/DocItem" },
+              { "$ref": "#/definitions/Reference" }
+            ]
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Language-specific metadata",
+          "properties": {
+            "packageManager": {
+              "type": "string",
+              "description": "Package manager used (npm, yarn, cargo, pip, etc.)"
+            },
+            "buildTool": {
+              "type": "string",
+              "description": "Build tool used (webpack, rollup, cargo, etc.)"
+            },
+            "testFramework": {
+              "type": "string",
+              "description": "Testing framework used"
+            },
+            "license": {
+              "type": "string",
+              "description": "Project license"
+            },
+            "repository": {
+              "type": "string",
+              "format": "uri",
+              "description": "Project repository URL"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "DocItem": {
+      "type": "object",
+      "required": ["id", "name", "kind", "language"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier (language-native FQN format)",
+          "examples": [
+            "@mintlify/docs#createDebugger",
+            "serde::de::Deserialize",
+            "fmt.Printf",
+            "json.loads"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "kind": {
+          "type": "string",
+          "description": "Language-specific item type",
+          "examples": [
+            "class",
+            "interface",
+            "function",
+            "variable",
+            "constant",
+            "enum",
+            "type-alias",
+            "namespace",
+            "module",
+            "rust-trait",
+            "rust-struct",
+            "go-interface",
+            "go-receiver-method",
+            "python-class",
+            "python-function"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "description": "Source language",
+          "enum": ["typescript", "rust", "go", "python", "java", "csharp", "javascript", "php", "ruby", "swift", "kotlin", "scala", "dart", "elixir"]
+        },
+        "docBlock": {
+          "$ref": "#/definitions/DocBlock",
+          "description": "Documentation content"
+        },
+        "container": {
+          "$ref": "#/definitions/ContainerRef",
+          "description": "Container relationship"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Language-specific metadata (includes signature, type info, etc.)",
+          "additionalProperties": true
+        },
+        "items": {
+          "type": "array",
+          "description": "Child items (methods, properties, nested types)",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/definitions/DocItem" },
+              { "$ref": "#/definitions/Reference" }
+            ]
+          }
+        }
+      }
+    },
+    "DocBlock": {
+      "type": "object",
+      "description": "Structured documentation content",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Main description text"
+        },
+        "tags": {
+          "type": "object",
+          "description": "Documentation tags (@param, @returns, etc.)",
+          "patternProperties": {
+            "^[a-zA-Z][a-zA-Z0-9-]*$": {
+              "oneOf": [
+                { "type": "string" },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DocTag"
+                  }
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "deprecated": {
+          "$ref": "#/definitions/DeprecatedInfo",
+          "description": "Deprecation information"
+        }
+      }
+    },
+    "DocTag": {
+      "type": "object",
+      "required": ["name", "content"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tag name without @"
+        },
+        "content": {
+          "type": "string",
+          "description": "Tag content"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Tag parameters for complex tags",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "DeprecatedInfo": {
+      "type": "object",
+      "description": "Deprecation information",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Deprecation message"
+        },
+        "since": {
+          "type": "string",
+          "description": "Version when deprecated"
+        },
+        "replacement": {
+          "type": "string",
+          "description": "Suggested replacement"
+        }
+      }
+    },
+    "ContainerRef": {
+      "type": "object",
+      "required": ["id", "relationship"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the containing DocItem"
+        },
+        "relationship": {
+          "type": "string",
+          "description": "Type of containment relationship",
+          "enum": ["module", "class", "interface", "namespace", "custom"]
+        }
+      }
+    }
+  }
+}
+
+// Additional properties for the DocSet root object (same as original)
+"type": "object",
+"properties": {
+  "$schema": {
+    "description": "Part of the JSON Schema standard, this optional keyword declares the URL of the schema that the file conforms to. Editors may download the schema and use it to perform syntax highlighting.",
+    "type": "string"
+  },
+  "id": {
+    "description": "The ID should be a lowercase string with hyphens",
+    "type": "string",
+    "pattern": "^[a-z][a-z0-9-]*$"
+  },
+  "name": {
+    "description": "The name of the documentation set",
+    "type": "string"
+  },
+  "metadata": {
+    "type": "object",
+    "description": "Additional metadata for the documentation set"
+  },
+  "projects": {
+    "type": "array",
+    "description": "Array of projects in the documentation set",
+    "items": {
+      "oneOf": [
+        { "$ref": "#/definitions/Project" },
+        { "$ref": "#/definitions/Reference" }
+      ]
+    }
+  }
+},
+"required": ["id", "name", "projects"],
+"additionalProperties": false
+
+// Note: The location, repository, and references enhancements would be added
+// when implementing the final recommendations, but are not part of the base model

@@ -231,7 +231,7 @@ export function resolveConfig(config: MintlifyTsDocsConfig, configDir: string): 
     },
     lint: {
       eslint: {
-        enabled: config.lint?.eslint?.enabled ?? true,
+        enabled: config.lint?.eslint?.enabled,
         directories: config.lint?.eslint?.directories ?? ['src'],
         configPath: config.lint?.eslint?.configPath
           ? path.resolve(configDir, config.lint.eslint.configPath)
