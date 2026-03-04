@@ -4,7 +4,6 @@ import { CommandLineAction, type CommandLineRemainder, type CommandLineFlagParam
 import { FileSystem } from '@rushstack/node-core-library';
 import * as clack from '@clack/prompts';
 import { S_BAR, S_BAR_END } from './utils/constants';
-import { ESLint } from 'eslint';
 import { Extractor, ExtractorConfig, type ExtractorResult } from '@microsoft/api-extractor';
 import { loadConfig, generateApiExtractorConfig } from '../config';
 import { DocumentationError, ErrorCode } from '../errors/DocumentationError';
@@ -278,8 +277,8 @@ export class LintAction extends CommandLineAction {
     pathFilter?: string,
     isFileFilter?: boolean
   ): Promise<void> {
-    // Check if ESLint is enabled in config
-    if (!config.lint?.eslint?.enabled) {
+    // Skip if explicitly disabled
+    if (config.lint?.eslint?.enabled === false) {
       return;
     }
 
@@ -315,7 +314,8 @@ export class LintAction extends CommandLineAction {
         return;
       }
 
-      // Import plugins
+      // Dynamically import ESLint and plugins (these are optional peer dependencies)
+      const { ESLint } = await import('eslint');
       const tsdocPlugin = await import('eslint-plugin-tsdoc');
       // @ts-expect-error - Dynamic import type resolution
       const typescriptParser = await import('@typescript-eslint/parser');
@@ -414,13 +414,36 @@ export class LintAction extends CommandLineAction {
       // Restore stderr
       (process.stderr as any).write = originalStderrWrite;
 
-      // Stop spinner and log warning
+      // Stop spinner
       if (spinner) {
         spinner.stop('ESLint analysis skipped');
       }
-      clack.log.warn(
-        'Reason: ' + (error instanceof Error ? error.message : String(error))
-      );
+
+      const isModuleNotFound = error instanceof Error &&
+        'code' in error && (error as any).code === 'MODULE_NOT_FOUND';
+
+      if (isModuleNotFound) {
+        const installCmd = 'bun add -D eslint eslint-plugin-tsdoc @typescript-eslint/parser';
+        if (config.lint?.eslint?.enabled === true) {
+          // Explicitly enabled but not installed — this is an error
+          clack.log.error(
+            `ESLint is enabled in config but not installed.\n` +
+            `  Run: ${chalk.cyan(installCmd)}`
+          );
+        } else {
+          // Auto-detect mode — show a non-intrusive hint
+          clack.log.info(
+            `Tip: Install eslint for deeper TSDoc source linting:\n` +
+            `  ${chalk.cyan(installCmd)}\n` +
+            `  To hide this message, set ${chalk.dim('lint.eslint.enabled')} to ${chalk.dim('false')} in mint-tsdocs.config.json.`
+          );
+        }
+      } else {
+        // Non-module error — always warn
+        clack.log.warn(
+          'ESLint analysis failed: ' + (error instanceof Error ? error.message : String(error))
+        );
+      }
     } finally {
       // Always restore stderr
       (process.stderr as any).write = originalStderrWrite;
