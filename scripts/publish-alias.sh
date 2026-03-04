@@ -21,7 +21,7 @@ fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
 # Publish the wrapper package
-npm publish
+npm publish --provenance --access public
 
 # Navigate back to the root directory
 cd ../..
