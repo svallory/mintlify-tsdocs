@@ -141,8 +141,8 @@ export class LintAction extends CommandLineAction {
         clack.log.success(`API Extractor analysis complete`);
       }
 
-      // Step 2: Run ESLint with tsdoc plugin (if enabled)
-      if (config.lint?.eslint?.enabled !== false) {
+      // Step 2: Run ESLint with tsdoc plugin (skipped internally if disabled)
+      {
         let eslintSpinner: ReturnType<typeof clack.spinner> | null = null;
         if (this._verboseParameter.value) {
           eslintSpinner = clack.spinner();
@@ -430,7 +430,7 @@ export class LintAction extends CommandLineAction {
             `ESLint is enabled in config but not installed.\n` +
             `  Run: ${chalk.cyan(installCmd)}`
           );
-        } else {
+        } else if (config.lint?.eslint?.enabled !== false) {
           // Auto-detect mode — show a non-intrusive hint
           clack.log.info(
             `Tip: Install eslint for deeper TSDoc source linting:\n` +
@@ -438,6 +438,7 @@ export class LintAction extends CommandLineAction {
             `  To hide this message, set ${chalk.dim('lint.eslint.enabled')} to ${chalk.dim('false')} in mint-tsdocs.config.json.`
           );
         }
+        // enabled === false: silent, do nothing
       } else {
         // Non-module error — always warn
         clack.log.warn(
