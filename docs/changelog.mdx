@@ -6,6 +6,37 @@ icon: history
 
 # Changelog
 
+<Update label="2026-03-04" description="Version 0.0.5">
+
+### Fix: ESLint No Longer Required
+
+**Fixed CLI crash when eslint is not installed.** Previously, running `npx mint-tsdocs` in a project without eslint would crash with `Cannot find module 'eslint'` — even for commands like `init` or `generate` that don't use eslint. Now eslint is fully optional.
+
+### ESLint Integration is Now Optional
+
+The `lint` command's ESLint integration (`eslint-plugin-tsdoc`) is now an opt-in feature with smart auto-detection:
+
+| `lint.eslint.enabled` | eslint installed | Behavior |
+|---|---|---|
+| `true` | yes | Runs ESLint with tsdoc plugin |
+| `true` | no | Error with install command |
+| not set (default) | yes | Auto-detects and runs ESLint |
+| not set (default) | no | Hint with install command |
+| `false` | either | Silent skip |
+
+**During `mint-tsdocs init`:**
+- Auto-detects if eslint is already installed and enables it
+- If not installed, prompts with an explanation of what ESLint adds
+- Offers to install `eslint`, `eslint-plugin-tsdoc`, and `@typescript-eslint/parser` automatically
+
+**Breaking change:** `lint.eslint.enabled` now defaults to `undefined` (auto-detect) instead of `true`. Projects that relied on eslint being enabled by default should add `"lint": { "eslint": { "enabled": true } }` to their config — but this was already broken for `npx` users, so the practical impact is zero.
+
+### Dependencies
+
+- `eslint`, `eslint-plugin-tsdoc`, and `@typescript-eslint/parser` are now declared as optional peer dependencies
+
+</Update>
+
 <Update label="2025-11-22" description="Version 0.0.4">
 
 ### Critical Fix: Module System

@@ -184,27 +184,45 @@ Check documentation quality and find issues in your API documentation.
 
 **Usage:**
 ```bash
-mint-tsdocs lint
+mint-tsdocs lint [PATH] [OPTIONS]
 ```
+
+**Options:**
+- `--verbose`, `-v` - Show detailed output including API Extractor and ESLint progress
 
 **What it checks:**
 - **Undocumented public APIs** - Classes, interfaces, and functions without documentation
 - **Missing parameter descriptions** - Function/method parameters without `@param` documentation
 - **Missing return descriptions** - Non-void functions without `@returns` documentation
 - **Missing examples** - Complex APIs (classes/interfaces) without usage examples
-- **TSDoc syntax** - Invalid TSDoc comment syntax (requires `@typescript-eslint/parser` and `eslint-plugin-tsdoc`)
+- **TSDoc syntax (via API Extractor)** - Invalid TSDoc comment syntax in compiled declarations
+- **TSDoc syntax (via ESLint, optional)** - Deeper source-level linting with `eslint-plugin-tsdoc`
 
-**Output:**
-Displays a formatted table with:
-- Issue severity (error, warning, info)
-- Issue description
-- Location (API item path or file:line:column)
-- Summary with counts by severity
+**ESLint Integration (optional):**
+
+The lint command can optionally run ESLint with `eslint-plugin-tsdoc` for deeper source-level TSDoc validation. This catches issues in `.ts` source files that may get stripped during compilation to `.d.ts`.
+
+Configure via `lint.eslint.enabled` in `mint-tsdocs.config.json`:
+- **`true`** - Force enable (shows error if eslint not installed)
+- **`false`** - Force disable (no hints shown)
+- **Not set (default)** - Auto-detect: runs eslint if installed, shows install hint if not
+
+To enable, install the required packages:
+```bash
+bun add -D eslint eslint-plugin-tsdoc @typescript-eslint/parser
+```
 
 **Examples:**
 ```bash
 # Check documentation quality
 mint-tsdocs lint
+
+# Lint specific folder or file
+mint-tsdocs lint ./src/core
+mint-tsdocs lint ./src/index.ts
+
+# Verbose output
+mint-tsdocs lint --verbose
 
 # Returns exit code 1 if errors are found
 mint-tsdocs lint && echo "Docs are good!"

@@ -119,6 +119,31 @@ Copy default Liquid templates to a directory for customization.
 - `-t, --template-dir <path>` - Directory where templates should be created
 - `--force` - Overwrite existing templates
 
+### `mint-tsdocs lint`
+
+Check documentation quality and find issues (undocumented APIs, missing params, TSDoc syntax).
+
+**Options:**
+- `--verbose`, `-v` - Show detailed output
+
+**Optional ESLint Integration:**
+
+For deeper source-level TSDoc linting, install:
+```bash
+bun add -D eslint eslint-plugin-tsdoc @typescript-eslint/parser
+```
+
+The lint command auto-detects ESLint. Control via `lint.eslint.enabled` in config (`true`/`false`/omit for auto-detect).
+
+### `mint-tsdocs coverage`
+
+Calculate TSDoc coverage with filtering, grouping, and threshold support.
+
+**Options:**
+- `--threshold <n>` - Minimum coverage percentage
+- `--group-by <type>` - Group by `file`, `folder`, or `none`
+- `--json` - Output JSON for CI
+
 ### `mint-tsdocs show`
 
 Display current configuration or cache statistics.

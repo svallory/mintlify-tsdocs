@@ -307,6 +307,116 @@ Whether to enable strict mode in Liquid template engine.
 
 ---
 
+## Lint Options
+
+### lint
+
+**Type:** `object`
+
+Configuration for the `lint` command.
+
+```json
+{
+  "lint": {
+    "eslint": {
+      "enabled": true,
+      "directories": ["src"],
+      "configPath": "./eslint.config.js"
+    },
+    "failOnError": true
+  }
+}
+```
+
+---
+
+#### lint.eslint.enabled
+
+**Type:** `boolean`
+
+**Default:** Not set (auto-detect)
+
+Controls ESLint integration with `eslint-plugin-tsdoc`:
+
+- **`true`** - Force enable. Shows an error with install command if eslint is not installed.
+- **`false`** - Force disable. No ESLint analysis, no hints.
+- **Not set** - Auto-detect. Runs ESLint if installed, shows a hint with install instructions if not.
+
+```json
+{
+  "lint": {
+    "eslint": {
+      "enabled": true
+    }
+  }
+}
+```
+
+**Required packages (when enabled):**
+```bash
+bun add -D eslint eslint-plugin-tsdoc @typescript-eslint/parser
+```
+
+---
+
+#### lint.eslint.directories
+
+**Type:** `string[]`
+
+**Default:** `["src"]`
+
+Directories to lint. ESLint discovers TypeScript files automatically within these directories.
+
+```json
+{
+  "lint": {
+    "eslint": {
+      "directories": ["src", "lib"]
+    }
+  }
+}
+```
+
+---
+
+#### lint.eslint.configPath
+
+**Type:** `string`
+
+**Default:** Auto-discovered
+
+Path to custom ESLint configuration file. If not set, ESLint auto-discovers `eslint.config.js` and other standard config files.
+
+```json
+{
+  "lint": {
+    "eslint": {
+      "configPath": "./config/eslint.config.js"
+    }
+  }
+}
+```
+
+---
+
+#### lint.failOnError
+
+**Type:** `boolean`
+
+**Default:** `true`
+
+Whether the `lint` command should exit with code 1 when errors are found. Set to `false` to treat errors as non-blocking.
+
+```json
+{
+  "lint": {
+    "failOnError": false
+  }
+}
+```
+
+---
+
 ## Message Reporting Options
 
 ### apiExtractor.messages
@@ -855,6 +965,14 @@ Path for the untrimmed .d.ts rollup file. Includes all declarations regardless o
     "userTemplateDir": "./templates",
     "cache": true,
     "strict": true
+  },
+
+  "lint": {
+    "eslint": {
+      "enabled": true,
+      "directories": ["src"]
+    },
+    "failOnError": true
   },
 
   "apiExtractor": {
