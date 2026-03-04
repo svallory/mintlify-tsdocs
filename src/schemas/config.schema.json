@@ -240,9 +240,8 @@
           "type": "object",
           "properties": {
             "enabled": {
-              "description": "Enable ESLint linting with tsdoc plugin. Defaults to true.",
-              "type": "boolean",
-              "default": true
+              "description": "Enable ESLint linting with tsdoc plugin. true = force enable (error if not installed), false = force disable, omit = auto-detect (use if installed, hint if not).",
+              "type": "boolean"
             },
             "directories": {
               "description": "Directories to lint (ESLint discovers files automatically). Defaults to ['src'].",
