@@ -187,6 +187,9 @@ export class InitAction extends CommandLineAction {
         }
       }
 
+      // Detect ESLint and optionally enable integration
+      const eslintEnabled = await this._detectAndPromptEslint(absoluteProjectDir, useDefaults);
+
       // Create config
       await this._createConfig(absoluteProjectDir, {
         entryPoint: path.relative(absoluteProjectDir, entryPoint),
@@ -194,6 +197,9 @@ export class InitAction extends CommandLineAction {
         docsJson: docsJsonPath ? path.relative(absoluteProjectDir, docsJsonPath) : undefined,
         tabName,
         groupName,
+        ...(eslintEnabled === true && {
+          lint: { eslint: { enabled: true } }
+        }),
         apiExtractor: {
           compiler: {
             tsconfigFilePath: tsconfigPath ? path.relative(absoluteProjectDir, tsconfigPath) : undefined
@@ -557,7 +563,8 @@ ${Colorize.cyan('  "mint-tsdocs": "mint-tsdocs generate"')}` : ''}`;
       outputFolder: config.outputFolder,
       ...(config.docsJson && { docsJson: config.docsJson }),
       ...(config.tabName && { tabName: config.tabName }),
-      ...(config.groupName && { groupName: config.groupName })
+      ...(config.groupName && { groupName: config.groupName }),
+      ...(config.lint && { lint: config.lint })
     };
 
     FileSystem.writeFile(configPath, JSON.stringify(fullConfig, null, 2));
@@ -830,6 +837,73 @@ This directory contains auto-generated files used during documentation generatio
       // If we can't update package.json, just skip it
       return false;
     }
+  }
+
+  /**
+   * Detect ESLint installation and optionally prompt to enable it
+   * @returns true to set enabled=true in config, undefined to leave unset
+   */
+  private async _detectAndPromptEslint(
+    projectDir: string,
+    useDefaults: boolean
+  ): Promise<boolean | undefined> {
+    // Check if eslint is installed
+    let eslintInstalled = false;
+    try {
+      require.resolve('eslint', { paths: [projectDir] });
+      eslintInstalled = true;
+    } catch {
+      // Not installed
+    }
+
+    if (eslintInstalled) {
+      clack.log.success('Detected eslint — enabling TSDoc linting integration');
+      return true;
+    }
+
+    if (useDefaults) {
+      // --yes mode: don't prompt, leave as auto-detect
+      return undefined;
+    }
+
+    // Prompt user
+    const shouldEnable = await clack.confirm({
+      message: 'Enable ESLint integration for TSDoc linting?\n' +
+        '  Catches TSDoc syntax errors in source files before compilation.\n' +
+        '  Requires: eslint, eslint-plugin-tsdoc, @typescript-eslint/parser',
+      initialValue: false
+    });
+
+    if (clack.isCancel(shouldEnable)) {
+      clack.cancel('Operation cancelled');
+      process.exit(0);
+    }
+
+    if (shouldEnable) {
+      // Offer to install dependencies
+      const shouldInstall = await clack.confirm({
+        message: 'Install ESLint dependencies now?',
+        initialValue: true
+      });
+
+      if (clack.isCancel(shouldInstall)) {
+        clack.cancel('Operation cancelled');
+        process.exit(0);
+      }
+
+      if (shouldInstall) {
+        await CommandRunner.run(
+          'bun',
+          ['add', '-D', 'eslint', 'eslint-plugin-tsdoc', '@typescript-eslint/parser'],
+          'Installing ESLint dependencies',
+          { cwd: projectDir, inheritStdio: true }
+        );
+      }
+
+      return true;
+    }
+
+    return undefined;
   }
 
   /**
