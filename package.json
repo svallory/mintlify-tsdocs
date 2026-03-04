@@ -70,6 +70,16 @@
     "react": "18",
     "resolve": "~1.22.11"
   },
+  "peerDependencies": {
+    "eslint": ">=8.0.0",
+    "eslint-plugin-tsdoc": ">=0.5.0",
+    "@typescript-eslint/parser": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "eslint": { "optional": true },
+    "eslint-plugin-tsdoc": { "optional": true },
+    "@typescript-eslint/parser": { "optional": true }
+  },
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
