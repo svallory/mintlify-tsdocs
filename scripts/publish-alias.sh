@@ -20,8 +20,14 @@ pkg.dependencies['mint-tsdocs'] = '$VERSION';
 fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
-# Publish the wrapper package
-npm publish --provenance --access public
+# Publish the wrapper package (tolerate "already published" errors from npm race conditions)
+npm publish --provenance --access public 2>&1 | tee /tmp/npm-publish-alias.log || {
+  if grep -q "cannot publish over the previously published versions" /tmp/npm-publish-alias.log; then
+    echo "Version $VERSION already published — treating as success"
+  else
+    exit 1
+  fi
+}
 
 # Navigate back to the root directory
 cd ../..
