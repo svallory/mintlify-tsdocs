@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - name: Checkout code
@@ -39,15 +39,11 @@ jobs:
         run: ./scripts/publish-alias.sh
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: |
-            Published to npm:
-            - [`mint-tsdocs@${{ github.ref_name }}`](https://www.npmjs.com/package/mint-tsdocs)
-            - [`mintlify-tsdocs@${{ github.ref_name }}`](https://www.npmjs.com/package/mintlify-tsdocs)
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "Release ${{ github.ref_name }}" \
+            --notes "Published to npm:
+          - [\`mint-tsdocs@${{ github.ref_name }}\`](https://www.npmjs.com/package/mint-tsdocs)
+          - [\`mintlify-tsdocs@${{ github.ref_name }}\`](https://www.npmjs.com/package/mintlify-tsdocs)"
